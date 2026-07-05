@@ -15,6 +15,11 @@ Reference: Trust Services Criteria (TSC) 2017 — Common Criteria series.
 - Supabase Postgres encrypted at rest (AES-256, AWS KMS).
 - Supabase Vault used for any future aggregator tokens (Phase B).
 
+## CC7.1 Vulnerability management
+- GitHub Dependabot alerts enabled at repo level (Settings → Code security), plus automated security fixes.
+- Scheduled dependency scanning via `.github/dependabot.yml`: npm + github-actions ecosystems, weekly, minor/patch grouped.
+- Evidence: `.github/dependabot.yml`; alert feed at https://github.com/hubi23798/truffe/security/dependabot; enablement verified via `GET /repos/hubi23798/truffe/vulnerability-alerts` (204) and `automated-security-fixes` (`enabled: true`) on 2026-07-05.
+
 ## CC7.2 System monitoring
 - App logs shipped to Axiom with PII redaction (`src/lib/logging/redact.ts`).
 - DB logs in Supabase dashboard with 7-day retention.
@@ -30,4 +35,3 @@ Reference: Trust Services Criteria (TSC) 2017 — Common Criteria series.
 ## Open evidence for next phases
 - CC6.1 observer-scope policies: Phase B.
 - CC6.6 BYOK for Family Office tier: Phase D.
-- CC7.1 vulnerability management (Snyk/Dependabot): add in Phase A.1.
