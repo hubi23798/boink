@@ -34,7 +34,7 @@ export default async function AdvisorPage() {
         <form action={createConversation}>
           <button
             type="submit"
-            className="rounded-lg bg-[#C9A84C] px-3 py-1.5 text-sm font-medium text-[#2C1A0E] hover:bg-[#D4B55C] transition-colors"
+            className="rounded-lg bg-[#C9A84C] px-3 py-1.5 text-sm font-medium text-[#2C1A0E] transition-colors hover:bg-[#D4B55C]"
           >
             New conversation
           </button>
@@ -42,7 +42,7 @@ export default async function AdvisorPage() {
       </div>
 
       {conversations.length === 0 ? (
-        <p className="text-[#C4B8A8] text-sm">
+        <p className="text-sm text-[#C4B8A8]">
           Start a conversation to get grounded insights about your finances.
         </p>
       ) : (
@@ -51,10 +51,12 @@ export default async function AdvisorPage() {
             <li key={conv.id}>
               <Link
                 href={`/advisor/c/${conv.id}`}
-                className="flex items-center justify-between rounded-xl border border-[#4A2E1A] bg-[#3A2414] px-4 py-3 text-sm hover:bg-[#4A2E1A] transition-colors"
+                className="flex items-center justify-between rounded-xl border border-[#4A2E1A] bg-[#3A2414] px-4 py-3 text-sm transition-colors hover:bg-[#4A2E1A]"
               >
-                <span className="min-w-0 flex-1 truncate font-medium text-[#F7F4EE]">{conv.title}</span>
-                <span className="text-[#C4B8A8] ml-4 shrink-0 text-xs">
+                <span className="min-w-0 flex-1 truncate font-medium text-[#F7F4EE]">
+                  {conv.title}
+                </span>
+                <span className="ml-4 shrink-0 text-xs text-[#C4B8A8]">
                   {new Date(conv.startedAt).toLocaleDateString("en-IE", {
                     day: "numeric",
                     month: "short",

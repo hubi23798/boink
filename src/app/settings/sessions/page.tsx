@@ -25,9 +25,13 @@ export default async function SettingsSessionsPage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
-        <a href="/settings" className="text-fg-muted text-sm hover:underline">← Settings</a>
+        <a href="/settings" className="text-fg-muted text-sm hover:underline">
+          ← Settings
+        </a>
         <h1 className="mt-2 text-xl font-semibold">Sessions</h1>
-        <p className="text-fg-muted mt-1 text-xs">{sessions.length} active session{sessions.length !== 1 ? "s" : ""}</p>
+        <p className="text-fg-muted mt-1 text-xs">
+          {sessions.length} active session{sessions.length !== 1 ? "s" : ""}
+        </p>
       </div>
 
       <div className="divide-border-subtle divide-y rounded-lg border text-sm">

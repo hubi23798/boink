@@ -22,7 +22,9 @@ export default async function SettingsProfilePage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
-        <a href="/settings" className="text-fg-muted text-sm hover:underline">← Settings</a>
+        <a href="/settings" className="text-fg-muted text-sm hover:underline">
+          ← Settings
+        </a>
         <h1 className="mt-2 text-xl font-semibold">Profile</h1>
         <p className="text-fg-muted mt-1 text-xs">Your preferences and financial context</p>
       </div>

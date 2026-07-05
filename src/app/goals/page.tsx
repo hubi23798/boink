@@ -38,11 +38,7 @@ export default async function GoalsPage() {
       .select({ id: account.id, name: account.name, kind: account.kind })
       .from(account)
       .where(eq(account.tenantId, tenantId)),
-    db
-      .select({ baseCurrency: user.baseCurrency })
-      .from(user)
-      .where(eq(user.id, userId))
-      .limit(1),
+    db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, userId)).limit(1),
   ]);
 
   const allLinkedIds = [...new Set(goals.flatMap((g) => g.linkedAccountIds))];
@@ -75,11 +71,5 @@ export default async function GoalsPage() {
 
   const currency = userRows[0]?.baseCurrency ?? "EUR";
 
-  return (
-    <GoalsView
-      goals={serializedGoals}
-      accounts={accounts}
-      currency={currency}
-    />
-  );
+  return <GoalsView goals={serializedGoals} accounts={accounts} currency={currency} />;
 }

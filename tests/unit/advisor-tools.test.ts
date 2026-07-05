@@ -62,7 +62,7 @@ describe("executeTool — get_net_worth_today", () => {
     });
     (ctx.db as unknown as Record<string, unknown>).select = selectMock;
 
-    const result = await executeTool("get_net_worth_today", {}, ctx) as Record<string, unknown>;
+    const result = (await executeTool("get_net_worth_today", {}, ctx)) as Record<string, unknown>;
     expect(result).toHaveProperty("total");
     expect(result).toHaveProperty("assets");
     expect(result).toHaveProperty("liabilities");
@@ -92,7 +92,7 @@ describe("executeTool — get_recent_transactions", () => {
     };
     (ctx.db as unknown as Record<string, unknown>).select = vi.fn().mockReturnValue(selectChain);
 
-    const result = await executeTool("get_recent_transactions", { limit: 5 }, ctx) as {
+    const result = (await executeTool("get_recent_transactions", { limit: 5 }, ctx)) as {
       transactions: Array<{ description: string }>;
     };
     expect(result.transactions[0]?.description).toContain("<user-data");
@@ -103,7 +103,7 @@ describe("executeTool — get_recent_transactions", () => {
 describe("executeTool — propose_categorization_rule", () => {
   it("pushes draft to ctx.proposals and returns queued status", async () => {
     const ctx = makeCtx();
-    const result = await executeTool(
+    const result = (await executeTool(
       "propose_categorization_rule",
       {
         matchKind: "description_contains",
@@ -112,7 +112,7 @@ describe("executeTool — propose_categorization_rule", () => {
         rationale: "All LIDL transactions are groceries",
       },
       ctx,
-    ) as Record<string, unknown>;
+    )) as Record<string, unknown>;
 
     expect(result.status).toBe("queued_for_user_review");
     expect(ctx.proposals).toHaveLength(1);
@@ -150,7 +150,7 @@ describe("executeTool — get_subscriptions", () => {
     };
     (ctx.db as unknown as Record<string, unknown>).select = vi.fn().mockReturnValue(selectChain);
 
-    const result = await executeTool("get_subscriptions", {}, ctx) as {
+    const result = (await executeTool("get_subscriptions", {}, ctx)) as {
       subscriptions: Array<{
         name: string;
         frequency: string;
@@ -193,7 +193,7 @@ describe("executeTool — get_subscriptions", () => {
     };
     (ctx.db as unknown as Record<string, unknown>).select = vi.fn().mockReturnValue(selectChain);
 
-    const result = await executeTool("get_subscriptions", {}, ctx) as {
+    const result = (await executeTool("get_subscriptions", {}, ctx)) as {
       subscriptions: unknown[];
       totalMonthly: number;
     };

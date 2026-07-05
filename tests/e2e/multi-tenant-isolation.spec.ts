@@ -9,8 +9,14 @@ test("user A cannot read user B's accounts via Supabase REST", async () => {
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
 
   // Generate a sign-in link for user A via service role, then exchange for session
-  const adminClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const { data: linkData } = await adminClient.auth.admin.generateLink({ type: "magiclink", email: "a@truffe.test" });
+  const adminClient = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+  const { data: linkData } = await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email: "a@truffe.test",
+  });
   const token = linkData.properties?.hashed_token;
 
   if (token) {
@@ -28,8 +34,14 @@ test("user A can read their own accounts", async () => {
   const { tA } = await seedTwoTenants();
 
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
-  const adminClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const { data: linkData } = await adminClient.auth.admin.generateLink({ type: "magiclink", email: "a@truffe.test" });
+  const adminClient = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+  const { data: linkData } = await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email: "a@truffe.test",
+  });
   const token = linkData.properties?.hashed_token;
 
   if (token) {

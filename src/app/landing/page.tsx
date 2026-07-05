@@ -74,9 +74,7 @@ function Hero() {
       <div className="landing-container">
         <Reveal>
           <div className="hero-stack">
-            <h1 className="sr-only">
-              Your money already knows. We just help you listen.
-            </h1>
+            <h1 className="sr-only">Your money already knows. We just help you listen.</h1>
 
             <div className="hero-h1-top">
               <p className="line tier-1 soft">
@@ -109,7 +107,9 @@ function HeroPrompt() {
     <div className="hero-prompt">
       <div className="hero-prompt-lead-wrap">
         <PixelPig />
-        <p className="hero-prompt-lead">Ask about a vendor, a pattern, or someone with access to your money.</p>
+        <p className="hero-prompt-lead">
+          Ask about a vendor, a pattern, or someone with access to your money.
+        </p>
       </div>
 
       <form className="hero-prompt-form" action="/login" method="get">
@@ -295,15 +295,7 @@ function AdvisorSection() {
   );
 }
 
-function Guardrail({
-  icon,
-  title,
-  desc,
-}: {
-  icon: React.ReactNode;
-  title: string;
-  desc: string;
-}) {
+function Guardrail({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
   return (
     <div className="guardrail">
       <div className="guardrail-icon">{icon}</div>

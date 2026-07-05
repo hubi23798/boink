@@ -21,7 +21,9 @@ import {
 import type { AnyPgColumn } from "drizzle-orm/pg-core";
 
 const bytea = customType<{ data: Buffer }>({
-  dataType() { return "bytea"; },
+  dataType() {
+    return "bytea";
+  },
 });
 
 // -- Constants ----------------------------------------------------------
@@ -87,11 +89,7 @@ export const ruleMatchKindEnum = pgEnum("rule_match_kind", [
 
 export const ruleSourceEnum = pgEnum("rule_source", ["user", "llm_accepted"]);
 
-export const advisorMessageRoleEnum = pgEnum("advisor_message_role", [
-  "user",
-  "assistant",
-  "tool",
-]);
+export const advisorMessageRoleEnum = pgEnum("advisor_message_role", ["user", "assistant", "tool"]);
 
 export const pendingProposalKindEnum = pgEnum("pending_proposal_kind", [
   "create_rule",
@@ -114,22 +112,13 @@ export const goalKindEnum = pgEnum("goal_kind", [
   "portfolio_target",
 ]);
 
-export const tenantPlanEnum = pgEnum("tenant_plan", [
-  "trial",
-  "solo",
-  "family",
-  "family_office",
-]);
+export const tenantPlanEnum = pgEnum("tenant_plan", ["trial", "solo", "family", "family_office"]);
 
 export const tenantRegionEnum = pgEnum("tenant_region", ["us", "eu", "uk"]);
 
 export const memberRoleEnum = pgEnum("member_role", ["owner", "observer"]);
 
-export const memberScopeEnum = pgEnum("member_scope", [
-  "full_read",
-  "ledger_only",
-  "audit_only",
-]);
+export const memberScopeEnum = pgEnum("member_scope", ["full_read", "ledger_only", "audit_only"]);
 
 // -- Tables -------------------------------------------------------------
 
@@ -147,7 +136,9 @@ export const user = pgTable("user", {
     mode: "number",
   }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
-  defaultTenantId: uuid("default_tenant_id").references((): AnyPgColumn => tenant.id, { onDelete: "set null" }),
+  defaultTenantId: uuid("default_tenant_id").references((): AnyPgColumn => tenant.id, {
+    onDelete: "set null",
+  }),
 });
 
 export const tenant = pgTable("tenant", {
@@ -228,10 +219,9 @@ export const auditLog = pgTable("audit_log", {
   targetId: text("target_id"),
   before: jsonb("before"),
   after: jsonb("after"),
-  advisorMessageId: uuid("advisor_message_id").references(
-    (): AnyPgColumn => advisorMessage.id,
-    { onDelete: "set null" },
-  ),
+  advisorMessageId: uuid("advisor_message_id").references((): AnyPgColumn => advisorMessage.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -372,10 +362,9 @@ export const transaction = pgTable(
     runningBalanceNative: bigint("running_balance_native", { mode: "number" }),
     categoryId: uuid("category_id").references(() => category.id, { onDelete: "set null" }),
     categorizedBy: categorizedByEnum("categorized_by"),
-    categorizationRuleId: uuid("categorization_rule_id").references(
-      () => categorizationRule.id,
-      { onDelete: "set null" },
-    ),
+    categorizationRuleId: uuid("categorization_rule_id").references(() => categorizationRule.id, {
+      onDelete: "set null",
+    }),
     importBatchId: uuid("import_batch_id")
       .notNull()
       .references(() => importBatch.id),
@@ -516,10 +505,7 @@ export const advisorMessage = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [
-    index("advisor_message_conversation_id_created_at_idx").on(
-      t.conversationId,
-      t.createdAt,
-    ),
+    index("advisor_message_conversation_id_created_at_idx").on(t.conversationId, t.createdAt),
     index("advisor_message_tenant_id_idx").on(t.tenantId),
   ],
 );
@@ -607,16 +593,16 @@ export const goal = pgTable(
     kind: goalKindEnum("kind").notNull(),
     targetAmount: bigint("target_amount", { mode: "number" }).notNull(), // cents in user's baseCurrency
     targetDate: date("target_date", { mode: "string" }), // nullable YYYY-MM-DD
-    linkedAccountIds: uuid("linked_account_ids").array().notNull().default(sql`ARRAY[]::uuid[]`),
+    linkedAccountIds: uuid("linked_account_ids")
+      .array()
+      .notNull()
+      .default(sql`ARRAY[]::uuid[]`),
     initialBalance: bigint("initial_balance", { mode: "number" }), // debt_payoff only: debt at creation (positive cents)
     isArchived: boolean("is_archived").notNull().default(false),
     createdAt: timestamp("created_at", { withTimezone: true }).defaultNow().notNull(),
     updatedAt: timestamp("updated_at", { withTimezone: true }).defaultNow().notNull(),
   },
-  (t) => [
-    index("goal_user_id_idx").on(t.userId),
-    index("goal_tenant_id_idx").on(t.tenantId),
-  ],
+  (t) => [index("goal_user_id_idx").on(t.userId), index("goal_tenant_id_idx").on(t.tenantId)],
 );
 
 // -- Weekly Debrief -----------------------------------------------------
@@ -657,7 +643,9 @@ export const auditLogV2 = pgTable(
   "audit_log_v2",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    tenantId: uuid("tenant_id").notNull().references(() => tenant.id, { onDelete: "restrict" }),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "restrict" }),
     actorUserId: uuid("actor_user_id").references(() => user.id, { onDelete: "set null" }),
     action: text("action").notNull(),
     targetType: text("target_type"),

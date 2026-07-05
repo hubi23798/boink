@@ -147,7 +147,7 @@ export function BudgetMockup() {
                   {c.name}
                   {c.over && <span className="mk-over"> OVER</span>}
                 </span>
-                <span className={`mk-num${c.over ? " mk-num-gold" : ""}`}>{c.pct}%</span>
+                <span className={`mk-num${c.over ? "mk-num-gold" : ""}`}>{c.pct}%</span>
               </div>
               <div className="mk-bar" aria-hidden>
                 <span
@@ -180,28 +180,49 @@ export function AdvisorMockup() {
             <div className="mk-advisor-actions">
               <button type="button" className="mk-advisor-action">
                 <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden>
-                  <path d="M8 2v12M2 8h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+                  <path
+                    d="M8 2v12M2 8h12"
+                    stroke="currentColor"
+                    strokeWidth="1.6"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 Attach
               </button>
               <button type="button" className="mk-advisor-action">
                 <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden fill="none">
                   <circle cx="8" cy="6" r="2.4" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M3 14c0-2.5 2.2-4.2 5-4.2s5 1.7 5 4.2" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  <path
+                    d="M3 14c0-2.5 2.2-4.2 5-4.2s5 1.7 5 4.2"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 Account
               </button>
               <button type="button" className="mk-advisor-action">
                 <svg viewBox="0 0 16 16" width="12" height="12" aria-hidden fill="none">
                   <circle cx="7" cy="7" r="4.2" stroke="currentColor" strokeWidth="1.4" />
-                  <path d="M10.2 10.2L13.5 13.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+                  <path
+                    d="M10.2 10.2L13.5 13.5"
+                    stroke="currentColor"
+                    strokeWidth="1.4"
+                    strokeLinecap="round"
+                  />
                 </svg>
                 Search
               </button>
             </div>
             <button type="button" className="mk-advisor-send" aria-label="Send">
               <svg viewBox="0 0 16 16" width="14" height="14" aria-hidden fill="none">
-                <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" />
+                <path
+                  d="M3 8h10M9 4l4 4-4 4"
+                  stroke="currentColor"
+                  strokeWidth="1.7"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                />
               </svg>
             </button>
           </div>

@@ -33,9 +33,19 @@ export interface TransactionRowProps {
 }
 
 const DEFAULT_CATEGORIES = [
-  "Groceries", "Dining Out", "Transport", "Housing", "Utilities",
-  "Entertainment", "Health", "Shopping", "Travel", "Subscriptions",
-  "Income", "Savings Transfer", "Other",
+  "Groceries",
+  "Dining Out",
+  "Transport",
+  "Housing",
+  "Utilities",
+  "Entertainment",
+  "Health",
+  "Shopping",
+  "Travel",
+  "Subscriptions",
+  "Income",
+  "Savings Transfer",
+  "Other",
 ];
 
 function formatAmount(cents: number, currency = "EUR"): string {
@@ -77,8 +87,15 @@ export function TransactionRow({
   className,
 }: TransactionRowProps) {
   const {
-    id, merchant, category, categoryEmoji, date,
-    account, amountCents, currency = "EUR", pending = false,
+    id,
+    merchant,
+    category,
+    categoryEmoji,
+    date,
+    account,
+    amountCents,
+    currency = "EUR",
+    pending = false,
   } = transaction;
 
   const [localCategory, setLocalCategory] = useState<string | null>(category ?? null);
@@ -111,7 +128,7 @@ export function TransactionRow({
     >
       {/* Merchant avatar */}
       <div
-        className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-elevated text-[13px] font-bold text-fg-muted select-none"
+        className="bg-elevated text-fg-muted flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-[13px] font-bold select-none"
         aria-hidden="true"
       >
         {categoryEmoji ?? merchantInitials(merchant)}
@@ -122,14 +139,14 @@ export function TransactionRow({
         <div className="flex items-center gap-2">
           <span
             className={cn(
-              "truncate text-body-strong leading-tight",
+              "text-body-strong truncate leading-tight",
               pending ? "text-fg-muted" : "text-fg-default",
             )}
           >
             {merchant}
           </span>
           {pending && (
-            <span className="text-caption flex items-center gap-1 rounded-full bg-elevated px-2 py-0.5 text-fg-muted">
+            <span className="text-caption bg-elevated text-fg-muted flex items-center gap-1 rounded-full px-2 py-0.5">
               <Clock className="h-2.5 w-2.5" aria-hidden="true" />
               Pending
             </span>
@@ -142,8 +159,8 @@ export function TransactionRow({
               <Select onValueChange={handleCategoryChange}>
                 <SelectTrigger
                   className={cn(
-                    "h-6 rounded-full border border-dashed border-gold/60 bg-transparent",
-                    "px-2 text-[11px] font-semibold text-gold",
+                    "border-gold/60 h-6 rounded-full border border-dashed bg-transparent",
+                    "text-gold px-2 text-[11px] font-semibold",
                     "hover:bg-gold-bg",
                   )}
                   aria-label="Assign category"
@@ -161,11 +178,11 @@ export function TransactionRow({
               </Select>
             </div>
           ) : (
-            <span className="rounded-full bg-elevated px-2 py-0.5 text-[11px] font-medium text-fg-muted">
+            <span className="bg-elevated text-fg-muted rounded-full px-2 py-0.5 text-[11px] font-medium">
               {localCategory}
             </span>
           )}
-          {account && <span className="text-[11px] text-fg-subtle">{account}</span>}
+          {account && <span className="text-fg-subtle text-[11px]">{account}</span>}
         </div>
       </div>
 
@@ -173,20 +190,20 @@ export function TransactionRow({
       <div className="flex shrink-0 flex-col items-end gap-0.5">
         <span
           className={cn(
-            "font-mono text-[14px] font-bold tabular-nums leading-tight",
+            "font-mono text-[14px] leading-tight font-bold tabular-nums",
             isCredit ? "text-success" : "text-fg-default",
           )}
           aria-label={`${isCredit ? "Credit" : "Debit"}: ${formatAmount(amountCents, currency)}`}
         >
           {formatAmount(amountCents, currency)}
         </span>
-        <span className="text-[11px] text-fg-subtle">{formatDate(date)}</span>
+        <span className="text-fg-subtle text-[11px]">{formatDate(date)}</span>
       </div>
 
       {/* Hover chevron */}
       {onClick && (
         <ChevronRight
-          className="h-4 w-4 shrink-0 text-line opacity-0 transition-opacity duration-100 group-hover:opacity-100"
+          className="text-line h-4 w-4 shrink-0 opacity-0 transition-opacity duration-100 group-hover:opacity-100"
           aria-hidden="true"
         />
       )}
@@ -209,29 +226,26 @@ export function TransactionList({
   onTransactionClick,
   className,
 }: TransactionListProps) {
-  const groups = transactions.reduce<Record<string, Transaction[]>>(
-    (acc, tx) => {
-      const key = formatDate(tx.date);
-      (acc[key] ??= []).push(tx);
-      return acc;
-    },
-    {},
-  );
+  const groups = transactions.reduce<Record<string, Transaction[]>>((acc, tx) => {
+    const key = formatDate(tx.date);
+    (acc[key] ??= []).push(tx);
+    return acc;
+  }, {});
 
   return (
     <div
-      className={cn(
-        "rounded-lg border border-line bg-card shadow-sm overflow-hidden",
-        className,
-      )}
+      className={cn("border-line bg-card overflow-hidden rounded-lg border shadow-sm", className)}
     >
       {Object.entries(groups).map(([dateLabel, txs], groupIdx) => (
         <div key={dateLabel}>
           {/* Date group header */}
-          <div className="sticky top-0 z-10 flex items-center justify-between bg-page px-4 py-2">
+          <div className="bg-page sticky top-0 z-10 flex items-center justify-between px-4 py-2">
             <span className="text-caption text-fg-subtle">{dateLabel}</span>
-            <span className="font-mono text-[11px] font-semibold text-fg-subtle tabular-nums">
-              {formatAmount(txs.reduce((sum, tx) => sum + tx.amountCents, 0), txs[0]?.currency)}
+            <span className="text-fg-subtle font-mono text-[11px] font-semibold tabular-nums">
+              {formatAmount(
+                txs.reduce((sum, tx) => sum + tx.amountCents, 0),
+                txs[0]?.currency,
+              )}
             </span>
           </div>
 
@@ -245,7 +259,7 @@ export function TransactionList({
                 onClick={onTransactionClick}
               />
               {!(rowIdx === txs.length - 1 && groupIdx === Object.keys(groups).length - 1) && (
-                <div className="mx-4 border-b border-line" aria-hidden="true" />
+                <div className="border-line mx-4 border-b" aria-hidden="true" />
               )}
             </div>
           ))}

@@ -1,6 +1,13 @@
 import { createHash } from "node:crypto";
 import { parse } from "csv-parse/sync";
-import type { AccountHint, NormalizedTxn, ParseRejection, ParseResult, ParsedRow, Source } from "./types";
+import type {
+  AccountHint,
+  NormalizedTxn,
+  ParseRejection,
+  ParseResult,
+  ParsedRow,
+  Source,
+} from "./types";
 
 const REQUIRED_HEADERS = [
   "Type",

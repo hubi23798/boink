@@ -47,10 +47,10 @@ export function KpiCard({
       data-testid={testId}
       className={cn(
         // Surface + radius
-        "relative flex flex-col gap-3 bg-card",
+        "bg-card relative flex flex-col gap-3",
         isHero
-          ? "rounded-xl border border-gold/40 p-6 shadow-md-glow"
-          : "rounded-lg border border-line p-4 shadow-sm",
+          ? "border-gold/40 shadow-md-glow rounded-xl border p-6"
+          : "border-line rounded-lg border p-4 shadow-sm",
         // Hover lift (subtle)
         "transition-shadow duration-150",
         isHero ? "" : "hover:border-line-strong",
@@ -62,27 +62,26 @@ export function KpiCard({
         <span className="text-caption text-fg-muted">{label}</span>
         {Icon && (
           <div
-            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-gold-bg"
+            className="bg-gold-bg flex h-7 w-7 shrink-0 items-center justify-center rounded-md"
             aria-hidden="true"
           >
-            <Icon className="h-4 w-4 text-gold" strokeWidth={1.75} />
+            <Icon className="text-gold h-4 w-4" strokeWidth={1.75} />
           </div>
         )}
       </div>
 
       {/* Value */}
-      <p
-        className={cn(
-          isHero ? "text-display text-gold" : "text-display-sm text-fg-default",
-        )}
-      >
+      <p className={cn(isHero ? "text-display text-gold" : "text-display-sm text-fg-default")}>
         {value}
       </p>
 
       {/* Delta */}
       {delta && (
         <div
-          className={cn("flex items-center gap-1 text-[13px] font-semibold", deltaColor[deltaDirection])}
+          className={cn(
+            "flex items-center gap-1 text-[13px] font-semibold",
+            deltaColor[deltaDirection],
+          )}
           aria-label={`Change: ${delta}`}
         >
           <DeltaIcon direction={deltaDirection} />

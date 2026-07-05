@@ -124,156 +124,151 @@ function buildCurrentTransactions(): TxnRow[] {
     cat: string,
     hour = 10,
     minute = 0,
-  ) => rows.push(txn(ACCT_CURRENT, BATCH_CURRENT, year, month, day, cents, desc, cat, hour, minute));
+  ) =>
+    rows.push(txn(ACCT_CURRENT, BATCH_CURRENT, year, month, day, cents, desc, cat, hour, minute));
 
   // ── December 2025 ─────────────────────────────────────────────────────
-  t(2025, 12,  1, -120000, "Property Rent December", CAT.rent);
-  t(2025, 12,  3,  -6240, "Lidl",                    CAT.groceries, 9, 15);
-  t(2025, 12,  5,  -1799, "Netflix",                  CAT.streaming);
-  t(2025, 12,  7,  -3800, "Leap Card Top-Up",         CAT.transport);
-  t(2025, 12,  8,  -2800, "Bunsen Burger",            CAT.diningOut, 19, 30);
-  t(2025, 12, 10,  -1099, "Spotify",                  CAT.streaming);
-  t(2025, 12, 11,  -7800, "Lidl",                     CAT.groceries, 11, 0);
-  t(2025, 12, 12,   -299, "Apple iCloud",              CAT.software);
-  t(2025, 12, 13,  -4500, "Penneys",                   CAT.shopping, 14, 0);
-  t(2025, 12, 15,  -8800, "Electric Ireland",          CAT.utilities); // high: winter
-  t(2025, 12, 17,  -2200, "Pharmacy",                  CAT.healthcare);
-  t(2025, 12, 18,  -8900, "Lidl",                      CAT.groceries, 10, 30);
-  t(2025, 12, 19,  -1200, "Dublin Bus",                CAT.transport, 8, 15);
-  t(2025, 12, 20,  -4500, "Pure Telecom",              CAT.utilities);
-  t(2025, 12, 21, -14800, "Amazon",                    CAT.shopping, 12, 0); // Christmas gifts
-  t(2025, 12, 22,  -6500, "Fade Street Social",        CAT.diningOut, 20, 0);
-  t(2025, 12, 23,  -4000, "Barber",                    CAT.personalCare);
-  t(2025, 12, 24, 350000, "Salary December",           CAT.salary, 9, 0);
-  t(2025, 12, 24,  -7200, "Lidl",                      CAT.groceries, 14, 0);
-  t(2025, 12, 26,  -7500, "SuperValu",                 CAT.groceries, 11, 0); // post-Christmas
-  t(2025, 12, 26, -40000, "Savings Transfer",          CAT.internalTransfer, 11, 30);
-  t(2025, 12, 27,  -5500, "Dundrum Town Centre",       CAT.shopping, 13, 0);
-  t(2025, 12, 28,  -9800, "The Hairy Lemon",           CAT.diningOut, 21, 0);
-  t(2025, 12, 30,  -3500, "Leap Card Top-Up",          CAT.transport);
+  t(2025, 12, 1, -120000, "Property Rent December", CAT.rent);
+  t(2025, 12, 3, -6240, "Lidl", CAT.groceries, 9, 15);
+  t(2025, 12, 5, -1799, "Netflix", CAT.streaming);
+  t(2025, 12, 7, -3800, "Leap Card Top-Up", CAT.transport);
+  t(2025, 12, 8, -2800, "Bunsen Burger", CAT.diningOut, 19, 30);
+  t(2025, 12, 10, -1099, "Spotify", CAT.streaming);
+  t(2025, 12, 11, -7800, "Lidl", CAT.groceries, 11, 0);
+  t(2025, 12, 12, -299, "Apple iCloud", CAT.software);
+  t(2025, 12, 13, -4500, "Penneys", CAT.shopping, 14, 0);
+  t(2025, 12, 15, -8800, "Electric Ireland", CAT.utilities); // high: winter
+  t(2025, 12, 17, -2200, "Pharmacy", CAT.healthcare);
+  t(2025, 12, 18, -8900, "Lidl", CAT.groceries, 10, 30);
+  t(2025, 12, 19, -1200, "Dublin Bus", CAT.transport, 8, 15);
+  t(2025, 12, 20, -4500, "Pure Telecom", CAT.utilities);
+  t(2025, 12, 21, -14800, "Amazon", CAT.shopping, 12, 0); // Christmas gifts
+  t(2025, 12, 22, -6500, "Fade Street Social", CAT.diningOut, 20, 0);
+  t(2025, 12, 23, -4000, "Barber", CAT.personalCare);
+  t(2025, 12, 24, 350000, "Salary December", CAT.salary, 9, 0);
+  t(2025, 12, 24, -7200, "Lidl", CAT.groceries, 14, 0);
+  t(2025, 12, 26, -7500, "SuperValu", CAT.groceries, 11, 0); // post-Christmas
+  t(2025, 12, 26, -40000, "Savings Transfer", CAT.internalTransfer, 11, 30);
+  t(2025, 12, 27, -5500, "Dundrum Town Centre", CAT.shopping, 13, 0);
+  t(2025, 12, 28, -9800, "The Hairy Lemon", CAT.diningOut, 21, 0);
+  t(2025, 12, 30, -3500, "Leap Card Top-Up", CAT.transport);
 
   // ── January 2026 ──────────────────────────────────────────────────────
-  t(2026,  1,  1, -120000, "Property Rent January",    CAT.rent);
-  t(2026,  1,  2,  -5500, "Gym — Annual Jan Offer",    CAT.personalCare);
-  t(2026,  1,  4,  -5900, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  1,  7,  -1799, "Netflix",                   CAT.streaming);
-  t(2026,  1,  8,  -3000, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  1, 10,  -1099, "Spotify",                   CAT.streaming);
-  t(2026,  1, 11,  -6500, "Lidl",                      CAT.groceries, 10, 0);
-  t(2026,  1, 12,   -299, "Apple iCloud",               CAT.software);
-  t(2026,  1, 14,  -2800, "Zucchini",                   CAT.diningOut, 19, 0);
-  t(2026,  1, 15,  -9200, "Electric Ireland",           CAT.utilities); // high: winter
-  t(2026,  1, 16,  -1800, "Boots Pharmacy",             CAT.healthcare);
-  t(2026,  1, 18,  -7100, "Lidl",                       CAT.groceries, 10, 0);
-  t(2026,  1, 19,  -4000, "Barber",                     CAT.personalCare);
-  t(2026,  1, 20,  -4500, "Pure Telecom",               CAT.utilities);
-  t(2026,  1, 22,  -3200, "Leap Card Top-Up",           CAT.transport);
-  t(2026,  1, 24,  -5800, "Lidl",                       CAT.groceries, 11, 30);
-  t(2026,  1, 25, 350000, "Salary January",             CAT.salary, 9, 0);
-  t(2026,  1, 26, -40000, "Savings Transfer",           CAT.internalTransfer, 11, 30);
-  t(2026,  1, 28,  -3500, "Starbucks",                  CAT.diningOut, 8, 30);
+  t(2026, 1, 1, -120000, "Property Rent January", CAT.rent);
+  t(2026, 1, 2, -5500, "Gym — Annual Jan Offer", CAT.personalCare);
+  t(2026, 1, 4, -5900, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 1, 7, -1799, "Netflix", CAT.streaming);
+  t(2026, 1, 8, -3000, "Leap Card Top-Up", CAT.transport);
+  t(2026, 1, 10, -1099, "Spotify", CAT.streaming);
+  t(2026, 1, 11, -6500, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 1, 12, -299, "Apple iCloud", CAT.software);
+  t(2026, 1, 14, -2800, "Zucchini", CAT.diningOut, 19, 0);
+  t(2026, 1, 15, -9200, "Electric Ireland", CAT.utilities); // high: winter
+  t(2026, 1, 16, -1800, "Boots Pharmacy", CAT.healthcare);
+  t(2026, 1, 18, -7100, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 1, 19, -4000, "Barber", CAT.personalCare);
+  t(2026, 1, 20, -4500, "Pure Telecom", CAT.utilities);
+  t(2026, 1, 22, -3200, "Leap Card Top-Up", CAT.transport);
+  t(2026, 1, 24, -5800, "Lidl", CAT.groceries, 11, 30);
+  t(2026, 1, 25, 350000, "Salary January", CAT.salary, 9, 0);
+  t(2026, 1, 26, -40000, "Savings Transfer", CAT.internalTransfer, 11, 30);
+  t(2026, 1, 28, -3500, "Starbucks", CAT.diningOut, 8, 30);
 
   // ── February 2026 ─────────────────────────────────────────────────────
-  t(2026,  2,  1, -120000, "Property Rent February",   CAT.rent);
-  t(2026,  2,  2,  -5500, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  2,  5,  -1799, "Netflix",                   CAT.streaming);
-  t(2026,  2,  7,  -3400, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  2,  8,  -4200, "Côte Brasserie",            CAT.diningOut, 19, 30); // pre-Valentine
-  t(2026,  2, 10,  -1099, "Spotify",                   CAT.streaming);
-  t(2026,  2, 11,  -6200, "Lidl",                      CAT.groceries, 10, 0);
-  t(2026,  2, 12,   -299, "Apple iCloud",               CAT.software);
-  t(2026,  2, 14, -11500, "Chapter One",               CAT.diningOut, 20, 0); // Valentine's
-  t(2026,  2, 15,  -7500, "Electric Ireland",           CAT.utilities);
-  t(2026,  2, 16,  -3500, "Brown Thomas",               CAT.shopping, 13, 0);
-  t(2026,  2, 17,  -6800, "Lidl",                      CAT.groceries, 10, 30);
-  t(2026,  2, 18,  -4000, "Barber",                    CAT.personalCare);
-  t(2026,  2, 20,  -4500, "Pure Telecom",              CAT.utilities);
-  t(2026,  2, 21,  -3000, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  2, 23,  -7200, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  2, 25, 350000, "Salary February",           CAT.salary, 9, 0);
-  t(2026,  2, 26, -40000, "Savings Transfer",          CAT.internalTransfer, 11, 30);
-  t(2026,  2, 27,  -2900, "Vue Cinema",                CAT.entertainment);
+  t(2026, 2, 1, -120000, "Property Rent February", CAT.rent);
+  t(2026, 2, 2, -5500, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 2, 5, -1799, "Netflix", CAT.streaming);
+  t(2026, 2, 7, -3400, "Leap Card Top-Up", CAT.transport);
+  t(2026, 2, 8, -4200, "Côte Brasserie", CAT.diningOut, 19, 30); // pre-Valentine
+  t(2026, 2, 10, -1099, "Spotify", CAT.streaming);
+  t(2026, 2, 11, -6200, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 2, 12, -299, "Apple iCloud", CAT.software);
+  t(2026, 2, 14, -11500, "Chapter One", CAT.diningOut, 20, 0); // Valentine's
+  t(2026, 2, 15, -7500, "Electric Ireland", CAT.utilities);
+  t(2026, 2, 16, -3500, "Brown Thomas", CAT.shopping, 13, 0);
+  t(2026, 2, 17, -6800, "Lidl", CAT.groceries, 10, 30);
+  t(2026, 2, 18, -4000, "Barber", CAT.personalCare);
+  t(2026, 2, 20, -4500, "Pure Telecom", CAT.utilities);
+  t(2026, 2, 21, -3000, "Leap Card Top-Up", CAT.transport);
+  t(2026, 2, 23, -7200, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 2, 25, 350000, "Salary February", CAT.salary, 9, 0);
+  t(2026, 2, 26, -40000, "Savings Transfer", CAT.internalTransfer, 11, 30);
+  t(2026, 2, 27, -2900, "Vue Cinema", CAT.entertainment);
 
   // ── March 2026 ────────────────────────────────────────────────────────
-  t(2026,  3,  1, -120000, "Property Rent March",      CAT.rent);
-  t(2026,  3,  2,  -5800, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  3,  4, -18000, "Ryanair",                   CAT.travel, 14, 0); // Easter flight
-  t(2026,  3,  5,  -1799, "Netflix",                   CAT.streaming);
-  t(2026,  3,  6,  -3000, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  3,  8,  -2200, "Boots Pharmacy",            CAT.healthcare);
-  t(2026,  3, 10,  -1099, "Spotify",                   CAT.streaming);
-  t(2026,  3, 11,  -6800, "Lidl",                      CAT.groceries, 10, 0);
-  t(2026,  3, 12,   -299, "Apple iCloud",               CAT.software);
-  t(2026,  3, 13,  -4800, "Zucchini",                  CAT.diningOut, 19, 0);
-  t(2026,  3, 15,  -7000, "Electric Ireland",           CAT.utilities);
-  t(2026,  3, 16,  -8500, "Airbnb",                    CAT.travel, 12, 0); // Easter Airbnb
-  t(2026,  3, 17,  -6200, "Lidl",                      CAT.groceries, 10, 30);
-  t(2026,  3, 18,  -4000, "Barber",                    CAT.personalCare);
-  t(2026,  3, 20,  -4500, "Pure Telecom",              CAT.utilities);
-  t(2026,  3, 21,  -4100, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  3, 22,  -7500, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  3, 24,  -3800, "Dundrum Town Centre",       CAT.shopping, 14, 0);
-  t(2026,  3, 25, 350000, "Salary March",              CAT.salary, 9, 0);
-  t(2026,  3, 26, -40000, "Savings Transfer",          CAT.internalTransfer, 11, 30);
-  t(2026,  3, 28,  -5200, "The Hairy Lemon",           CAT.diningOut, 21, 0);
-  t(2026,  3, 30,  -2500, "Vue Cinema",                CAT.entertainment);
+  t(2026, 3, 1, -120000, "Property Rent March", CAT.rent);
+  t(2026, 3, 2, -5800, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 3, 4, -18000, "Ryanair", CAT.travel, 14, 0); // Easter flight
+  t(2026, 3, 5, -1799, "Netflix", CAT.streaming);
+  t(2026, 3, 6, -3000, "Leap Card Top-Up", CAT.transport);
+  t(2026, 3, 8, -2200, "Boots Pharmacy", CAT.healthcare);
+  t(2026, 3, 10, -1099, "Spotify", CAT.streaming);
+  t(2026, 3, 11, -6800, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 3, 12, -299, "Apple iCloud", CAT.software);
+  t(2026, 3, 13, -4800, "Zucchini", CAT.diningOut, 19, 0);
+  t(2026, 3, 15, -7000, "Electric Ireland", CAT.utilities);
+  t(2026, 3, 16, -8500, "Airbnb", CAT.travel, 12, 0); // Easter Airbnb
+  t(2026, 3, 17, -6200, "Lidl", CAT.groceries, 10, 30);
+  t(2026, 3, 18, -4000, "Barber", CAT.personalCare);
+  t(2026, 3, 20, -4500, "Pure Telecom", CAT.utilities);
+  t(2026, 3, 21, -4100, "Leap Card Top-Up", CAT.transport);
+  t(2026, 3, 22, -7500, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 3, 24, -3800, "Dundrum Town Centre", CAT.shopping, 14, 0);
+  t(2026, 3, 25, 350000, "Salary March", CAT.salary, 9, 0);
+  t(2026, 3, 26, -40000, "Savings Transfer", CAT.internalTransfer, 11, 30);
+  t(2026, 3, 28, -5200, "The Hairy Lemon", CAT.diningOut, 21, 0);
+  t(2026, 3, 30, -2500, "Vue Cinema", CAT.entertainment);
 
   // ── April 2026 ────────────────────────────────────────────────────────
-  t(2026,  4,  1, -120000, "Property Rent April",      CAT.rent);
-  t(2026,  4,  3,  -6400, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  4,  5,  -1799, "Netflix",                   CAT.streaming);
-  t(2026,  4,  7,  -3200, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  4,  8,  -3800, "Starbucks",                 CAT.diningOut, 8, 0);
-  t(2026,  4, 10,  -1099, "Spotify",                   CAT.streaming);
-  t(2026,  4, 11,  -6100, "Lidl",                      CAT.groceries, 10, 0);
-  t(2026,  4, 12,   -299, "Apple iCloud",               CAT.software);
-  t(2026,  4, 13, -45000, "Revenue — Preliminary Tax", CAT.tax, 14, 0); // tax bill
-  t(2026,  4, 14,  -1800, "Boots Pharmacy",            CAT.healthcare);
-  t(2026,  4, 15,  -6500, "Electric Ireland",           CAT.utilities);
-  t(2026,  4, 17,  -5900, "Lidl",                      CAT.groceries, 10, 30);
-  t(2026,  4, 18,  -4000, "Barber",                    CAT.personalCare);
-  t(2026,  4, 19,  -6800, "Dundrum Town Centre",       CAT.shopping, 13, 0);
-  t(2026,  4, 20,  -4500, "Pure Telecom",              CAT.utilities);
-  t(2026,  4, 21,  -3500, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  4, 22,  -7200, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  4, 23,  -4600, "Bunsen Burger",             CAT.diningOut, 19, 30);
-  t(2026,  4, 25, 350000, "Salary April",              CAT.salary, 9, 0);
-  t(2026,  4, 26, -40000, "Savings Transfer",          CAT.internalTransfer, 11, 30);
-  t(2026,  4, 28,  -3200, "Lidl",                      CAT.groceries, 11, 30);
-  t(2026,  4, 29,  -5000, "Vue Cinema",                CAT.entertainment);
+  t(2026, 4, 1, -120000, "Property Rent April", CAT.rent);
+  t(2026, 4, 3, -6400, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 4, 5, -1799, "Netflix", CAT.streaming);
+  t(2026, 4, 7, -3200, "Leap Card Top-Up", CAT.transport);
+  t(2026, 4, 8, -3800, "Starbucks", CAT.diningOut, 8, 0);
+  t(2026, 4, 10, -1099, "Spotify", CAT.streaming);
+  t(2026, 4, 11, -6100, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 4, 12, -299, "Apple iCloud", CAT.software);
+  t(2026, 4, 13, -45000, "Revenue — Preliminary Tax", CAT.tax, 14, 0); // tax bill
+  t(2026, 4, 14, -1800, "Boots Pharmacy", CAT.healthcare);
+  t(2026, 4, 15, -6500, "Electric Ireland", CAT.utilities);
+  t(2026, 4, 17, -5900, "Lidl", CAT.groceries, 10, 30);
+  t(2026, 4, 18, -4000, "Barber", CAT.personalCare);
+  t(2026, 4, 19, -6800, "Dundrum Town Centre", CAT.shopping, 13, 0);
+  t(2026, 4, 20, -4500, "Pure Telecom", CAT.utilities);
+  t(2026, 4, 21, -3500, "Leap Card Top-Up", CAT.transport);
+  t(2026, 4, 22, -7200, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 4, 23, -4600, "Bunsen Burger", CAT.diningOut, 19, 30);
+  t(2026, 4, 25, 350000, "Salary April", CAT.salary, 9, 0);
+  t(2026, 4, 26, -40000, "Savings Transfer", CAT.internalTransfer, 11, 30);
+  t(2026, 4, 28, -3200, "Lidl", CAT.groceries, 11, 30);
+  t(2026, 4, 29, -5000, "Vue Cinema", CAT.entertainment);
 
   // ── May 2026 (partial — up to May 14) ─────────────────────────────────
-  t(2026,  5,  1, -120000, "Property Rent May",        CAT.rent);
-  t(2026,  5,  2,  -5700, "Lidl",                      CAT.groceries, 11, 0);
-  t(2026,  5,  5,  -1799, "Netflix",                   CAT.streaming);
-  t(2026,  5,  6,  -3000, "Leap Card Top-Up",          CAT.transport);
-  t(2026,  5,  7,  -4200, "Zucchini",                  CAT.diningOut, 19, 30);
-  t(2026,  5, 10,  -1099, "Spotify",                   CAT.streaming);
-  t(2026,  5, 10,  -7500, "Lidl",                      CAT.groceries, 10, 0);
-  t(2026,  5, 12,   -299, "Apple iCloud",               CAT.software);
-  t(2026,  5, 13,  -1500, "Boots Pharmacy",            CAT.healthcare);
-  t(2026,  5, 14,  -2800, "Starbucks",                 CAT.diningOut, 8, 30);
+  t(2026, 5, 1, -120000, "Property Rent May", CAT.rent);
+  t(2026, 5, 2, -5700, "Lidl", CAT.groceries, 11, 0);
+  t(2026, 5, 5, -1799, "Netflix", CAT.streaming);
+  t(2026, 5, 6, -3000, "Leap Card Top-Up", CAT.transport);
+  t(2026, 5, 7, -4200, "Zucchini", CAT.diningOut, 19, 30);
+  t(2026, 5, 10, -1099, "Spotify", CAT.streaming);
+  t(2026, 5, 10, -7500, "Lidl", CAT.groceries, 10, 0);
+  t(2026, 5, 12, -299, "Apple iCloud", CAT.software);
+  t(2026, 5, 13, -1500, "Boots Pharmacy", CAT.healthcare);
+  t(2026, 5, 14, -2800, "Starbucks", CAT.diningOut, 8, 30);
 
   return rows;
 }
 
 function buildSavingsTransactions(): TxnRow[] {
   const rows: TxnRow[] = [];
-  const t = (
-    year: number,
-    month: number,
-    day: number,
-    cents: number,
-    desc: string,
-    cat: string,
-  ) => rows.push(txn(ACCT_SAVINGS, BATCH_SAVINGS, year, month, day, cents, desc, cat, 11, 31));
+  const t = (year: number, month: number, day: number, cents: number, desc: string, cat: string) =>
+    rows.push(txn(ACCT_SAVINGS, BATCH_SAVINGS, year, month, day, cents, desc, cat, 11, 31));
 
-  t(2025, 12, 26, 40000, "Transfer from Current",     CAT.internalTransfer);
-  t(2026,  1, 26, 40000, "Transfer from Current",     CAT.internalTransfer);
-  t(2026,  2, 26, 40000, "Transfer from Current",     CAT.internalTransfer);
-  t(2026,  3, 26, 40000, "Transfer from Current",     CAT.internalTransfer);
-  t(2026,  3, 31,  1850, "AIB Savings Interest Q1",   CAT.investmentReturns);
-  t(2026,  4, 26, 40000, "Transfer from Current",     CAT.internalTransfer);
+  t(2025, 12, 26, 40000, "Transfer from Current", CAT.internalTransfer);
+  t(2026, 1, 26, 40000, "Transfer from Current", CAT.internalTransfer);
+  t(2026, 2, 26, 40000, "Transfer from Current", CAT.internalTransfer);
+  t(2026, 3, 26, 40000, "Transfer from Current", CAT.internalTransfer);
+  t(2026, 3, 31, 1850, "AIB Savings Interest Q1", CAT.investmentReturns);
+  t(2026, 4, 26, 40000, "Transfer from Current", CAT.internalTransfer);
 
   return rows;
 }
@@ -285,7 +280,13 @@ function buildSnapshots(
   txns: TxnRow[],
   startDate: Date,
   endDate: Date,
-): { tenantId: string; accountId: string; asOfDate: string; balanceNative: number; balanceBaseCcy: number }[] {
+): {
+  tenantId: string;
+  accountId: string;
+  asOfDate: string;
+  balanceNative: number;
+  balanceBaseCcy: number;
+}[] {
   const txnsByDate = new Map<string, number>();
   for (const t of txns.filter((r) => r.accountId === accountId)) {
     const d = fmtDate(t.startedAt);
@@ -317,19 +318,13 @@ async function main() {
 
   // Idempotent reset: delete seed accounts (cascade deletes txns + snapshots)
   console.log("Resetting seed data…");
-  await db
-    .delete(account)
-    .where(inArray(account.id, [ACCT_CURRENT, ACCT_SAVINGS]));
+  await db.delete(account).where(inArray(account.id, [ACCT_CURRENT, ACCT_SAVINGS]));
 
   // Delete seed import batches (not cascade-deleted by account delete)
-  await db
-    .delete(importBatch)
-    .where(inArray(importBatch.id, [BATCH_CURRENT, BATCH_SAVINGS]));
+  await db.delete(importBatch).where(inArray(importBatch.id, [BATCH_CURRENT, BATCH_SAVINGS]));
 
   // Delete all user categorization rules (re-inserted below)
-  await db
-    .delete(categorizationRule)
-    .where(eq(categorizationRule.userId, SEED_USER_ID));
+  await db.delete(categorizationRule).where(eq(categorizationRule.userId, SEED_USER_ID));
 
   // ── Accounts ────────────────────────────────────────────────────────────
   console.log("Inserting accounts…");
@@ -393,53 +388,259 @@ async function main() {
     categoryId: string;
   }[] = [
     // Income
-    { userId: SEED_USER_ID, priority: 10, matchKind: "description_contains", matchValue: "Salary", categoryId: CAT.salary },
+    {
+      userId: SEED_USER_ID,
+      priority: 10,
+      matchKind: "description_contains",
+      matchValue: "Salary",
+      categoryId: CAT.salary,
+    },
     // Rent
-    { userId: SEED_USER_ID, priority: 20, matchKind: "description_contains", matchValue: "Property Rent", categoryId: CAT.rent },
+    {
+      userId: SEED_USER_ID,
+      priority: 20,
+      matchKind: "description_contains",
+      matchValue: "Property Rent",
+      categoryId: CAT.rent,
+    },
     // Groceries
-    { userId: SEED_USER_ID, priority: 30, matchKind: "description_contains", matchValue: "Lidl", categoryId: CAT.groceries },
-    { userId: SEED_USER_ID, priority: 31, matchKind: "description_contains", matchValue: "SuperValu", categoryId: CAT.groceries },
-    { userId: SEED_USER_ID, priority: 32, matchKind: "description_contains", matchValue: "Tesco", categoryId: CAT.groceries },
-    { userId: SEED_USER_ID, priority: 33, matchKind: "description_contains", matchValue: "Aldi", categoryId: CAT.groceries },
+    {
+      userId: SEED_USER_ID,
+      priority: 30,
+      matchKind: "description_contains",
+      matchValue: "Lidl",
+      categoryId: CAT.groceries,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 31,
+      matchKind: "description_contains",
+      matchValue: "SuperValu",
+      categoryId: CAT.groceries,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 32,
+      matchKind: "description_contains",
+      matchValue: "Tesco",
+      categoryId: CAT.groceries,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 33,
+      matchKind: "description_contains",
+      matchValue: "Aldi",
+      categoryId: CAT.groceries,
+    },
     // Streaming
-    { userId: SEED_USER_ID, priority: 40, matchKind: "description_contains", matchValue: "Netflix", categoryId: CAT.streaming },
-    { userId: SEED_USER_ID, priority: 41, matchKind: "description_contains", matchValue: "Spotify", categoryId: CAT.streaming },
-    { userId: SEED_USER_ID, priority: 42, matchKind: "description_contains", matchValue: "Disney+", categoryId: CAT.streaming },
-    { userId: SEED_USER_ID, priority: 43, matchKind: "description_contains", matchValue: "Prime Video", categoryId: CAT.streaming },
+    {
+      userId: SEED_USER_ID,
+      priority: 40,
+      matchKind: "description_contains",
+      matchValue: "Netflix",
+      categoryId: CAT.streaming,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 41,
+      matchKind: "description_contains",
+      matchValue: "Spotify",
+      categoryId: CAT.streaming,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 42,
+      matchKind: "description_contains",
+      matchValue: "Disney+",
+      categoryId: CAT.streaming,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 43,
+      matchKind: "description_contains",
+      matchValue: "Prime Video",
+      categoryId: CAT.streaming,
+    },
     // Software
-    { userId: SEED_USER_ID, priority: 50, matchKind: "description_contains", matchValue: "Apple iCloud", categoryId: CAT.software },
-    { userId: SEED_USER_ID, priority: 51, matchKind: "description_contains", matchValue: "Google One", categoryId: CAT.software },
+    {
+      userId: SEED_USER_ID,
+      priority: 50,
+      matchKind: "description_contains",
+      matchValue: "Apple iCloud",
+      categoryId: CAT.software,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 51,
+      matchKind: "description_contains",
+      matchValue: "Google One",
+      categoryId: CAT.software,
+    },
     // Transport
-    { userId: SEED_USER_ID, priority: 60, matchKind: "description_contains", matchValue: "Leap Card", categoryId: CAT.transport },
-    { userId: SEED_USER_ID, priority: 61, matchKind: "description_contains", matchValue: "Dublin Bus", categoryId: CAT.transport },
-    { userId: SEED_USER_ID, priority: 62, matchKind: "description_contains", matchValue: "Luas", categoryId: CAT.transport },
-    { userId: SEED_USER_ID, priority: 63, matchKind: "description_contains", matchValue: "Irish Rail", categoryId: CAT.transport },
-    { userId: SEED_USER_ID, priority: 64, matchKind: "description_contains", matchValue: "Uber", categoryId: CAT.transport },
-    { userId: SEED_USER_ID, priority: 65, matchKind: "description_contains", matchValue: "Bolt", categoryId: CAT.transport },
+    {
+      userId: SEED_USER_ID,
+      priority: 60,
+      matchKind: "description_contains",
+      matchValue: "Leap Card",
+      categoryId: CAT.transport,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 61,
+      matchKind: "description_contains",
+      matchValue: "Dublin Bus",
+      categoryId: CAT.transport,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 62,
+      matchKind: "description_contains",
+      matchValue: "Luas",
+      categoryId: CAT.transport,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 63,
+      matchKind: "description_contains",
+      matchValue: "Irish Rail",
+      categoryId: CAT.transport,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 64,
+      matchKind: "description_contains",
+      matchValue: "Uber",
+      categoryId: CAT.transport,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 65,
+      matchKind: "description_contains",
+      matchValue: "Bolt",
+      categoryId: CAT.transport,
+    },
     // Utilities
-    { userId: SEED_USER_ID, priority: 70, matchKind: "description_contains", matchValue: "Electric Ireland", categoryId: CAT.utilities },
-    { userId: SEED_USER_ID, priority: 71, matchKind: "description_contains", matchValue: "Pure Telecom", categoryId: CAT.utilities },
-    { userId: SEED_USER_ID, priority: 72, matchKind: "description_contains", matchValue: "Eir", categoryId: CAT.utilities },
-    { userId: SEED_USER_ID, priority: 73, matchKind: "description_contains", matchValue: "Bord Gáis", categoryId: CAT.utilities },
+    {
+      userId: SEED_USER_ID,
+      priority: 70,
+      matchKind: "description_contains",
+      matchValue: "Electric Ireland",
+      categoryId: CAT.utilities,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 71,
+      matchKind: "description_contains",
+      matchValue: "Pure Telecom",
+      categoryId: CAT.utilities,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 72,
+      matchKind: "description_contains",
+      matchValue: "Eir",
+      categoryId: CAT.utilities,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 73,
+      matchKind: "description_contains",
+      matchValue: "Bord Gáis",
+      categoryId: CAT.utilities,
+    },
     // Healthcare
-    { userId: SEED_USER_ID, priority: 80, matchKind: "description_contains", matchValue: "Pharmacy", categoryId: CAT.healthcare },
-    { userId: SEED_USER_ID, priority: 81, matchKind: "description_contains", matchValue: "Boots", categoryId: CAT.healthcare },
-    { userId: SEED_USER_ID, priority: 82, matchKind: "description_contains", matchValue: "LloydsPharmacy", categoryId: CAT.healthcare },
+    {
+      userId: SEED_USER_ID,
+      priority: 80,
+      matchKind: "description_contains",
+      matchValue: "Pharmacy",
+      categoryId: CAT.healthcare,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 81,
+      matchKind: "description_contains",
+      matchValue: "Boots",
+      categoryId: CAT.healthcare,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 82,
+      matchKind: "description_contains",
+      matchValue: "LloydsPharmacy",
+      categoryId: CAT.healthcare,
+    },
     // Personal care
-    { userId: SEED_USER_ID, priority: 90, matchKind: "description_contains", matchValue: "Barber", categoryId: CAT.personalCare },
-    { userId: SEED_USER_ID, priority: 91, matchKind: "description_contains", matchValue: "Gym", categoryId: CAT.personalCare },
-    { userId: SEED_USER_ID, priority: 92, matchKind: "description_contains", matchValue: "Salon", categoryId: CAT.personalCare },
+    {
+      userId: SEED_USER_ID,
+      priority: 90,
+      matchKind: "description_contains",
+      matchValue: "Barber",
+      categoryId: CAT.personalCare,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 91,
+      matchKind: "description_contains",
+      matchValue: "Gym",
+      categoryId: CAT.personalCare,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 92,
+      matchKind: "description_contains",
+      matchValue: "Salon",
+      categoryId: CAT.personalCare,
+    },
     // Entertainment
-    { userId: SEED_USER_ID, priority: 100, matchKind: "description_contains", matchValue: "Vue Cinema", categoryId: CAT.entertainment },
-    { userId: SEED_USER_ID, priority: 101, matchKind: "description_contains", matchValue: "Cineworld", categoryId: CAT.entertainment },
+    {
+      userId: SEED_USER_ID,
+      priority: 100,
+      matchKind: "description_contains",
+      matchValue: "Vue Cinema",
+      categoryId: CAT.entertainment,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 101,
+      matchKind: "description_contains",
+      matchValue: "Cineworld",
+      categoryId: CAT.entertainment,
+    },
     // Travel
-    { userId: SEED_USER_ID, priority: 110, matchKind: "description_contains", matchValue: "Ryanair", categoryId: CAT.travel },
-    { userId: SEED_USER_ID, priority: 111, matchKind: "description_contains", matchValue: "Airbnb", categoryId: CAT.travel },
-    { userId: SEED_USER_ID, priority: 112, matchKind: "description_contains", matchValue: "Aer Lingus", categoryId: CAT.travel },
+    {
+      userId: SEED_USER_ID,
+      priority: 110,
+      matchKind: "description_contains",
+      matchValue: "Ryanair",
+      categoryId: CAT.travel,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 111,
+      matchKind: "description_contains",
+      matchValue: "Airbnb",
+      categoryId: CAT.travel,
+    },
+    {
+      userId: SEED_USER_ID,
+      priority: 112,
+      matchKind: "description_contains",
+      matchValue: "Aer Lingus",
+      categoryId: CAT.travel,
+    },
     // Tax
-    { userId: SEED_USER_ID, priority: 120, matchKind: "description_contains", matchValue: "Revenue", categoryId: CAT.tax },
+    {
+      userId: SEED_USER_ID,
+      priority: 120,
+      matchKind: "description_contains",
+      matchValue: "Revenue",
+      categoryId: CAT.tax,
+    },
   ];
-  await db.insert(categorizationRule).values(rules.map((r) => ({ ...r, tenantId: PRIMARY_TENANT_ID })));
+  await db
+    .insert(categorizationRule)
+    .values(rules.map((r) => ({ ...r, tenantId: PRIMARY_TENANT_ID })));
 
   // ── Transactions ─────────────────────────────────────────────────────────
   const currentTxns = buildCurrentTransactions();
@@ -457,9 +658,7 @@ async function main() {
   const currentSnapshots = buildSnapshots(ACCT_CURRENT, allTxns, periodStart, periodEnd);
   const savingsSnapshots = buildSnapshots(ACCT_SAVINGS, allTxns, periodStart, periodEnd);
 
-  console.log(
-    `Inserting ${currentSnapshots.length + savingsSnapshots.length} balance snapshots…`,
-  );
+  console.log(`Inserting ${currentSnapshots.length + savingsSnapshots.length} balance snapshots…`);
   await db.insert(balanceSnapshot).values([...currentSnapshots, ...savingsSnapshots]);
 
   // ── Summary ──────────────────────────────────────────────────────────────

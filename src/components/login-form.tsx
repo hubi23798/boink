@@ -63,9 +63,7 @@ export function LoginForm() {
       <CardHeader>
         <CardTitle>Sign in to truffe.ai</CardTitle>
         {!sent && (
-          <CardDescription>
-            Use a passkey, or enter your email for a magic link.
-          </CardDescription>
+          <CardDescription>Use a passkey, or enter your email for a magic link.</CardDescription>
         )}
       </CardHeader>
       <CardContent className="space-y-4">
@@ -73,11 +71,17 @@ export function LoginForm() {
           <Alert>
             <AlertTitle>Check your email</AlertTitle>
             <AlertDescription>
-              We sent a sign-in link to <strong>{email}</strong>. Click it to continue.
-              {" "}In local dev, check Inbucket at{" "}
-              <a href="http://127.0.0.1:54324" target="_blank" rel="noreferrer" className="underline">
+              We sent a sign-in link to <strong>{email}</strong>. Click it to continue. In local
+              dev, check Inbucket at{" "}
+              <a
+                href="http://127.0.0.1:54324"
+                target="_blank"
+                rel="noreferrer"
+                className="underline"
+              >
                 127.0.0.1:54324
-              </a>.
+              </a>
+              .
             </AlertDescription>
           </Alert>
         ) : (
@@ -119,7 +123,12 @@ export function LoginForm() {
                   disabled={busy || passkeyBusy}
                 />
               </div>
-              <Button type="submit" variant="outline" disabled={busy || passkeyBusy || !email} className="w-full">
+              <Button
+                type="submit"
+                variant="outline"
+                disabled={busy || passkeyBusy || !email}
+                className="w-full"
+              >
                 {busy ? "Sending…" : "Send magic link"}
               </Button>
             </form>

@@ -58,9 +58,8 @@ Deno.serve(async (req) => {
     );
   } catch {
     // On any unexpected error, pass claims through unchanged so login is never denied.
-    return new Response(
-      JSON.stringify({ claims: payload.claims }),
-      { headers: { "Content-Type": "application/json" } },
-    );
+    return new Response(JSON.stringify({ claims: payload.claims }), {
+      headers: { "Content-Type": "application/json" },
+    });
   }
 });

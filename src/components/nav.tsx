@@ -7,8 +7,18 @@ import type { Route } from "next";
 import { cn } from "@/lib/utils";
 import { TruffleMark } from "@/components/truffle-mark";
 import {
-  Home, TrendingUp, ArrowLeftRight, Target, BarChart2,
-  MessageCircle, Settings, Mail, RefreshCw, Tag, Lightbulb, LogOut,
+  Home,
+  TrendingUp,
+  ArrowLeftRight,
+  Target,
+  BarChart2,
+  MessageCircle,
+  Settings,
+  Mail,
+  RefreshCw,
+  Tag,
+  Lightbulb,
+  LogOut,
 } from "lucide-react";
 
 interface NavItem {
@@ -18,21 +28,19 @@ interface NavItem {
 }
 
 const PRIMARY_LINKS: NavItem[] = [
-  { href: "/",                   label: "Home",         icon: Home },
-  { href: "/wealth",             label: "Wealth",       icon: TrendingUp },
-  { href: "/transactions",       label: "Transactions", icon: ArrowLeftRight },
-  { href: "/transactions/inbox", label: "Inbox",        icon: Mail },
-  { href: "/recurring",          label: "Recurring",    icon: RefreshCw },
-  { href: "/goals",              label: "Goals",        icon: Target },
-  { href: "/budget",             label: "Budget",       icon: BarChart2 },
-  { href: "/advisor",            label: "Advisor",      icon: MessageCircle },
-  { href: "/categories",         label: "Categories",   icon: Tag },
-  { href: "/insights",           label: "Insights",     icon: Lightbulb },
+  { href: "/", label: "Home", icon: Home },
+  { href: "/wealth", label: "Wealth", icon: TrendingUp },
+  { href: "/transactions", label: "Transactions", icon: ArrowLeftRight },
+  { href: "/transactions/inbox", label: "Inbox", icon: Mail },
+  { href: "/recurring", label: "Recurring", icon: RefreshCw },
+  { href: "/goals", label: "Goals", icon: Target },
+  { href: "/budget", label: "Budget", icon: BarChart2 },
+  { href: "/advisor", label: "Advisor", icon: MessageCircle },
+  { href: "/categories", label: "Categories", icon: Tag },
+  { href: "/insights", label: "Insights", icon: Lightbulb },
 ];
 
-const UTILITY_LINKS: NavItem[] = [
-  { href: "/settings", label: "Settings", icon: Settings },
-];
+const UTILITY_LINKS: NavItem[] = [{ href: "/settings", label: "Settings", icon: Settings }];
 
 function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
   const Icon = item.icon;
@@ -41,12 +49,12 @@ function NavLink({ item, isActive }: { item: NavItem; isActive: boolean }) {
       href={item.href as Route}
       aria-current={isActive ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-md px-3 py-2 text-body-strong",
+        "group text-body-strong relative flex items-center gap-3 rounded-md px-3 py-2",
         "transition-colors duration-150",
         "border-l-[3px] pl-[9px]",
         isActive
           ? "bg-card text-fg-default border-gold"
-          : "text-fg-muted border-transparent hover:bg-card hover:text-fg-default",
+          : "text-fg-muted hover:bg-card hover:text-fg-default border-transparent",
       )}
     >
       <Icon
@@ -77,14 +85,14 @@ function SignOutItem() {
         }
       }}
       className={cn(
-        "group flex w-full items-center gap-3 rounded-md px-3 py-2 text-body-strong",
+        "group text-body-strong flex w-full items-center gap-3 rounded-md px-3 py-2",
         "transition-colors duration-150",
         "border-l-[3px] border-transparent pl-[9px]",
         "text-fg-muted hover:bg-card hover:text-fg-default disabled:opacity-50",
       )}
     >
       <LogOut
-        className="h-4 w-4 shrink-0 text-fg-subtle group-hover:text-fg-muted transition-colors duration-150"
+        className="text-fg-subtle group-hover:text-fg-muted h-4 w-4 shrink-0 transition-colors duration-150"
         strokeWidth={1.75}
         aria-hidden="true"
       />
@@ -115,7 +123,7 @@ export function SidebarNav({ className }: { className?: string }) {
     <aside
       className={cn(
         "flex h-full w-[220px] shrink-0 flex-col",
-        "bg-sidebar border-r border-line",
+        "bg-sidebar border-line border-r",
         className,
       )}
     >
@@ -123,7 +131,7 @@ export function SidebarNav({ className }: { className?: string }) {
       <div className="flex items-center gap-3 px-4 py-5">
         <TruffleMark size={28} small />
         <span
-          className="text-fg-default text-[17px] font-extrabold leading-none tracking-[-0.03em]"
+          className="text-fg-default text-[17px] leading-none font-extrabold tracking-[-0.03em]"
           aria-label="truffe.ai"
         >
           truffe<span className="text-gold">.ai</span>
@@ -142,7 +150,7 @@ export function SidebarNav({ className }: { className?: string }) {
 
       {/* Utility + sign out */}
       <div
-        className="flex flex-col gap-0.5 border-t border-line px-2 py-3"
+        className="border-line flex flex-col gap-0.5 border-t px-2 py-3"
         aria-label="Utility navigation"
       >
         {UTILITY_LINKS.map((item) => (
@@ -161,7 +169,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   if (isMarketing) return <>{children}</>;
 
   return (
-    <div className="flex h-screen overflow-hidden bg-page">
+    <div className="bg-page flex h-screen overflow-hidden">
       <SidebarNav />
       <main className="flex flex-1 flex-col overflow-y-auto">{children}</main>
     </div>

@@ -14,6 +14,7 @@ Two bugs causing complete failure of interactive features:
 ### Root Cause
 
 `src/app/recurring/page.tsx` (Server Component) passes `candidates: RecurringItem[]` to `RecurringView` (Client Component, `"use client"`). `RecurringItem` contains:
+
 - `occurrences: Date[]` — array of Date objects
 - `lastDate: Date` — Date object
 - `nextExpected: Date` — Date object
@@ -28,6 +29,7 @@ Even if React's RSC protocol serializes these correctly, two issues cause hydrat
 **In `src/app/recurring/page.tsx`:** Map `RecurringItem[]` to a plain serializable type before passing as props. No Dates, no arrays of Dates.
 
 New serialized shape (inline in `page.tsx`):
+
 ```typescript
 interface SerializedCandidate {
   key: string;
@@ -36,12 +38,13 @@ interface SerializedCandidate {
   frequency: Frequency;
   amountNative: number;
   currency: string;
-  occurrenceCount: number;       // was: occurrences: Date[]
-  nextExpected: string;          // ISO YYYY-MM-DD string, was: Date
+  occurrenceCount: number; // was: occurrences: Date[]
+  nextExpected: string; // ISO YYYY-MM-DD string, was: Date
 }
 ```
 
 Mapping:
+
 ```typescript
 const serializedCandidates: SerializedCandidate[] = candidates.map((c) => ({
   key: c.key,
@@ -76,7 +79,7 @@ const serializedCandidates: SerializedCandidate[] = candidates.map((c) => ({
       amount: String(Math.abs(item.amountNative) / 100),
       frequency: item.frequency,
       categoryId: "",
-      nextDue: item.nextExpected,   // no longer need .toISOString().slice(0,10)
+      nextDue: item.nextExpected, // no longer need .toISOString().slice(0,10)
     };
   }
   ```
@@ -124,7 +127,7 @@ const getRes = await fetch(`/api/advisor/conversations/${id}`);
 if (!getRes.ok) {
   throw new Error(`Reload failed: ${getRes.status}`);
 }
-const updated = await getRes.json() as ConversationData;
+const updated = (await getRes.json()) as ConversationData;
 setData(updated);
 setProposals(updated.proposals);
 ```
@@ -135,11 +138,11 @@ The existing `catch` block already handles this correctly — it restores the in
 
 ## Files Changed
 
-| File | Change |
-|---|---|
-| `src/app/recurring/page.tsx` | Add `SerializedCandidate` interface, map `candidates` to serialized form |
+| File                                   | Change                                                                                                                         |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `src/app/recurring/page.tsx`           | Add `SerializedCandidate` interface, map `candidates` to serialized form                                                       |
 | `src/app/recurring/recurring-view.tsx` | Use `SerializedCandidate`, fix `nextExpectedLabel`, fix `defaultFormFromCandidate`, fix `today`, remove `RecurringItem` import |
-| `src/app/advisor/c/[id]/chat-view.tsx` | Add `res.ok` checks after POST and GET fetches |
+| `src/app/advisor/c/[id]/chat-view.tsx` | Add `res.ok` checks after POST and GET fetches                                                                                 |
 
 No DB changes. No new API routes. No migrations.
 

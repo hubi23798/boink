@@ -75,8 +75,8 @@ function TrustHero() {
             className="section-body"
             style={{ maxWidth: "560px", marginTop: "1.25rem", color: "var(--ink-muted)" }}
           >
-            Every control, every policy, and every refusal category on this page is a working
-            system — not a promise. HNW operators can verify each claim independently.
+            Every control, every policy, and every refusal category on this page is a working system
+            — not a promise. HNW operators can verify each claim independently.
           </p>
         </div>
       </div>
@@ -91,20 +91,32 @@ function SectionSOC2() {
   return (
     <TrustSection id="soc2" label="Compliance" title="SOC2 Type I — in progress from day one">
       <p>
-        truffe.ai accumulates SOC2 evidence from Phase A (Supabase + Vercel infrastructure
-        cutover). Formal Type I audit engagement is initiated at the end of Phase C. Type II
-        certification target is 12 months after Type I.
+        truffe.ai accumulates SOC2 evidence from Phase A (Supabase + Vercel infrastructure cutover).
+        Formal Type I audit engagement is initiated at the end of Phase C. Type II certification
+        target is 12 months after Type I.
       </p>
       <TrustTable
         rows={[
           ["Infrastructure", "Supabase (SOC2 Type 2) + Vercel (SOC2 Type 2) — inherited controls"],
-          ["Encryption at rest", "AES-256 via Supabase managed encryption; aggregator tokens in Supabase Vault (KMS-backed)"],
-          ["Encryption in transit", "TLS 1.2+ enforced end-to-end; HSTS preload header on all responses"],
-          ["Access control", "Postgres Row-Level Security on every tenant-owned table; JWT claim–scoped per request"],
+          [
+            "Encryption at rest",
+            "AES-256 via Supabase managed encryption; aggregator tokens in Supabase Vault (KMS-backed)",
+          ],
+          [
+            "Encryption in transit",
+            "TLS 1.2+ enforced end-to-end; HSTS preload header on all responses",
+          ],
+          [
+            "Access control",
+            "Postgres Row-Level Security on every tenant-owned table; JWT claim–scoped per request",
+          ],
           ["Audit log", "Append-only, hash-chained, S3 Object Lock mirror (7-year retention)"],
           ["Backups", "Supabase PITR (point-in-time recovery); nightly logical snapshot"],
           ["Audit firm", "To be named at Type I engagement kickoff"],
-          ["Report availability", "Available to Family Office tier on request after Type I certification"],
+          [
+            "Report availability",
+            "Available to Family Office tier on request after Type I certification",
+          ],
         ]}
       />
     </TrustSection>
@@ -116,17 +128,26 @@ function SectionGDPR() {
     <TrustSection id="gdpr" label="Data Residency" title="GDPR-native from launch">
       <p>
         truffe.ai is EU-first. All tenant data is stored in the Supabase EU (Frankfurt, AWS
-        eu-central-1) region by default. A US region project is provisioned for US-market
-        expansion; tenants are routed to their region at onboarding and data does not cross
-        regions without explicit tenant action.
+        eu-central-1) region by default. A US region project is provisioned for US-market expansion;
+        tenants are routed to their region at onboarding and data does not cross regions without
+        explicit tenant action.
       </p>
       <TrustTable
         rows={[
           ["Primary region", "EU — Frankfurt (AWS eu-central-1) via Supabase"],
           ["US region", "Provisioned; activated for US tenants at onboarding"],
-          ["Cross-region transfer", "No automatic cross-region routing; tenant region locked at signup"],
-          ["Data subject rights", "Deletion, export, and rectification available on request via settings"],
-          ["Sub-processors", "Supabase, Vercel, Anthropic (AI inference only, no training on tenant data), Postmark/Resend (transactional email)"],
+          [
+            "Cross-region transfer",
+            "No automatic cross-region routing; tenant region locked at signup",
+          ],
+          [
+            "Data subject rights",
+            "Deletion, export, and rectification available on request via settings",
+          ],
+          [
+            "Sub-processors",
+            "Supabase, Vercel, Anthropic (AI inference only, no training on tenant data), Postmark/Resend (transactional email)",
+          ],
           ["DPA", "Available on request for Family and Family Office tiers"],
           ["Lawful basis", "Contractual necessity (Art. 6(1)(b) GDPR)"],
         ]}
@@ -139,10 +160,10 @@ function SectionAuditChain() {
   return (
     <TrustSection id="audit" label="Audit Log" title="Tamper-evident hash chain">
       <p>
-        Every mutation in truffe.ai — every connection added, every transaction categorised,
-        every fraud signal dismissed, every observer invited — is written to an append-only audit
-        log. The log is hash-chained so any tampering breaks the chain visibly. Observers can
-        verify chain integrity from the UI without contacting us.
+        Every mutation in truffe.ai — every connection added, every transaction categorised, every
+        fraud signal dismissed, every observer invited — is written to an append-only audit log. The
+        log is hash-chained so any tampering breaks the chain visibly. Observers can verify chain
+        integrity from the UI without contacting us.
       </p>
       <CodeBlock>{`-- audit_log_v2 schema (simplified)
 id          bigserial primary key
@@ -162,10 +183,19 @@ created_at  timestamptz`}</CodeBlock>
           ["Hash algorithm", "SHA-256 over canonical row serialisation"],
           ["Chain start", "Genesis row has prev_hash = 0x00…00 (32 zero bytes)"],
           ["Verification", "Observer can download signed JSON and verify chain locally"],
-          ["Tamper detection", "Any row deletion or edit breaks every subsequent hash; visually flagged in UI"],
-          ["Off-site mirror", "Nightly replication to S3-compatible Object Lock store (WORM, compliance mode)"],
+          [
+            "Tamper detection",
+            "Any row deletion or edit breaks every subsequent hash; visually flagged in UI",
+          ],
+          [
+            "Off-site mirror",
+            "Nightly replication to S3-compatible Object Lock store (WORM, compliance mode)",
+          ],
           ["Retention", "7 years (SOC2 + general financial recordkeeping)"],
-          ["Observer export", "Signed JSON download from /observe/audit — usable in attorney or forensic context"],
+          [
+            "Observer export",
+            "Signed JSON download from /observe/audit — usable in attorney or forensic context",
+          ],
         ]}
       />
     </TrustSection>
@@ -174,28 +204,47 @@ created_at  timestamptz`}</CodeBlock>
 
 function SectionRefusalPolicy() {
   return (
-    <TrustSection id="refusals" label="Advisor Guardrails" title="Refusal policy — every category is hardcoded">
+    <TrustSection
+      id="refusals"
+      label="Advisor Guardrails"
+      title="Refusal policy — every category is hardcoded"
+    >
       <p>
         The truffe.ai advisor refuses certain request categories unconditionally. These are
-        hardcoded in the system prompt and enforced by an output filter — not configuration that
-        can be changed per tenant. Every refusal is logged to <code>policy_event</code> for
-        owner review and SOC2 evidence.
+        hardcoded in the system prompt and enforced by an output filter — not configuration that can
+        be changed per tenant. Every refusal is logged to <code>policy_event</code> for owner review
+        and SOC2 evidence.
       </p>
       <TrustTable
         rows={[
-          ["Specific securities / tickers", "Refused. Advisor speaks in asset classes only (e.g. 'global equity index')."],
+          [
+            "Specific securities / tickers",
+            "Refused. Advisor speaks in asset classes only (e.g. 'global equity index').",
+          ],
           ["Tax evasion / structuring", "Refused. Suggests licensed CPA or solicitor."],
           ["Money laundering / sanctions evasion", "Refused. Logged as category: aml."],
-          ["Insider trading reasoning", "Refused when user mentions material non-public information. Logged as category: insider."],
+          [
+            "Insider trading reasoning",
+            "Refused when user mentions material non-public information. Logged as category: insider.",
+          ],
           ["Legal advice", "Refused. Suggests attorney or solicitor."],
-          ["Financial crisis / self-harm signals", "Soft refusal. Surfaces crisis line: Samaritans UK 116 123 · US 988. Logged as category: welfare."],
-          ["Scam-enablement", "Advisor flags the opportunity as suspicious rather than reasoning positively about it."],
-          ["Cross-tenant data requests", "Refused at DB layer (RLS) and advisor layer. Logged as category: cross_tenant."],
+          [
+            "Financial crisis / self-harm signals",
+            "Soft refusal. Surfaces crisis line: Samaritans UK 116 123 · US 988. Logged as category: welfare.",
+          ],
+          [
+            "Scam-enablement",
+            "Advisor flags the opportunity as suspicious rather than reasoning positively about it.",
+          ],
+          [
+            "Cross-tenant data requests",
+            "Refused at DB layer (RLS) and advisor layer. Logged as category: cross_tenant.",
+          ],
         ]}
       />
       <p style={{ marginTop: "1.25rem", fontSize: "0.875rem", color: "var(--ink-muted)" }}>
-        Each refusal returns a structured response: category, user-facing explanation, and
-        suggested next action. The raw trigger text is hashed (not stored) for PII hygiene.
+        Each refusal returns a structured response: category, user-facing explanation, and suggested
+        next action. The raw trigger text is hashed (not stored) for PII hygiene.
       </p>
     </TrustSection>
   );
@@ -203,26 +252,51 @@ function SectionRefusalPolicy() {
 
 function SectionDetectorTransparency() {
   return (
-    <TrustSection id="detectors" label="Fraud Detectors" title="Evidence-cited, deterministic, detective-only">
+    <TrustSection
+      id="detectors"
+      label="Fraud Detectors"
+      title="Evidence-cited, deterministic, detective-only"
+    >
       <p>
-        Every fraud signal truffe.ai surfaces carries a machine-readable evidence array. The
-        advisor never writes &ldquo;the model thinks&rdquo; — every claim cites a specific data point, its
-        source, and the date the source was last updated. Detectors are deterministic rule
-        engines, not probabilistic models, so signals are reproducible and auditable.
+        Every fraud signal truffe.ai surfaces carries a machine-readable evidence array. The advisor
+        never writes &ldquo;the model thinks&rdquo; — every claim cites a specific data point, its
+        source, and the date the source was last updated. Detectors are deterministic rule engines,
+        not probabilistic models, so signals are reproducible and auditable.
       </p>
       <TrustTable
         rows={[
-          ["vendor-bec", "Net-new payee heuristic + anomaly vs vendor history + urgency-language scan + address-mismatch. Evidence: payee first-seen date, amount vs N-month median, memo text hash."],
-          ["subscription-trap", "Recurring-engine extension. Evidence: price change amount + date, post-trial conversion flag, double-billing pair (account A × account B)."],
-          ["crypto-outflow-scam", "Outflow to exchange deposit address or on-chain destination cross-referenced against Chainabuse public feed + OFAC SDN crypto list. Evidence: matched address, feed source, feed update date."],
+          [
+            "vendor-bec",
+            "Net-new payee heuristic + anomaly vs vendor history + urgency-language scan + address-mismatch. Evidence: payee first-seen date, amount vs N-month median, memo text hash.",
+          ],
+          [
+            "subscription-trap",
+            "Recurring-engine extension. Evidence: price change amount + date, post-trial conversion flag, double-billing pair (account A × account B).",
+          ],
+          [
+            "crypto-outflow-scam",
+            "Outflow to exchange deposit address or on-chain destination cross-referenced against Chainabuse public feed + OFAC SDN crypto list. Evidence: matched address, feed source, feed update date.",
+          ],
         ]}
       />
       <TrustTable
         rows={[
-          ["Detective-only", "Detectors never block, never auto-act. Owner explicitly reviews and dismisses or escalates."],
-          ["False-positive feedback", "Owner can dismiss with reason; tuning is per-tenant (no global learning from HNW data)."],
-          ["Feed sources", "Chainabuse (open, MVP) → Chainalysis / TRM Labs (commercial, post-MVP). Feed treated as untrusted upstream — sanity-checked before use."],
-          ["Observer visibility", "All fraud signals are observer-visible by default. Dismissal reason is also logged and observer-readable."],
+          [
+            "Detective-only",
+            "Detectors never block, never auto-act. Owner explicitly reviews and dismisses or escalates.",
+          ],
+          [
+            "False-positive feedback",
+            "Owner can dismiss with reason; tuning is per-tenant (no global learning from HNW data).",
+          ],
+          [
+            "Feed sources",
+            "Chainabuse (open, MVP) → Chainalysis / TRM Labs (commercial, post-MVP). Feed treated as untrusted upstream — sanity-checked before use.",
+          ],
+          [
+            "Observer visibility",
+            "All fraud signals are observer-visible by default. Dismissal reason is also logged and observer-readable.",
+          ],
         ]}
       />
     </TrustSection>
@@ -233,26 +307,35 @@ function SectionBugBounty() {
   return (
     <TrustSection id="bounty" label="Bug Bounty" title="Responsible disclosure">
       <p>
-        truffe.ai operates a responsible disclosure programme. Valid security findings are
-        rewarded. We aim to acknowledge reports within 2 business days and resolve critical
-        findings within 14 days.
+        truffe.ai operates a responsible disclosure programme. Valid security findings are rewarded.
+        We aim to acknowledge reports within 2 business days and resolve critical findings within 14
+        days.
       </p>
       <TrustTable
         rows={[
-          ["Scope", "truffe.ai web application, API endpoints, authentication flows, aggregator token handling, RLS policies"],
-          ["Out of scope", "Social engineering, physical attacks, third-party services (Supabase, Vercel, TrueLayer), volumetric DoS"],
+          [
+            "Scope",
+            "truffe.ai web application, API endpoints, authentication flows, aggregator token handling, RLS policies",
+          ],
+          [
+            "Out of scope",
+            "Social engineering, physical attacks, third-party services (Supabase, Vercel, TrueLayer), volumetric DoS",
+          ],
           ["Critical (RLS bypass, token exfil, cross-tenant read)", "£2,000–£5,000"],
           ["High (auth bypass, persistent XSS, IDOR)", "£500–£2,000"],
           ["Medium (CSRF, reflected XSS, info disclosure)", "£100–£500"],
           ["Platform", "HackerOne (target: launch at end of Phase C); direct email prior to that"],
-          ["Disclosure policy", "90-day coordinated disclosure window; CVE requested for critical findings"],
+          [
+            "Disclosure policy",
+            "90-day coordinated disclosure window; CVE requested for critical findings",
+          ],
         ]}
       />
       <p style={{ marginTop: "1.25rem", fontSize: "0.875rem", color: "var(--ink-muted)" }}>
-        To report a vulnerability before the HackerOne programme launches, email
-        security@truffe.ai with subject line{" "}
-        <code style={{ fontSize: "0.8125rem" }}>[SECURITY] &lt;brief description&gt;</code>.
-        PGP key available on request.
+        To report a vulnerability before the HackerOne programme launches, email security@truffe.ai
+        with subject line{" "}
+        <code style={{ fontSize: "0.8125rem" }}>[SECURITY] &lt;brief description&gt;</code>. PGP key
+        available on request.
       </p>
     </TrustSection>
   );
@@ -335,7 +418,11 @@ function TrustFooter() {
             <div className="footer-col-title">Resources</div>
             <ul className="footer-links">
               <li>
-                <a href="https://github.com/hubi23798/truffe" target="_blank" rel="noopener noreferrer">
+                <a
+                  href="https://github.com/hubi23798/truffe"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
                   GitHub
                 </a>
               </li>
@@ -344,9 +431,15 @@ function TrustFooter() {
           <div>
             <div className="footer-col-title">Legal</div>
             <ul className="footer-links">
-              <li><Link href={"/privacy" as Route}>Privacy</Link></li>
-              <li><Link href={"/terms" as Route}>Terms</Link></li>
-              <li><Link href={"/trust" as Route}>Trust &amp; Security</Link></li>
+              <li>
+                <Link href={"/privacy" as Route}>Privacy</Link>
+              </li>
+              <li>
+                <Link href={"/terms" as Route}>Terms</Link>
+              </li>
+              <li>
+                <Link href={"/trust" as Route}>Trust &amp; Security</Link>
+              </li>
             </ul>
           </div>
         </div>

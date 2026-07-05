@@ -14,9 +14,7 @@ export async function POST(req: Request) {
   const backfill = searchParams.get("backfill") === "true";
 
   try {
-    const rates = backfill
-      ? await fetchHistoricalRates("2018-01-01")
-      : await fetchDailyRates();
+    const rates = backfill ? await fetchHistoricalRates("2018-01-01") : await fetchDailyRates();
 
     const stored = await storeRates(getDb(), rates);
     return NextResponse.json({ ok: true, fetched: rates.length, stored });

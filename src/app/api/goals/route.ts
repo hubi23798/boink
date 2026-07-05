@@ -12,7 +12,10 @@ const createSchema = z.object({
   name: z.string().min(1).max(100),
   kind: z.enum(["cash_target", "emergency_fund", "debt_payoff", "portfolio_target"]),
   targetAmount: z.number().int().positive(),
-  targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  targetDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
   linkedAccountIds: z.array(z.string().regex(UUID_RE)).min(1),
 });
 

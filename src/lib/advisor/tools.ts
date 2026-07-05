@@ -79,10 +79,12 @@ const ProposeCategorizationRuleInput = z.object({
   ]),
   matchValue: z.string(),
   // Accept any UUID-shaped string (including nil/seeded UUIDs used in tests)
-  categoryId: z.string().regex(
-    /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
-    "Invalid UUID",
-  ),
+  categoryId: z
+    .string()
+    .regex(
+      /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/,
+      "Invalid UUID",
+    ),
   rationale: z.string(),
 });
 
@@ -114,8 +116,7 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: "get_budget_status",
-    description:
-      "Returns budget target vs. actual spend per leaf category for a given month.",
+    description: "Returns budget target vs. actual spend per leaf category for a given month.",
     input_schema: {
       type: "object" as const,
       properties: {
@@ -141,7 +142,8 @@ export const TOOL_DEFINITIONS = [
   },
   {
     name: "get_spending_by_category",
-    description: "Returns total spending per category for a date range, sorted by total descending.",
+    description:
+      "Returns total spending per category for a date range, sorted by total descending.",
     input_schema: {
       type: "object" as const,
       properties: {

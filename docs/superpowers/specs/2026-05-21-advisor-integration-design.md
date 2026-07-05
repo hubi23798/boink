@@ -13,12 +13,12 @@ Make the AI advisor end-to-end usable by fixing the broken model string, giving 
 
 No new DB tables. No new API routes. Changes span four files:
 
-| File | Change |
-|---|---|
-| `src/lib/advisor/tools.ts` | Add `get_subscriptions` tool + executor |
-| `src/app/page.tsx` | Add advisor prompt card with server action |
-| `src/app/advisor/c/[id]/page.tsx` | Read `searchParams.q`, pass to ChatView |
-| `src/app/advisor/c/[id]/chat-view.tsx` | Accept + initialize `initialMessage` prop |
+| File                                   | Change                                     |
+| -------------------------------------- | ------------------------------------------ |
+| `src/lib/advisor/tools.ts`             | Add `get_subscriptions` tool + executor    |
+| `src/app/page.tsx`                     | Add advisor prompt card with server action |
+| `src/app/advisor/c/[id]/page.tsx`      | Read `searchParams.q`, pass to ChatView    |
+| `src/app/advisor/c/[id]/chat-view.tsx` | Accept + initialize `initialMessage` prop  |
 
 ---
 
@@ -31,6 +31,7 @@ New read tool added to the advisor's tool catalog.
 **Input schema:** none (no params — always returns all confirmed subscriptions for the user).
 
 **Output:**
+
 ```json
 {
   "subscriptions": [
@@ -57,11 +58,13 @@ New read tool added to the advisor's tool catalog.
 New `<section>` in `src/app/page.tsx`, placed above the "Quick links" grid.
 
 Three starter questions hard-coded:
+
 - "How did I do this month?"
 - "Am I on track with my budget?"
 - "What are my biggest subscriptions costing me?"
 
 Each question is a `<form>` with a hidden `q` input that calls a server action `createConversationWithQuestion`. The action:
+
 1. Authenticates (reads session cookie, same pattern as the existing `createConversation` in advisor/page.tsx).
 2. Inserts a row into `advisorConversation` with title = the question (truncated to 60 chars).
 3. Redirects to `/advisor/c/[id]?q=<encodeURIComponent(question)>`.
@@ -79,7 +82,7 @@ export default async function ConversationPage({
 }: {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ q?: string }>;
-})
+});
 ```
 
 Pass `initialMessage={q ?? ""}` to `<ChatView>`.

@@ -27,92 +27,92 @@
    *   border-line   border-line-strong
    *   text-gold   bg-gold   border-gold   (same for success/warning/danger)
    */
-  --color-page:        #2C1A0E;
-  --color-sidebar:     #1A0D06;
-  --color-card:        #3A2414;
-  --color-elevated:    #4A2E1A;
-  --color-sunken:      #1F1208;
-  --color-line:        #4A2E1A;
-  --color-line-strong: #5A3820;
+  --color-page: #2c1a0e;
+  --color-sidebar: #1a0d06;
+  --color-card: #3a2414;
+  --color-elevated: #4a2e1a;
+  --color-sunken: #1f1208;
+  --color-line: #4a2e1a;
+  --color-line-strong: #5a3820;
 
-  --color-fg-default:  #F7F4EE;
-  --color-fg-muted:    #C4B8A8;
-  --color-fg-subtle:   #6B5040;
+  --color-fg-default: #f7f4ee;
+  --color-fg-muted: #c4b8a8;
+  --color-fg-subtle: #6b5040;
 
-  --color-gold:        #C9A84C;
-  --color-gold-hover:  #D4B55C;
-  --color-success:     #6BBF85;
-  --color-warning:     #E8A350;
-  --color-danger:      #E07070;
+  --color-gold: #c9a84c;
+  --color-gold-hover: #d4b55c;
+  --color-success: #6bbf85;
+  --color-warning: #e8a350;
+  --color-danger: #e07070;
 
   /* Tinted state backgrounds (use with text-{gold|success|warning|danger}) */
-  --color-gold-bg:     rgba(201, 168, 76, 0.12);
-  --color-success-bg:  rgba(107, 191, 133, 0.12);
-  --color-warning-bg:  rgba(232, 163, 80, 0.12);
-  --color-danger-bg:   rgba(224, 112, 112, 0.12);
+  --color-gold-bg: rgba(201, 168, 76, 0.12);
+  --color-success-bg: rgba(107, 191, 133, 0.12);
+  --color-warning-bg: rgba(232, 163, 80, 0.12);
+  --color-danger-bg: rgba(224, 112, 112, 0.12);
 
   /* Brand tokens (consumed by truffle-mark and wordmark) */
-  --brand-paper:   #2C1A0E;
-  --brand-truffle: #2C1A0E;
-  --brand-gold:    #C9A84C;
-  --brand-cream:   #F7F4EE;
-  --brand-forest:  #6BBF85;
+  --brand-paper: #2c1a0e;
+  --brand-truffle: #2c1a0e;
+  --brand-gold: #c9a84c;
+  --brand-cream: #f7f4ee;
+  --brand-forest: #6bbf85;
 
   /* ── Cockpit raw HSL tokens (kept for shadcn primitives) ───────────────── */
-  --color-surface-raw:           25 49% 15%;   /* #3A2414 */
-  --color-surface-elevated-raw:  25 48% 20%;   /* #4A2E1A */
-  --color-surface-sunken-raw:    21 62% 6%;    /* #1A0D06 */
-  --color-fg-default-raw:        40 37% 95%;
-  --color-fg-muted-raw:          34 19% 71%;
-  --color-border-subtle-raw:     25 48% 20%;
-  --color-success-raw:           139 40% 58%;
-  --color-success-fg-raw:        25 49% 8%;
-  --color-warning-raw:           30 79% 60%;
-  --color-warning-fg-raw:        25 49% 8%;
-  --color-danger-raw:            0 64% 66%;
-  --color-danger-fg-raw:         25 49% 8%;
-  --color-info-raw:              217 70% 65%;
-  --color-info-fg-raw:           25 49% 8%;
-  --color-accent-brand-raw:      38 60% 54%;
+  --color-surface-raw: 25 49% 15%; /* #3A2414 */
+  --color-surface-elevated-raw: 25 48% 20%; /* #4A2E1A */
+  --color-surface-sunken-raw: 21 62% 6%; /* #1A0D06 */
+  --color-fg-default-raw: 40 37% 95%;
+  --color-fg-muted-raw: 34 19% 71%;
+  --color-border-subtle-raw: 25 48% 20%;
+  --color-success-raw: 139 40% 58%;
+  --color-success-fg-raw: 25 49% 8%;
+  --color-warning-raw: 30 79% 60%;
+  --color-warning-fg-raw: 25 49% 8%;
+  --color-danger-raw: 0 64% 66%;
+  --color-danger-fg-raw: 25 49% 8%;
+  --color-info-raw: 217 70% 65%;
+  --color-info-fg-raw: 25 49% 8%;
+  --color-accent-brand-raw: 38 60% 54%;
 
   /* ── shadcn/ui mapping ─────────────────────────────────────────────────── */
-  --background: #2C1A0E;
-  --foreground: #F7F4EE;
-  --card: #3A2414;
-  --card-foreground: #F7F4EE;
-  --popover: #4A2E1A;
-  --popover-foreground: #F7F4EE;
-  --primary: #C9A84C;
-  --primary-foreground: #2C1A0E;
-  --secondary: #4A2E1A;
-  --secondary-foreground: #F7F4EE;
-  --muted: #3A2414;
-  --muted-foreground: #C4B8A8;
-  --accent: #4A2E1A;
-  --accent-foreground: #F7F4EE;
-  --destructive: #E07070;
-  --border: #4A2E1A;
-  --input: #4A2E1A;
-  --ring: #C9A84C;
+  --background: #2c1a0e;
+  --foreground: #f7f4ee;
+  --card: #3a2414;
+  --card-foreground: #f7f4ee;
+  --popover: #4a2e1a;
+  --popover-foreground: #f7f4ee;
+  --primary: #c9a84c;
+  --primary-foreground: #2c1a0e;
+  --secondary: #4a2e1a;
+  --secondary-foreground: #f7f4ee;
+  --muted: #3a2414;
+  --muted-foreground: #c4b8a8;
+  --accent: #4a2e1a;
+  --accent-foreground: #f7f4ee;
+  --destructive: #e07070;
+  --border: #4a2e1a;
+  --input: #4a2e1a;
+  --ring: #c9a84c;
 }
 
 .dark {
   /* Always-dark: mirror :root so system-dark users get the same palette */
-  --color-page: #2C1A0E;
-  --color-sidebar: #1A0D06;
-  --color-card: #3A2414;
-  --color-elevated: #4A2E1A;
-  --color-sunken: #1F1208;
-  --color-line: #4A2E1A;
-  --color-line-strong: #5A3820;
-  --color-fg-default: #F7F4EE;
-  --color-fg-muted: #C4B8A8;
-  --color-fg-subtle: #6B5040;
-  --color-gold: #C9A84C;
-  --color-gold-hover: #D4B55C;
-  --color-success: #6BBF85;
-  --color-warning: #E8A350;
-  --color-danger: #E07070;
+  --color-page: #2c1a0e;
+  --color-sidebar: #1a0d06;
+  --color-card: #3a2414;
+  --color-elevated: #4a2e1a;
+  --color-sunken: #1f1208;
+  --color-line: #4a2e1a;
+  --color-line-strong: #5a3820;
+  --color-fg-default: #f7f4ee;
+  --color-fg-muted: #c4b8a8;
+  --color-fg-subtle: #6b5040;
+  --color-gold: #c9a84c;
+  --color-gold-hover: #d4b55c;
+  --color-success: #6bbf85;
+  --color-warning: #e8a350;
+  --color-danger: #e07070;
   --color-gold-bg: rgba(201, 168, 76, 0.12);
   --color-success-bg: rgba(107, 191, 133, 0.12);
   --color-warning-bg: rgba(232, 163, 80, 0.12);
@@ -134,24 +134,24 @@
   --color-info-fg-raw: 25 49% 8%;
   --color-accent-brand-raw: 38 60% 54%;
 
-  --background: #2C1A0E;
-  --foreground: #F7F4EE;
-  --card: #3A2414;
-  --card-foreground: #F7F4EE;
-  --popover: #4A2E1A;
-  --popover-foreground: #F7F4EE;
-  --primary: #C9A84C;
-  --primary-foreground: #2C1A0E;
-  --secondary: #4A2E1A;
-  --secondary-foreground: #F7F4EE;
-  --muted: #3A2414;
-  --muted-foreground: #C4B8A8;
-  --accent: #4A2E1A;
-  --accent-foreground: #F7F4EE;
-  --destructive: #E07070;
-  --border: #4A2E1A;
-  --input: #4A2E1A;
-  --ring: #C9A84C;
+  --background: #2c1a0e;
+  --foreground: #f7f4ee;
+  --card: #3a2414;
+  --card-foreground: #f7f4ee;
+  --popover: #4a2e1a;
+  --popover-foreground: #f7f4ee;
+  --primary: #c9a84c;
+  --primary-foreground: #2c1a0e;
+  --secondary: #4a2e1a;
+  --secondary-foreground: #f7f4ee;
+  --muted: #3a2414;
+  --muted-foreground: #c4b8a8;
+  --accent: #4a2e1a;
+  --accent-foreground: #f7f4ee;
+  --destructive: #e07070;
+  --border: #4a2e1a;
+  --input: #4a2e1a;
+  --ring: #c9a84c;
 }
 
 @theme inline {
@@ -228,9 +228,9 @@
 
   /* ── Shadow scale (warm-on-dark) ─────────────────────────────────────── */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.25);
-  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.30), 0 1px 2px rgba(0, 0, 0, 0.20);
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.20);
-  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.40), 0 4px 12px rgba(0, 0, 0, 0.25);
+  --shadow-md: 0 2px 6px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.35), 0 2px 6px rgba(0, 0, 0, 0.2);
+  --shadow-xl: 0 16px 48px rgba(0, 0, 0, 0.4), 0 4px 12px rgba(0, 0, 0, 0.25);
 
   /* ── Motion ──────────────────────────────────────────────────────────── */
   --default-transition-duration: 150ms;
@@ -238,7 +238,8 @@
 }
 
 @layer base {
-  html, body {
+  html,
+  body {
     height: 100%;
   }
 
@@ -253,7 +254,8 @@
   }
 
   /* Tabular nums use mono everywhere by default */
-  .font-mono, [class*="tabular-nums"] {
+  .font-mono,
+  [class*="tabular-nums"] {
     font-family: var(--font-mono);
   }
 
@@ -265,14 +267,21 @@
   }
 
   /* Scrollbar — warm, narrow */
-  ::-webkit-scrollbar { width: 10px; height: 10px; }
-  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
   ::-webkit-scrollbar-thumb {
     background: var(--color-elevated);
     border-radius: 9999px;
     border: 2px solid var(--color-page);
   }
-  ::-webkit-scrollbar-thumb:hover { background: var(--color-line-strong); }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-line-strong);
+  }
 }
 
 @layer utilities {
@@ -341,8 +350,8 @@
   }
   .shadow-md-glow {
     box-shadow:
-      0 2px 6px rgba(0, 0, 0, 0.30),
-      0 1px 2px rgba(0, 0, 0, 0.20),
+      0 2px 6px rgba(0, 0, 0, 0.3),
+      0 1px 2px rgba(0, 0, 0, 0.2),
       0 0 24px rgba(201, 168, 76, 0.15);
   }
 }

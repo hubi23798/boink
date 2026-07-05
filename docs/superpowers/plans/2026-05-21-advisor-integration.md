@@ -12,28 +12,30 @@
 
 ## File Map
 
-| File | Action | Purpose |
-|---|---|---|
-| `src/lib/advisor/tools.ts` | Modify | Add `get_subscriptions` tool definition + executor |
-| `tests/unit/advisor-tools.test.ts` | Modify | Add tests for `get_subscriptions` |
-| `src/app/page.tsx` | Modify | Add advisor prompt card + `createConversationWithQuestion` server action |
-| `src/app/advisor/c/[id]/page.tsx` | Modify | Read `searchParams.q`, pass as `initialMessage` to ChatView |
-| `src/app/advisor/c/[id]/chat-view.tsx` | Modify | Accept + initialise `initialMessage` prop |
+| File                                   | Action | Purpose                                                                  |
+| -------------------------------------- | ------ | ------------------------------------------------------------------------ |
+| `src/lib/advisor/tools.ts`             | Modify | Add `get_subscriptions` tool definition + executor                       |
+| `tests/unit/advisor-tools.test.ts`     | Modify | Add tests for `get_subscriptions`                                        |
+| `src/app/page.tsx`                     | Modify | Add advisor prompt card + `createConversationWithQuestion` server action |
+| `src/app/advisor/c/[id]/page.tsx`      | Modify | Read `searchParams.q`, pass as `initialMessage` to ChatView              |
+| `src/app/advisor/c/[id]/chat-view.tsx` | Modify | Accept + initialise `initialMessage` prop                                |
 
 ---
 
 ### Task 1: Add `get_subscriptions` tool to the advisor
 
 **Files:**
+
 - Modify: `src/lib/advisor/tools.ts`
 - Modify: `tests/unit/advisor-tools.test.ts`
 
 The tool reads confirmed subscriptions from `recurring_subscription`, left-joins `category` for names, and computes a `totalMonthly` figure normalised from weekly/fortnightly/monthly amounts.
 
 Normalisation multipliers:
+
 - `monthly`: × 1
-- `fortnightly`: × (26 / 12)  ≈ × 2.1667
-- `weekly`: × (52 / 12)  ≈ × 4.3333
+- `fortnightly`: × (26 / 12) ≈ × 2.1667
+- `weekly`: × (52 / 12) ≈ × 4.3333
 
 - [ ] **Step 1: Write the failing test**
 
@@ -69,7 +71,7 @@ describe("executeTool — get_subscriptions", () => {
     };
     (ctx.db as unknown as Record<string, unknown>).select = vi.fn().mockReturnValue(selectChain);
 
-    const result = await executeTool("get_subscriptions", {}, ctx) as {
+    const result = (await executeTool("get_subscriptions", {}, ctx)) as {
       subscriptions: Array<{
         name: string;
         frequency: string;
@@ -111,7 +113,7 @@ describe("executeTool — get_subscriptions", () => {
     };
     (ctx.db as unknown as Record<string, unknown>).select = vi.fn().mockReturnValue(selectChain);
 
-    const result = await executeTool("get_subscriptions", {}, ctx) as {
+    const result = (await executeTool("get_subscriptions", {}, ctx)) as {
       subscriptions: unknown[];
       totalMonthly: number;
     };
@@ -134,13 +136,7 @@ Expected: two failing tests — `executeTool — get_subscriptions` with "Unknow
 **3a.** Add the import for `recurringSubscription` at the top of the imports block. Find the existing import:
 
 ```typescript
-import {
-  PRIMARY_USER_ID,
-  account,
-  budgetTarget,
-  category,
-  transaction,
-} from "@/lib/db/schema";
+import { PRIMARY_USER_ID, account, budgetTarget, category, transaction } from "@/lib/db/schema";
 ```
 
 Replace with:
@@ -266,6 +262,7 @@ git commit -m "feat(advisor): add get_subscriptions tool"
 ### Task 2: Add advisor prompt card to home screen
 
 **Files:**
+
 - Modify: `src/app/page.tsx`
 
 Adds a "Ask your advisor" section with three suggested starter questions. Each question is a `<form>` that calls a server action which creates a new conversation and redirects to the chat view with `?q=<question>` pre-filled.
@@ -298,7 +295,9 @@ Next, locate the closing `</main>` tag at the end of the JSX. The current struct
 Find this exact line:
 
 ```typescript
-      {/* Quick links */}
+{
+  /* Quick links */
+}
 ```
 
 Insert before it:
@@ -337,27 +336,26 @@ Insert before it:
 Now add the server action inside `HomePage` (after the data-fetching `await` block, before the `return`). Find the line:
 
 ```typescript
-  const netDelta = thisMo.net - lastMo.net;
+const netDelta = thisMo.net - lastMo.net;
 ```
 
 Insert after it:
 
 ```typescript
-  async function createConversationWithQuestion(q: string) {
-    "use server";
-    const cookieStore2 = await cookies();
-    const sid2 = cookieStore2.get(env().SESSION_COOKIE_NAME)?.value;
-    if (!sid2) redirect("/login");
-    const db2 = getDb();
-    const sess2 = await readSession(db2, sid2);
-    if (!sess2) redirect("/login");
-    const [conv] = await db2
-      .insert(advisorConversation)
-      .values({ userId: PRIMARY_USER_ID, title: q.slice(0, 60) })
-      .returning({ id: advisorConversation.id });
-    redirect(`/advisor/c/${conv!.id}?q=${encodeURIComponent(q)}`);
-  }
-
+async function createConversationWithQuestion(q: string) {
+  "use server";
+  const cookieStore2 = await cookies();
+  const sid2 = cookieStore2.get(env().SESSION_COOKIE_NAME)?.value;
+  if (!sid2) redirect("/login");
+  const db2 = getDb();
+  const sess2 = await readSession(db2, sid2);
+  if (!sess2) redirect("/login");
+  const [conv] = await db2
+    .insert(advisorConversation)
+    .values({ userId: PRIMARY_USER_ID, title: q.slice(0, 60) })
+    .returning({ id: advisorConversation.id });
+  redirect(`/advisor/c/${conv!.id}?q=${encodeURIComponent(q)}`);
+}
 ```
 
 - [ ] **Step 2: Verify TypeScript compiles**
@@ -380,6 +378,7 @@ git commit -m "feat(home): add advisor prompt card with starter questions"
 ### Task 3: Pre-fill chat view from URL param
 
 **Files:**
+
 - Modify: `src/app/advisor/c/[id]/page.tsx`
 - Modify: `src/app/advisor/c/[id]/chat-view.tsx`
 
@@ -422,13 +421,13 @@ export function ChatView({ id, initialMessage = "" }: { id: string; initialMessa
 Find the `input` state initialisation:
 
 ```typescript
-  const [input, setInput] = useState("");
+const [input, setInput] = useState("");
 ```
 
 Replace with:
 
 ```typescript
-  const [input, setInput] = useState(initialMessage);
+const [input, setInput] = useState(initialMessage);
 ```
 
 - [ ] **Step 3: Verify TypeScript compiles**
@@ -466,6 +465,7 @@ Open `http://localhost:3000`. Verify the "Ask your advisor" card appears with th
 - [ ] **Step 3: Click a starter question**
 
 Click "How did I do this month?". Verify:
+
 1. You are redirected to `/advisor/c/<uuid>?q=How+did+I+do+this+month%3F`
 2. The textarea is pre-filled with the question text
 3. The "Thinking…" spinner is **not** showing (no auto-submit)
@@ -473,6 +473,7 @@ Click "How did I do this month?". Verify:
 - [ ] **Step 4: Send the message**
 
 Click Send (or press Enter). Verify:
+
 1. The optimistic user bubble appears immediately
 2. The "Thinking…" bubble appears
 3. After a few seconds, the advisor replies with a substantive answer grounded in tool data

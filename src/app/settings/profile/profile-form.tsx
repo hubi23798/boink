@@ -55,7 +55,11 @@ export function ProfileForm({ profile }: Props) {
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <label className={label}>Base currency</label>
-          <select className={field} value={form.baseCurrency} onChange={(e) => set("baseCurrency", e.target.value)}>
+          <select
+            className={field}
+            value={form.baseCurrency}
+            onChange={(e) => set("baseCurrency", e.target.value)}
+          >
             <option value="EUR">EUR</option>
             <option value="USD">USD</option>
             <option value="GBP">GBP</option>
@@ -65,7 +69,11 @@ export function ProfileForm({ profile }: Props) {
         </div>
         <div>
           <label className={label}>Locale</label>
-          <select className={field} value={form.locale} onChange={(e) => set("locale", e.target.value)}>
+          <select
+            className={field}
+            value={form.locale}
+            onChange={(e) => set("locale", e.target.value)}
+          >
             <option value="en-IE">en-IE</option>
             <option value="en-GB">en-GB</option>
             <option value="en-US">en-US</option>
@@ -91,7 +99,9 @@ export function ProfileForm({ profile }: Props) {
             className={field}
             placeholder="e.g. 30"
             value={form.timeHorizonYears ?? ""}
-            onChange={(e) => set("timeHorizonYears", e.target.value ? parseInt(e.target.value) : null)}
+            onChange={(e) =>
+              set("timeHorizonYears", e.target.value ? parseInt(e.target.value) : null)
+            }
             min={1}
             max={60}
           />
@@ -101,7 +111,9 @@ export function ProfileForm({ profile }: Props) {
           <select
             className={field}
             value={form.riskTolerance ?? ""}
-            onChange={(e) => set("riskTolerance", (e.target.value || null) as Profile["riskTolerance"])}
+            onChange={(e) =>
+              set("riskTolerance", (e.target.value || null) as Profile["riskTolerance"])
+            }
           >
             <option value="">Not set</option>
             <option value="conservative">Conservative</option>

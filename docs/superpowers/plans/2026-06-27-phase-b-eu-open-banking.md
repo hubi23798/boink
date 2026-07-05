@@ -24,30 +24,31 @@
 
 ### TrueLayer vs Tink — Comparison Matrix
 
-| Dimension | TrueLayer | Tink |
-|---|---|---|
-| **UK coverage** | Excellent — 99%+ major banks (Barclays, HSBC, Lloyds, NatWest, Monzo, Starling, Revolut UK) | Good — FCA-authorised, main banks covered, slightly thinner long-tail |
-| **Ireland coverage** | Good — AIB, Bank of Ireland, Ulster Bank, Revolut IE | Good — comparable IE coverage |
-| **France coverage** | Good — BNP, Société Générale, Crédit Agricole, Revolut FR | Excellent — deepest FR coverage of any PSD2 aggregator |
-| **Germany coverage** | Good — Deutsche, Commerzbank, N26, Revolut DE | Excellent — strongest DE coverage; ING, Sparkasse long-tail |
-| **Netherlands coverage** | Good — ING, ABN AMRO, Rabobank | Excellent — broadest NL coverage |
-| **Revolut (EU)** | ✅ Full (IE, FR, DE, NL) | ✅ Full |
-| **Revolut (UK)** | ✅ Full | ✅ Full |
-| **Transaction history depth** | 90 days standard; up to 24 months on supported banks | 90 days standard; varies by bank |
-| **Pending transactions** | ✅ Supported | ✅ Supported |
-| **Webhooks** | JWS-signed (JSON Web Signature, RS256 or PS256) | HMAC-SHA256 signed |
-| **Sandbox DX** | Excellent — full OAuth flow testable, simulated accounts, fast key provisioning | Good — more onboarding steps; sandbox covers all major bank simulations |
-| **Pricing model** | Per-API-call (~€0.10–0.20/connection/mo at truffe.ai sync cadence) | Per-consent (~€0.15–0.30/connection/mo) |
-| **PSD2 licence** | FCA Authorised Payment Institution + EU agent passporting | Finansinspektionen (Sweden) + EU passporting; Visa subsidiary |
-| **Enterprise backing** | Independent (raised ~$70M); UK-headquartered | Visa subsidiary since 2022; larger enterprise trust signal |
-| **HQ** | London | Stockholm |
-| **SDK / client libs** | Official Node.js SDK + REST | Official Node.js SDK + REST |
-| **Token refresh** | Server-side refresh with re-consent flow on expiry | Server-side refresh; re-consent on expiry |
-| **Rate limits** | Per-application limits; documented in dashboard | Per-application; configurable |
+| Dimension                     | TrueLayer                                                                                   | Tink                                                                    |
+| ----------------------------- | ------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------- |
+| **UK coverage**               | Excellent — 99%+ major banks (Barclays, HSBC, Lloyds, NatWest, Monzo, Starling, Revolut UK) | Good — FCA-authorised, main banks covered, slightly thinner long-tail   |
+| **Ireland coverage**          | Good — AIB, Bank of Ireland, Ulster Bank, Revolut IE                                        | Good — comparable IE coverage                                           |
+| **France coverage**           | Good — BNP, Société Générale, Crédit Agricole, Revolut FR                                   | Excellent — deepest FR coverage of any PSD2 aggregator                  |
+| **Germany coverage**          | Good — Deutsche, Commerzbank, N26, Revolut DE                                               | Excellent — strongest DE coverage; ING, Sparkasse long-tail             |
+| **Netherlands coverage**      | Good — ING, ABN AMRO, Rabobank                                                              | Excellent — broadest NL coverage                                        |
+| **Revolut (EU)**              | ✅ Full (IE, FR, DE, NL)                                                                    | ✅ Full                                                                 |
+| **Revolut (UK)**              | ✅ Full                                                                                     | ✅ Full                                                                 |
+| **Transaction history depth** | 90 days standard; up to 24 months on supported banks                                        | 90 days standard; varies by bank                                        |
+| **Pending transactions**      | ✅ Supported                                                                                | ✅ Supported                                                            |
+| **Webhooks**                  | JWS-signed (JSON Web Signature, RS256 or PS256)                                             | HMAC-SHA256 signed                                                      |
+| **Sandbox DX**                | Excellent — full OAuth flow testable, simulated accounts, fast key provisioning             | Good — more onboarding steps; sandbox covers all major bank simulations |
+| **Pricing model**             | Per-API-call (~€0.10–0.20/connection/mo at truffe.ai sync cadence)                          | Per-consent (~€0.15–0.30/connection/mo)                                 |
+| **PSD2 licence**              | FCA Authorised Payment Institution + EU agent passporting                                   | Finansinspektionen (Sweden) + EU passporting; Visa subsidiary           |
+| **Enterprise backing**        | Independent (raised ~$70M); UK-headquartered                                                | Visa subsidiary since 2022; larger enterprise trust signal              |
+| **HQ**                        | London                                                                                      | Stockholm                                                               |
+| **SDK / client libs**         | Official Node.js SDK + REST                                                                 | Official Node.js SDK + REST                                             |
+| **Token refresh**             | Server-side refresh with re-consent flow on expiry                                          | Server-side refresh; re-consent on expiry                               |
+| **Rate limits**               | Per-application limits; documented in dashboard                                             | Per-application; configurable                                           |
 
 ### Decision rationale
 
 **Primary: TrueLayer**
+
 - EU beachhead is London/Dublin (spec §6.3 geo order). TrueLayer's UK coverage is best-in-class — no other PSD2 aggregator matches it on UK bank breadth.
 - London/Dublin HNW persona uses Revolut, Monzo, Starling, HSBC, Barclays — all TrueLayer Tier 1.
 - JWS webhook signature is more widely documented and has more reference implementations than Tink HMAC.
@@ -55,12 +56,14 @@
 - UK-headquartered: easier enterprise/commercial contract negotiation for London outreach.
 
 **Backup: Tink**
+
 - DE/NL/FR HNW accounts where TrueLayer coverage has gaps.
 - Visa backing provides additional enterprise trust signal for Family Office tier.
 - Pluggable `Source` interface means Tink adapter can be added without restructuring TrueLayer adapter.
 - Tink webhook verification (HMAC) implemented separately from TrueLayer (JWS); both handler paths needed for multi-provider support.
 
 **Deferred: Plaid**
+
 - US only; Phase C. Architecture wired but not user-facing in Phase B.
 
 ---
@@ -155,6 +158,7 @@ tests/
 ```
 
 **Modified files:**
+
 - `src/lib/advisor/system-prompt.ts` — refusal policy baked in (done: TRF-114).
 - `src/lib/db/schema.ts` — add `connection`, `fraudSignal`, `policyEvent` tables; add `visibility` to `advisorConversation`.
 - `src/app/api/advisor/route.ts` — pipe responses through `output-filter.ts`; log refusals to `policy_event`.
@@ -172,6 +176,7 @@ tests/
 ## Task 1: DB migrations — connection + fraud tables
 
 **Files:**
+
 - Create: `src/lib/db/migrations/0015_connection.sql`
 - Create: `src/lib/db/migrations/0016_fraud_signal.sql`
 - Create: `src/lib/db/migrations/0017_policy_event.sql`
@@ -250,6 +255,7 @@ npx supabase db reset --local  # verify seed still works
 ## Task 2: Supabase Vault setup for aggregator tokens
 
 **Files:**
+
 - Create: `src/lib/aggregators/vault.ts`
 
 - [ ] **Step 1: Write vault.ts wrapper**
@@ -257,9 +263,9 @@ npx supabase db reset --local  # verify seed still works
 ```ts
 // Thin wrapper: store/retrieve aggregator tokens by secret name.
 // Never returns raw token to client — Edge Function only.
-export async function storeToken(secretName: string, token: string): Promise<void>
-export async function retrieveToken(secretName: string): Promise<string>
-export async function deleteToken(secretName: string): Promise<void>
+export async function storeToken(secretName: string, token: string): Promise<void>;
+export async function retrieveToken(secretName: string): Promise<string>;
+export async function deleteToken(secretName: string): Promise<void>;
 ```
 
 Use `supabase.rpc('vault.create_secret', ...)` and `vault.decrypted_secrets` view.
@@ -272,6 +278,7 @@ Token is never logged — enforce via `src/lib/logging/redact.ts` pattern.
 ## Task 3: TrueLayer OAuth flow
 
 **Files:**
+
 - Create: `src/lib/aggregators/truelayer/oauth.ts`
 - Create: `src/app/api/aggregators/truelayer/connect/route.ts`
 - Create: `src/app/api/aggregators/truelayer/callback/route.ts`
@@ -285,7 +292,7 @@ export function buildAuthUrl(params: {
   redirectUri: string;
   state: string; // HMAC-signed per-session nonce
   scopes: string[]; // ['accounts', 'transactions', 'balance']
-}): string
+}): string;
 ```
 
 State parameter: `HMAC-SHA256(sessionId + timestamp)` — verified in callback to prevent CSRF.
@@ -307,6 +314,7 @@ State parameter: `HMAC-SHA256(sessionId + timestamp)` — verified in callback t
 ## Task 4: TrueLayer sync runner
 
 **Files:**
+
 - Create: `src/lib/aggregators/truelayer/client.ts`
 - Create: `src/lib/aggregators/truelayer/sync.ts`
 - Create: `supabase/functions/sync-connections/index.ts`
@@ -318,7 +326,7 @@ Implement `getAccounts`, `getTransactions(accountId, from, to)`, `getBalance(acc
 - [ ] **Step 2: Sync runner**
 
 ```ts
-export async function syncConnection(connectionId: string): Promise<SyncResult>
+export async function syncConnection(connectionId: string): Promise<SyncResult>;
 ```
 
 Flow: retrieve token from Vault → fetch accounts → upsert `account` rows → fetch transactions (since `last_synced_at`) → upsert `transaction` rows → run fraud detectors on new transactions → update `connection.last_synced_at`.
@@ -346,6 +354,7 @@ Run with sandbox credentials. Assert: accounts appear, transactions import, `las
 ## Task 5: TrueLayer webhook verification
 
 **Files:**
+
 - Create: `src/lib/aggregators/truelayer/webhook.ts`
 - Create: `src/app/api/aggregators/truelayer/webhook/route.ts`
 
@@ -356,7 +365,7 @@ export async function verifyTrueLayerWebhook(
   body: string,
   jwsHeader: string,
   jwksUri: string,
-): Promise<boolean>
+): Promise<boolean>;
 ```
 
 Fetch TrueLayer JWKS from their public endpoint. Cache with 5-min TTL. Verify RS256/PS256 signature. Reject if timestamp in JWS header > 5 min old (replay protection).
@@ -372,6 +381,7 @@ Parse event type (`transaction.created`, `account.status_updated`). Trigger incr
 ## Task 6: Connection management UI
 
 **Files:**
+
 - Create: `src/app/settings/connections/page.tsx`
 - Create: `src/app/api/connections/[id]/route.ts`
 
@@ -396,6 +406,7 @@ If `connection.status = error`: show "Reconnect" CTA → re-initiates OAuth. Sho
 ## Task 7: Observer invite + scope model
 
 **Files:**
+
 - Create: `src/lib/observers/invite.ts`
 - Create: `src/app/settings/observers/page.tsx`
 - Create: `src/app/api/observers/invite/route.ts`
@@ -407,10 +418,10 @@ If `connection.status = error`: show "Reconnect" CTA → re-initiates OAuth. Sho
 export function buildInviteToken(params: {
   tenantId: string;
   invitedByUserId: string;
-  scope: 'full_read' | 'ledger_only' | 'audit_only';
+  scope: "full_read" | "ledger_only" | "audit_only";
   expiresAt: Date; // 7 days
-}): string // HMAC-signed JWT
-export function verifyInviteToken(token: string): InvitePayload | null
+}): string; // HMAC-signed JWT
+export function verifyInviteToken(token: string): InvitePayload | null;
 ```
 
 - [ ] **Step 2: Invite flow**
@@ -439,6 +450,7 @@ On revoke: set `revoked_at = now() + 72h` (not immediate). Observer notified by 
 ## Task 8: Observer routes
 
 **Files:**
+
 - Create: `src/app/observe/layout.tsx`
 - Create: `src/app/observe/page.tsx`
 - Create: `src/app/observe/audit/page.tsx`
@@ -470,6 +482,7 @@ Dismissed fraud signals (with dismiss reason + who dismissed) + any accepted adv
 ## Task 9: Fraud detector — vendor-bec
 
 **Files:**
+
 - Create: `src/lib/fraud/interface.ts`
 - Create: `src/lib/fraud/runner.ts`
 - Create: `src/lib/fraud/vendor-bec/detector.ts`
@@ -487,7 +500,7 @@ export interface Detector {
 export interface FraudSignal {
   detectorId: string;
   transactionId: string;
-  severity: 'info' | 'warn' | 'high';
+  severity: "info" | "warn" | "high";
   evidence: Record<string, unknown>; // structured, no free text from LLM
   suggestedAction: string;
   expiresAt?: Date;
@@ -497,11 +510,11 @@ export interface FraudSignal {
 - [ ] **Step 2: vendor-bec heuristics (all untrusted-data wrapped)**
 
 ```ts
-export function isNewPayee(payeeName: string, tenantHistory: string[]): boolean
-export function amountAnomaly(amount: number, vendorHistory: number[]): AnomalyResult
-export function urgencyLanguageScan(memo: string): UrgencyScanResult
-  // wraps memo in <user-data> before any LLM call; returns {flagged, matchedTerms}
-export function addressMismatch(memoText: string, knownVendorAddress: string | null): boolean
+export function isNewPayee(payeeName: string, tenantHistory: string[]): boolean;
+export function amountAnomaly(amount: number, vendorHistory: number[]): AnomalyResult;
+export function urgencyLanguageScan(memo: string): UrgencyScanResult;
+// wraps memo in <user-data> before any LLM call; returns {flagged, matchedTerms}
+export function addressMismatch(memoText: string, knownVendorAddress: string | null): boolean;
 ```
 
 - [ ] **Step 3: detector.ts — compose heuristics into FraudSignal**
@@ -517,6 +530,7 @@ Include: new payee + anomaly amount = high severity; known payee + normal amount
 ## Task 10: Fraud detector — subscription-trap
 
 **Files:**
+
 - Create: `src/lib/fraud/subscription-trap/detector.ts`
 - Create: `src/lib/fraud/subscription-trap/heuristics.ts`
 - Create: `tests/unit/fraud/subscription-trap.test.ts`
@@ -524,15 +538,12 @@ Include: new payee + anomaly amount = high severity; known payee + normal amount
 - [ ] **Step 1: subscription-trap heuristics**
 
 ```ts
-export function priceHikeDetect(history: RecurringEntry[]): PriceHikeResult
-  // Fire if latest amount > 1.15× median of last 6 months
-export function postTrialConversion(history: RecurringEntry[]): PostTrialResult
-  // Fire if first charge ≥ 3× preceding charge AND gap ≤ 35 days
-export function doubleBilling(
-  txA: Transaction,
-  candidates: Transaction[],
-): DoubleBillingResult
-  // Fire if same merchant + same amount within 7 days across different accounts
+export function priceHikeDetect(history: RecurringEntry[]): PriceHikeResult;
+// Fire if latest amount > 1.15× median of last 6 months
+export function postTrialConversion(history: RecurringEntry[]): PostTrialResult;
+// Fire if first charge ≥ 3× preceding charge AND gap ≤ 35 days
+export function doubleBilling(txA: Transaction, candidates: Transaction[]): DoubleBillingResult;
+// Fire if same merchant + same amount within 7 days across different accounts
 ```
 
 - [ ] **Step 2: detector.ts**
@@ -546,6 +557,7 @@ Evidence field: `{ priceHike: { from, to, percentIncrease }, postTrial: { trialA
 ## Task 11: Fraud runner integration
 
 **Files:**
+
 - Create: `src/lib/fraud/runner.ts`
 
 - [ ] **Step 1: runDetectors**
@@ -555,7 +567,7 @@ export async function runDetectors(
   db: Db,
   tenantId: string,
   transactions: Transaction[],
-): Promise<FraudSignal[]>
+): Promise<FraudSignal[]>;
 ```
 
 Fan-out all registered detectors over `transactions`. Deduplicate: if signal for same `(detectorId, transactionId)` already exists with status `open`, skip. Write new signals to `fraud_signal` table. Write to `audit_log_v2`.
@@ -581,6 +593,7 @@ Call `runDetectors` after transaction upsert in `syncConnection`.
 ## Task 12: Advisor refusal policy + output filter
 
 **Files:**
+
 - Create: `src/lib/policy/refusals.ts`
 - Create: `src/lib/policy/output-filter.ts`
 - Modify: `src/app/api/advisor/route.ts`
@@ -590,17 +603,27 @@ Call `runDetectors` after transaction upsert in `syncConnection`.
 
 ```ts
 export const REFUSAL_CATEGORIES = [
-  'securities', 'tax_evasion', 'aml', 'insider', 'legal', 'welfare', 'scam_enablement', 'cross_tenant'
+  "securities",
+  "tax_evasion",
+  "aml",
+  "insider",
+  "legal",
+  "welfare",
+  "scam_enablement",
+  "cross_tenant",
 ] as const;
 
-export async function logPolicyEvent(db: Db, params: {
-  tenantId: string;
-  userId: string;
-  conversationId?: string;
-  category: typeof REFUSAL_CATEGORIES[number];
-  triggerTextHash: Buffer;
-  surfacedToObserver: boolean;
-}): Promise<void>
+export async function logPolicyEvent(
+  db: Db,
+  params: {
+    tenantId: string;
+    userId: string;
+    conversationId?: string;
+    category: (typeof REFUSAL_CATEGORIES)[number];
+    triggerTextHash: Buffer;
+    surfacedToObserver: boolean;
+  },
+): Promise<void>;
 ```
 
 - [ ] **Step 2: Output filter**
@@ -622,12 +645,14 @@ If `category = welfare`: surface crisis line in response (`Samaritans UK: 116 12
 ## Task 13: Daily digest email
 
 **Files:**
+
 - Create: `src/lib/observers/digest.ts`
 - Create: `supabase/functions/daily-digest/index.ts`
 
 - [ ] **Step 1: Digest builder**
 
 Per tenant per day:
+
 - New fraud signals: count + detector breakdown
 - Signals dismissed today: who dismissed + reason
 - New connections added / revoked
@@ -657,6 +682,7 @@ Seed a tenant with signals + dismissals + a connection sync → trigger digest b
 ## Task 14: `advisor_conversation.visibility` enforcement
 
 **Files:**
+
 - Modify: `src/app/api/advisor/route.ts`
 - Modify: `src/lib/db/schema.ts`
 

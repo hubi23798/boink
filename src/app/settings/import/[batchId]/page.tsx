@@ -30,7 +30,7 @@ export default async function BatchDetailPage({ params }: Props) {
     <main className="mx-auto max-w-3xl space-y-8 p-6">
       <div>
         <h1 className="text-xl font-semibold">Import batch</h1>
-        <p className="text-fg-muted mt-1 text-sm font-mono text-xs">{batch.id}</p>
+        <p className="text-fg-muted mt-1 font-mono text-sm text-xs">{batch.id}</p>
       </div>
 
       <section className="grid grid-cols-2 gap-4 sm:grid-cols-4">

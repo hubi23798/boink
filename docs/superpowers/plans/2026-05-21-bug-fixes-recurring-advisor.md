@@ -12,17 +12,18 @@
 
 ## File Map
 
-| File | Action | Purpose |
-|---|---|---|
+| File                                   | Action | Purpose                                                                                                                     |
+| -------------------------------------- | ------ | --------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/recurring/recurring-view.tsx` | Modify | Export `SerializedCandidate`, update props/state type, fix `nextExpectedLabel`, fix `defaultFormFromCandidate`, fix `today` |
-| `src/app/recurring/page.tsx` | Modify | Import `SerializedCandidate`, serialize candidates before passing as prop |
-| `src/app/advisor/c/[id]/chat-view.tsx` | Modify | Add `res.ok` checks after POST and GET fetches |
+| `src/app/recurring/page.tsx`           | Modify | Import `SerializedCandidate`, serialize candidates before passing as prop                                                   |
+| `src/app/advisor/c/[id]/chat-view.tsx` | Modify | Add `res.ok` checks after POST and GET fetches                                                                              |
 
 ---
 
 ### Task 1: Fix recurring hydration failure
 
 **Files:**
+
 - Modify: `src/app/recurring/recurring-view.tsx`
 - Modify: `src/app/recurring/page.tsx`
 
@@ -33,15 +34,19 @@
 Open `src/app/recurring/recurring-view.tsx`. Make these changes:
 
 **a.** Replace the import line:
+
 ```typescript
 import type { RecurringItem, Frequency } from "@/lib/recurring/detect";
 ```
+
 With (drop `RecurringItem`, keep `Frequency`):
+
 ```typescript
 import type { Frequency } from "@/lib/recurring/detect";
 ```
 
 **b.** After the `import type { Frequency }` line, add the exported interface:
+
 ```typescript
 export interface SerializedCandidate {
   key: string;
@@ -56,11 +61,13 @@ export interface SerializedCandidate {
 ```
 
 **c.** In `RecurringViewProps`, change `candidates: RecurringItem[]` to:
+
 ```typescript
   candidates: SerializedCandidate[];
 ```
 
 **d.** In `RecurringView` function body, change the state initialisation for `candidates`:
+
 ```typescript
 const [candidates, setCandidates] = useState<SerializedCandidate[]>(initialCandidates);
 ```
@@ -68,6 +75,7 @@ const [candidates, setCandidates] = useState<SerializedCandidate[]>(initialCandi
 - [ ] **Step 2: Fix `nextExpectedLabel` to accept a string**
 
 In `recurring-view.tsx`, replace the existing `nextExpectedLabel` function:
+
 ```typescript
 function nextExpectedLabel(nextExpected: Date): string {
   const diff = Math.round((nextExpected.getTime() - Date.now()) / 86_400_000);
@@ -78,6 +86,7 @@ function nextExpectedLabel(nextExpected: Date): string {
 ```
 
 With:
+
 ```typescript
 function nextExpectedLabel(nextExpected: string): string {
   const diff = Math.round((new Date(nextExpected).getTime() - Date.now()) / 86_400_000);
@@ -90,6 +99,7 @@ function nextExpectedLabel(nextExpected: string): string {
 - [ ] **Step 3: Fix `defaultFormFromCandidate` to accept `SerializedCandidate`**
 
 In `recurring-view.tsx`, replace:
+
 ```typescript
 function defaultFormFromCandidate(item: RecurringItem): FormState {
   return {
@@ -103,6 +113,7 @@ function defaultFormFromCandidate(item: RecurringItem): FormState {
 ```
 
 With:
+
 ```typescript
 function defaultFormFromCandidate(item: SerializedCandidate): FormState {
   return {
@@ -120,22 +131,28 @@ function defaultFormFromCandidate(item: SerializedCandidate): FormState {
 In `recurring-view.tsx`:
 
 **a.** In `RecurringView` function body, **before the `return` statement**, add (after the `sortedSubs`/`groupedSubs` block):
+
 ```typescript
 const today = new Date().toISOString().slice(0, 10);
 ```
 
 **b.** Inside the confirmed subs JSX (inside the `items.map((sub) => { ... })` callback), **remove** these three lines:
+
 ```typescript
 const now = new Date();
 const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 ```
+
 The `today` constant defined in step (a) is in scope for the entire component render.
 
 **c.** In the candidates JSX section, find:
+
 ```typescript
 {item.occurrences.length} times ·{" "}
 ```
+
 Replace with:
+
 ```typescript
 {item.occurrenceCount} times ·{" "}
 ```
@@ -145,15 +162,19 @@ Replace with:
 Open `src/app/recurring/page.tsx`. Make these changes:
 
 **a.** Update the import for `recurring-view`:
+
 ```typescript
 import { RecurringView } from "./recurring-view";
 ```
+
 Replace with:
+
 ```typescript
 import { RecurringView, type SerializedCandidate } from "./recurring-view";
 ```
 
 **b.** After this existing block (which filters `allDetected` into `candidates`):
+
 ```typescript
 const candidates = allDetected.filter(
   (r) => !confirmedKeys.has(r.key) && !dismissedKeys.has(r.key),
@@ -161,6 +182,7 @@ const candidates = allDetected.filter(
 ```
 
 Add immediately after:
+
 ```typescript
 const serializedCandidates: SerializedCandidate[] = candidates.map((c) => ({
   key: c.key,
@@ -175,12 +197,15 @@ const serializedCandidates: SerializedCandidate[] = candidates.map((c) => ({
 ```
 
 **c.** In the `return` JSX, change:
+
 ```typescript
-      candidates={candidates}
+candidates = { candidates };
 ```
+
 To:
+
 ```typescript
-      candidates={serializedCandidates}
+candidates = { serializedCandidates };
 ```
 
 - [ ] **Step 6: Run TypeScript check**
@@ -211,6 +236,7 @@ git commit -m "fix(recurring): serialize candidates at RSC boundary, fix today U
 ### Task 2: Fix advisor send error handling
 
 **Files:**
+
 - Modify: `src/app/advisor/c/[id]/chat-view.tsx`
 
 **Context:** `fetch()` in JavaScript resolves (does not throw) on HTTP 4xx/5xx responses. In `sendMessage()`, the POST to `/api/advisor/conversations/${id}/messages` can return 500 (e.g., invalid `MODEL_ADVISOR` env var). Without an `res.ok` check, the code continues to the reload GET and calls `setData(updated)` — the optimistic user bubble is replaced with the server state (no AI reply visible), and no error is shown. The `catch` block only fires on network errors. The fix is to check `res.ok` immediately after both fetches so the catch block fires on API errors.
@@ -218,6 +244,7 @@ git commit -m "fix(recurring): serialize candidates at RSC boundary, fix today U
 - [ ] **Step 1: Add `res.ok` check after the POST fetch**
 
 Open `src/app/advisor/c/[id]/chat-view.tsx`. In `sendMessage()`, find:
+
 ```typescript
     try {
       await fetch(`/api/advisor/conversations/${id}/messages`, {
@@ -235,6 +262,7 @@ Open `src/app/advisor/c/[id]/chat-view.tsx`. In `sendMessage()`, find:
 ```
 
 Replace with:
+
 ```typescript
     try {
       const res = await fetch(`/api/advisor/conversations/${id}/messages`, {
@@ -257,6 +285,7 @@ Replace with:
 ```
 
 The existing `catch` block already handles this correctly:
+
 ```typescript
     } catch (e) {
       console.error(e);
@@ -267,6 +296,7 @@ The existing `catch` block already handles this correctly:
       setSendError("Failed to send. Please try again.");
     }
 ```
+
 No changes needed to the catch block.
 
 - [ ] **Step 2: Run TypeScript check**
@@ -311,6 +341,7 @@ If it shows anything else (e.g., `claude-opus-4-7-sonnet-20260219`), fix it to `
 - [ ] **Step 2: Restart dev server**
 
 Stop any running `pnpm dev` (Ctrl+C), then:
+
 ```bash
 pnpm dev
 ```
@@ -322,6 +353,7 @@ Required because env vars are cached in memory. The corrected `MODEL_ADVISOR` mu
 Navigate to `http://localhost:3000/recurring`.
 
 Verify:
+
 1. The page loads without a blank white screen or React error overlay
 2. Clicking ✏ on a confirmed subscription opens the inline edit form
 3. Clicking × on a confirmed subscription removes it from the list
@@ -334,6 +366,7 @@ Verify:
 Navigate to `http://localhost:3000/advisor`, create a new conversation, type a message and click Send (or press Enter).
 
 Verify:
+
 1. The user message bubble appears immediately (optimistic)
 2. The "Thinking…" spinner appears
 3. After a few seconds, the advisor replies with substantive content
@@ -345,6 +378,7 @@ Verify:
 Temporarily set `MODEL_ADVISOR=bad-model-name` in `.env`, restart dev server, send a message.
 
 Verify:
+
 1. The user message bubble appears (optimistic)
 2. After a moment, the "Thinking…" spinner disappears
 3. The error message "Failed to send. Please try again." appears below the send box

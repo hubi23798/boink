@@ -1,10 +1,5 @@
 import { describe, it, expect } from "vitest";
-import {
-  GENESIS_HASH,
-  canonicalize,
-  computeHash,
-  verifyChain,
-} from "@/lib/audit/hash-chain";
+import { GENESIS_HASH, canonicalize, computeHash, verifyChain } from "@/lib/audit/hash-chain";
 
 describe("canonicalize", () => {
   it("is independent of object key insertion order", () => {
@@ -43,7 +38,7 @@ describe("canonicalize", () => {
   });
 
   it("escapes special characters in strings", () => {
-    expect(canonicalize("a\"b\\c\n")).toBe('"a\\"b\\\\c\\n"');
+    expect(canonicalize('a"b\\c\n')).toBe('"a\\"b\\\\c\\n"');
   });
 });
 
@@ -104,9 +99,9 @@ describe("verifyChain", () => {
   it("accepts a chain with a caller-supplied non-zero genesis", () => {
     const genesis = Buffer.alloc(32, 7);
     const h0 = computeHash(genesis, { id: 1 });
-    expect(
-      verifyChain([{ prevHash: genesis, thisHash: h0, payload: { id: 1 } }], genesis),
-    ).toEqual({ valid: true, brokenAt: null });
+    expect(verifyChain([{ prevHash: genesis, thisHash: h0, payload: { id: 1 } }], genesis)).toEqual(
+      { valid: true, brokenAt: null },
+    );
   });
 
   it("accepts a valid multi-row chain", () => {

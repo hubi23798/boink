@@ -46,15 +46,21 @@ function txn(overrides: Partial<Transaction> = {}): Transaction {
 
 describe("matches — description_contains", () => {
   it("matches when description contains the value (case-insensitive)", () => {
-    expect(matches(rule({ matchKind: "description_contains", matchValue: "spotify" }), txn())).toBe(true);
+    expect(matches(rule({ matchKind: "description_contains", matchValue: "spotify" }), txn())).toBe(
+      true,
+    );
   });
 
   it("matches regardless of case in description", () => {
-    expect(matches(rule({ matchKind: "description_contains", matchValue: "SPOTIFY" }), txn())).toBe(true);
+    expect(matches(rule({ matchKind: "description_contains", matchValue: "SPOTIFY" }), txn())).toBe(
+      true,
+    );
   });
 
   it("does not match when description does not contain the value", () => {
-    expect(matches(rule({ matchKind: "description_contains", matchValue: "netflix" }), txn())).toBe(false);
+    expect(matches(rule({ matchKind: "description_contains", matchValue: "netflix" }), txn())).toBe(
+      false,
+    );
   });
 
   it("matches on empty matchValue (every description contains empty string)", () => {
@@ -65,55 +71,58 @@ describe("matches — description_contains", () => {
     expect(
       matches(
         rule({ matchKind: "description_contains", matchValue: "anything" }),
-        txn({ descriptionRaw: null })
-      )
+        txn({ descriptionRaw: null }),
+      ),
     ).toBe(false);
   });
 });
 
 describe("matches — description_regex", () => {
   it("matches a regex pattern (case-insensitive)", () => {
-    expect(
-      matches(rule({ matchKind: "description_regex", matchValue: "^spotify" }), txn())
-    ).toBe(true);
+    expect(matches(rule({ matchKind: "description_regex", matchValue: "^spotify" }), txn())).toBe(
+      true,
+    );
   });
 
   it("does not match when regex does not match", () => {
-    expect(
-      matches(rule({ matchKind: "description_regex", matchValue: "^netflix" }), txn())
-    ).toBe(false);
+    expect(matches(rule({ matchKind: "description_regex", matchValue: "^netflix" }), txn())).toBe(
+      false,
+    );
   });
 
   it("returns false for an invalid regex (does not throw)", () => {
-    expect(
-      matches(rule({ matchKind: "description_regex", matchValue: "[invalid" }), txn())
-    ).toBe(false);
+    expect(matches(rule({ matchKind: "description_regex", matchValue: "[invalid" }), txn())).toBe(
+      false,
+    );
   });
 });
 
 describe("matches — type_raw_equals", () => {
   it("matches when typeRaw equals the value (case-insensitive)", () => {
-    expect(
-      matches(rule({ matchKind: "type_raw_equals", matchValue: "card_payment" }), txn())
-    ).toBe(true);
+    expect(matches(rule({ matchKind: "type_raw_equals", matchValue: "card_payment" }), txn())).toBe(
+      true,
+    );
   });
 
   it("matches regardless of case", () => {
-    expect(
-      matches(rule({ matchKind: "type_raw_equals", matchValue: "CARD_PAYMENT" }), txn())
-    ).toBe(true);
+    expect(matches(rule({ matchKind: "type_raw_equals", matchValue: "CARD_PAYMENT" }), txn())).toBe(
+      true,
+    );
   });
 
   it("does not match a different type", () => {
-    expect(
-      matches(rule({ matchKind: "type_raw_equals", matchValue: "transfer" }), txn())
-    ).toBe(false);
+    expect(matches(rule({ matchKind: "type_raw_equals", matchValue: "transfer" }), txn())).toBe(
+      false,
+    );
   });
 });
 
 describe("matches — amount_range", () => {
   it("matches when amount is within min and max", () => {
-    const r = rule({ matchKind: "amount_range", matchValue: JSON.stringify({ min: -2000, max: -500 }) });
+    const r = rule({
+      matchKind: "amount_range",
+      matchValue: JSON.stringify({ min: -2000, max: -500 }),
+    });
     expect(matches(r, txn({ amountNative: -999 }))).toBe(true);
   });
 

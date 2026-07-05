@@ -15,10 +15,7 @@ const bodySchema = z.object({
   action: z.enum(["accept", "reject"]),
 });
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAuth(req);
   if (!auth.ok) return auth.response;
   const { tenantId, userId } = auth.ctx;
@@ -41,9 +38,7 @@ export async function PATCH(
     .from(pendingProposal)
     .innerJoin(advisorMessage, eq(pendingProposal.advisorMessageId, advisorMessage.id))
     .innerJoin(advisorConversation, eq(advisorMessage.conversationId, advisorConversation.id))
-    .where(
-      and(eq(pendingProposal.id, id), eq(advisorConversation.tenantId, tenantId)),
-    )
+    .where(and(eq(pendingProposal.id, id), eq(advisorConversation.tenantId, tenantId)))
     .limit(1);
 
   if (!proposal) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -58,7 +53,12 @@ export async function PATCH(
 
   if (action === "accept" && proposal.kind === "create_rule") {
     const p = proposal.payload as {
-      matchKind: "description_contains" | "description_regex" | "type_raw_equals" | "amount_range" | "account_id_equals";
+      matchKind:
+        | "description_contains"
+        | "description_regex"
+        | "type_raw_equals"
+        | "amount_range"
+        | "account_id_equals";
       matchValue: string;
       categoryId: string;
     };

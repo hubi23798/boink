@@ -21,14 +21,14 @@ pnpm dlx vercel env pull .env.vercel.local
 
 Copy all vars from `.env.example` into Vercel (Production + Preview):
 
-| Variable | Notes |
-|----------|-------|
-| `DATABASE_URL` / `SUPABASE_DB_URL` | Supabase pooler (6543) |
-| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | From Supabase project settings |
-| `SUPABASE_DB_DIRECT_URL` | Direct connection (migrations only; optional on Vercel) |
-| `RP_ID`, `RP_NAME`, `ORIGIN` | Production domain values |
-| `CRON_SECRET` | Min 16 chars; Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` |
-| `ANTHROPIC_API_KEY`, `AXIOM_*` | As configured |
+| Variable                                                         | Notes                                                                 |
+| ---------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `DATABASE_URL` / `SUPABASE_DB_URL`                               | Supabase pooler (6543)                                                |
+| `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | From Supabase project settings                                        |
+| `SUPABASE_DB_DIRECT_URL`                                         | Direct connection (migrations only; optional on Vercel)               |
+| `RP_ID`, `RP_NAME`, `ORIGIN`                                     | Production domain values                                              |
+| `CRON_SECRET`                                                    | Min 16 chars; Vercel Cron sends `Authorization: Bearer <CRON_SECRET>` |
+| `ANTHROPIC_API_KEY`, `AXIOM_*`                                   | As configured                                                         |
 
 ## 3. Cron jobs
 

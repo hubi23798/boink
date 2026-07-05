@@ -1,12 +1,7 @@
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import {
-  account,
-  importBatch,
-  importBatchRejection,
-  transaction,
-} from "@/lib/db/schema";
+import { account, importBatch, importBatchRejection, transaction } from "@/lib/db/schema";
 import { categorize } from "@/lib/categorization/categorize";
 import { classifyTransactions } from "@/lib/categorization/llm";
 import { backfillSnapshots } from "@/lib/net-worth/snapshots";
@@ -148,10 +143,7 @@ export async function ingest(
       }
     });
   } catch (e) {
-    await db
-      .update(importBatch)
-      .set({ status: "failed" })
-      .where(eq(importBatch.id, batchId));
+    await db.update(importBatch).set({ status: "failed" }).where(eq(importBatch.id, batchId));
     throw e;
   }
 
@@ -161,8 +153,7 @@ export async function ingest(
 
     // Find accepted transactions still uncategorized after rules pass
     const uncategorized = await db.query.transaction.findMany({
-      where: (t, { and, inArray, isNull }) =>
-        and(inArray(t.id, acceptedIds), isNull(t.categoryId)),
+      where: (t, { and, inArray, isNull }) => and(inArray(t.id, acceptedIds), isNull(t.categoryId)),
       columns: { id: true, descriptionRaw: true, amountNative: true, currency: true },
     });
 
@@ -179,9 +170,7 @@ export async function ingest(
       // Only pass expense/investment_flow leaf categories to the LLM
       const categoriesForLlm = allCategories
         .filter(
-          (c) =>
-            c.parentId !== null &&
-            (c.kind === "expense" || c.kind === "investment_flow"),
+          (c) => c.parentId !== null && (c.kind === "expense" || c.kind === "investment_flow"),
         )
         .map((c) => ({
           id: c.id,

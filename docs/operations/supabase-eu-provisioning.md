@@ -24,13 +24,13 @@ Note the **Project URL** and **API keys** from **Project Settings → API**.
 
 From **Project Settings → Database**:
 
-| Variable | Source |
-|----------|--------|
-| `SUPABASE_URL` | Project URL (`https://<ref>.supabase.co`) |
-| `SUPABASE_ANON_KEY` | anon / public key |
-| `SUPABASE_SERVICE_ROLE_KEY` | service_role key (server-only, never expose to browser) |
-| `SUPABASE_DB_DIRECT_URL` | Direct connection (port 5432) — use for Drizzle migrations |
-| `SUPABASE_DB_URL` | Pooler connection (port 6543, `?pgbouncer=true`) — use for app runtime if pooling |
+| Variable                    | Source                                                                            |
+| --------------------------- | --------------------------------------------------------------------------------- |
+| `SUPABASE_URL`              | Project URL (`https://<ref>.supabase.co`)                                         |
+| `SUPABASE_ANON_KEY`         | anon / public key                                                                 |
+| `SUPABASE_SERVICE_ROLE_KEY` | service_role key (server-only, never expose to browser)                           |
+| `SUPABASE_DB_DIRECT_URL`    | Direct connection (port 5432) — use for Drizzle migrations                        |
+| `SUPABASE_DB_URL`           | Pooler connection (port 6543, `?pgbouncer=true`) — use for app runtime if pooling |
 
 Copy into `.env` (never commit):
 
@@ -103,9 +103,9 @@ rp_origins = ["https://truffe.ai", "https://www.truffe.ai"]
 
 Dashboard → **Authentication → URL Configuration**:
 
-| Setting | Value |
-|---------|-------|
-| Site URL | `https://truffe.ai` |
+| Setting       | Value                                                                    |
+| ------------- | ------------------------------------------------------------------------ |
+| Site URL      | `https://truffe.ai`                                                      |
 | Redirect URLs | `https://truffe.ai/auth/callback`, `http://localhost:3000/auth/callback` |
 
 ---

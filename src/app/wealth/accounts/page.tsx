@@ -15,7 +15,9 @@ export default async function AccountsPage() {
   return (
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
-        <a href="/wealth" className="text-fg-muted text-sm hover:underline">← Wealth</a>
+        <a href="/wealth" className="text-fg-muted text-sm hover:underline">
+          ← Wealth
+        </a>
         <h1 className="mt-2 text-xl font-semibold">Accounts</h1>
         <p className="text-fg-muted mt-1 text-sm">{nw.accounts.length} accounts</p>
       </div>
@@ -35,7 +37,13 @@ export default async function AccountsPage() {
               </p>
             </div>
             <div className="text-right">
-              <p className={acct.balanceNative < 0 ? "font-medium text-red-600 dark:text-red-400" : "font-medium"}>
+              <p
+                className={
+                  acct.balanceNative < 0
+                    ? "font-medium text-red-600 dark:text-red-400"
+                    : "font-medium"
+                }
+              >
                 {fmt(acct.balanceNative, acct.currency)}
               </p>
               {acct.currency !== "EUR" && (

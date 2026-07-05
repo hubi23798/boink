@@ -19,7 +19,9 @@ export default async function CategoriesPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">Categories</h1>
-        <p className="text-fg-muted mt-1 text-sm">{categories.length} categories across {parents.length} groups</p>
+        <p className="text-fg-muted mt-1 text-sm">
+          {categories.length} categories across {parents.length} groups
+        </p>
       </div>
 
       <div className="space-y-4">
@@ -35,7 +37,9 @@ export default async function CategoriesPage() {
                 <div className="divide-border-subtle divide-y border-t">
                   {children.map((child) => (
                     <div key={child.id} className="flex items-center justify-between px-4 py-2">
-                      <span className={`text-sm ${child.isArchived ? "line-through opacity-50" : ""}`}>
+                      <span
+                        className={`text-sm ${child.isArchived ? "line-through opacity-50" : ""}`}
+                      >
                         {child.name}
                       </span>
                       <span className="text-fg-muted text-xs">{child.kind}</span>

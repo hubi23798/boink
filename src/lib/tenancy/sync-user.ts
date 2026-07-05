@@ -3,10 +3,7 @@ import type { Db } from "@/lib/db/client";
 import { PRIMARY_TENANT_ID, tenantMember, user } from "@/lib/db/schema";
 
 /** Ensure public.user + tenant_member exist for a Supabase Auth user after sign-in. */
-export async function ensureAppUserForAuth(
-  db: Db,
-  authUserId: string,
-): Promise<void> {
+export async function ensureAppUserForAuth(db: Db, authUserId: string): Promise<void> {
   const existing = await db.query.user.findFirst({
     where: eq(user.id, authUserId),
     columns: { id: true },
@@ -35,7 +32,6 @@ export async function ensureAppUserForAuth(
       .set({ defaultTenantId: PRIMARY_TENANT_ID })
       .where(eq(user.id, authUserId));
   }
-
 }
 
 export async function countActiveMemberships(db: Db, authUserId: string): Promise<number> {

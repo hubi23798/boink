@@ -23,16 +23,31 @@ export default async function RecurringPage() {
 
   const [subs, dismissals, txns, accounts, allCats, userRows] = await Promise.all([
     db.select().from(recurringSubscription).where(eq(recurringSubscription.tenantId, tenantId)),
-    db.select({ key: recurringDismissal.key }).from(recurringDismissal).where(eq(recurringDismissal.tenantId, tenantId)),
-    db.select({
-      accountId: transaction.accountId,
-      descriptionRaw: transaction.descriptionRaw,
-      amountNative: transaction.amountNative,
-      currency: transaction.currency,
-      startedAt: transaction.startedAt,
-    }).from(transaction).where(gte(transaction.startedAt, lookback)),
-    db.select({ id: account.id, name: account.name }).from(account).where(eq(account.tenantId, tenantId)),
-    db.select({ id: category.id, name: category.name, parentId: category.parentId, kind: category.kind })
+    db
+      .select({ key: recurringDismissal.key })
+      .from(recurringDismissal)
+      .where(eq(recurringDismissal.tenantId, tenantId)),
+    db
+      .select({
+        accountId: transaction.accountId,
+        descriptionRaw: transaction.descriptionRaw,
+        amountNative: transaction.amountNative,
+        currency: transaction.currency,
+        startedAt: transaction.startedAt,
+      })
+      .from(transaction)
+      .where(gte(transaction.startedAt, lookback)),
+    db
+      .select({ id: account.id, name: account.name })
+      .from(account)
+      .where(eq(account.tenantId, tenantId)),
+    db
+      .select({
+        id: category.id,
+        name: category.name,
+        parentId: category.parentId,
+        kind: category.kind,
+      })
       .from(category)
       .where(and(eq(category.tenantId, tenantId), eq(category.isArchived, false))),
     db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, userId)).limit(1),
@@ -59,9 +74,7 @@ export default async function RecurringPage() {
     nextExpected: c.nextExpected.toISOString().slice(0, 10),
   }));
 
-  const parentMap = new Map(
-    allCats.filter((c) => !c.parentId).map((c) => [c.id, c.name]),
-  );
+  const parentMap = new Map(allCats.filter((c) => !c.parentId).map((c) => [c.id, c.name]));
   const categories = allCats
     .filter((c) => c.parentId !== null && (c.kind === "expense" || c.kind === "investment_flow"))
     .map((c) => ({

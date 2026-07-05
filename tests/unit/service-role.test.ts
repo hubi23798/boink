@@ -15,8 +15,8 @@ describe("runAsService", () => {
 
   it("throws if requireCronContext and CRON_CONTEXT not set", async () => {
     delete process.env.CRON_CONTEXT;
-    await expect(
-      runAsService(async () => "x", { requireCronContext: true }),
-    ).rejects.toThrow(/cron context/);
+    await expect(runAsService(async () => "x", { requireCronContext: true })).rejects.toThrow(
+      /cron context/,
+    );
   });
 });

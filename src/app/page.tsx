@@ -10,8 +10,13 @@ import { cn } from "@/lib/utils";
 import { KpiCard, KpiGrid } from "@/components/kpi-card";
 import { TransactionList, type Transaction } from "@/components/transaction-row";
 import {
-  TrendingUp, Wallet, CreditCard, PiggyBank,
-  MessageSquare, ArrowRight, Inbox,
+  TrendingUp,
+  Wallet,
+  CreditCard,
+  PiggyBank,
+  MessageSquare,
+  ArrowRight,
+  Inbox,
 } from "lucide-react";
 
 function fmt(minor: number, currency = "EUR") {
@@ -69,8 +74,9 @@ export default async function HomePage() {
 
   const categoryIds = [
     ...new Set(
-      [...recentTxns.map((t) => t.categoryId), ...thisMo.topCategories.map((c) => c.id)]
-        .filter(Boolean) as string[],
+      [...recentTxns.map((t) => t.categoryId), ...thisMo.topCategories.map((c) => c.id)].filter(
+        Boolean,
+      ) as string[],
     ),
   ];
   const categoriesData =
@@ -86,8 +92,7 @@ export default async function HomePage() {
   const netDelta = thisMo.net - lastMo.net;
   const hasMonthlyData = thisMo.income > 0 || thisMo.expenses < 0;
   const hasLastMo = lastMo.income > 0 || lastMo.expenses < 0;
-  const savingsRate =
-    thisMo.income > 0 ? Math.round((thisMo.net / thisMo.income) * 100) : null;
+  const savingsRate = thisMo.income > 0 ? Math.round((thisMo.net / thisMo.income) * 100) : null;
 
   const mappedTxns: Transaction[] = recentTxns.map((txn) => ({
     id: txn.id,
@@ -112,7 +117,6 @@ export default async function HomePage() {
 
   return (
     <div className="mx-auto w-full max-w-5xl space-y-8 px-8 py-10">
-
       {/* ── Page header ─────────────────────────────────────────────────── */}
       <header className="space-y-1">
         <p className="text-caption text-fg-subtle">{greeting()}</p>
@@ -127,9 +131,7 @@ export default async function HomePage() {
           label={`Net Worth · as of ${nw.asOf}`}
           value={fmt(nw.netWorth)}
           delta={
-            hasLastMo
-              ? `${fmtSigned(netDelta)} vs ${monthLabel(prev.year, prev.month)}`
-              : undefined
+            hasLastMo ? `${fmtSigned(netDelta)} vs ${monthLabel(prev.year, prev.month)}` : undefined
           }
           deltaDirection={netDelta >= 0 ? "up" : "down"}
           icon={TrendingUp}
@@ -173,9 +175,7 @@ export default async function HomePage() {
                 label="Savings Rate"
                 value={`${savingsRate}%`}
                 icon={PiggyBank}
-                deltaDirection={
-                  savingsRate >= 20 ? "up" : savingsRate >= 0 ? "neutral" : "down"
-                }
+                deltaDirection={savingsRate >= 20 ? "up" : savingsRate >= 0 ? "neutral" : "down"}
               />
             )}
           </KpiGrid>
@@ -186,7 +186,11 @@ export default async function HomePage() {
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
         {/* Left: Recent transactions (wider) */}
         <section className="space-y-3 lg:col-span-3">
-          <SectionHeader title="Recent activity" actionHref="/transactions" actionLabel="View all" />
+          <SectionHeader
+            title="Recent activity"
+            actionHref="/transactions"
+            actionLabel="View all"
+          />
           {mappedTxns.length > 0 ? (
             <TransactionList transactions={mappedTxns} />
           ) : (
@@ -201,19 +205,17 @@ export default async function HomePage() {
               <SectionHeader title="Next actions" />
               <a
                 href="/transactions/inbox"
-                className="group flex items-center gap-3 rounded-lg border border-line bg-card p-4 shadow-sm transition-colors hover:bg-elevated"
+                className="group border-line bg-card hover:bg-elevated flex items-center gap-3 rounded-lg border p-4 shadow-sm transition-colors"
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-gold-bg">
-                  <Inbox className="h-5 w-5 text-gold" strokeWidth={1.75} />
+                <div className="bg-gold-bg flex h-10 w-10 shrink-0 items-center justify-center rounded-md">
+                  <Inbox className="text-gold h-5 w-5" strokeWidth={1.75} />
                 </div>
                 <div className="min-w-0 flex-1">
                   <p className="text-body-strong text-fg-default">Categorize transactions</p>
-                  <p className="text-[12px] text-fg-muted">
-                    {uncategorizedCount} pending
-                  </p>
+                  <p className="text-fg-muted text-[12px]">{uncategorizedCount} pending</p>
                 </div>
                 <ArrowRight
-                  className="h-4 w-4 shrink-0 text-fg-subtle transition-transform group-hover:translate-x-0.5 group-hover:text-fg-muted"
+                  className="text-fg-subtle group-hover:text-fg-muted h-4 w-4 shrink-0 transition-transform group-hover:translate-x-0.5"
                   aria-hidden="true"
                 />
               </a>
@@ -222,7 +224,7 @@ export default async function HomePage() {
 
           <section className="space-y-3">
             <SectionHeader title="Ask your advisor" actionHref="/advisor" actionLabel="Open" />
-            <div className="overflow-hidden rounded-lg border border-line bg-card shadow-sm">
+            <div className="border-line bg-card overflow-hidden rounded-lg border shadow-sm">
               {(
                 [
                   "How did I do this month?",
@@ -234,13 +236,13 @@ export default async function HomePage() {
                   <button
                     type="submit"
                     className={cn(
-                      "group flex w-full items-start gap-3 px-4 py-3 text-left text-body text-fg-muted",
-                      "transition-colors hover:bg-elevated hover:text-fg-default",
-                      i > 0 && "border-t border-line",
+                      "group text-body text-fg-muted flex w-full items-start gap-3 px-4 py-3 text-left",
+                      "hover:bg-elevated hover:text-fg-default transition-colors",
+                      i > 0 && "border-line border-t",
                     )}
                   >
                     <MessageSquare
-                      className="mt-0.5 h-4 w-4 shrink-0 text-gold"
+                      className="text-gold mt-0.5 h-4 w-4 shrink-0"
                       strokeWidth={1.75}
                     />
                     <span className="flex-1">{q}</span>
@@ -257,12 +259,12 @@ export default async function HomePage() {
         <section className="space-y-3">
           <div className="flex items-baseline justify-between">
             <h2 className="text-h2 text-fg-default">Weekly debrief</h2>
-            <span className="font-mono text-[12px] text-fg-subtle tabular-nums">
+            <span className="text-fg-subtle font-mono text-[12px] tabular-nums">
               {latestDebrief.weekStart} – {latestDebrief.weekEnd}
             </span>
           </div>
-          <article className="rounded-lg border border-line bg-card p-5 shadow-sm">
-            <p className="text-body leading-relaxed text-fg-default">
+          <article className="border-line bg-card rounded-lg border p-5 shadow-sm">
+            <p className="text-body text-fg-default leading-relaxed">
               {latestDebrief.narrativeText}
             </p>
             {latestDebrief.flags.length > 0 && (
@@ -275,7 +277,6 @@ export default async function HomePage() {
           </article>
         </section>
       )}
-
     </div>
   );
 }
@@ -299,7 +300,7 @@ function SectionHeader({
       {actionHref && actionLabel && (
         <a
           href={actionHref}
-          className="text-[12px] font-semibold text-gold hover:text-gold-hover transition-colors"
+          className="text-gold hover:text-gold-hover text-[12px] font-semibold transition-colors"
         >
           {actionLabel} →
         </a>
@@ -310,7 +311,7 @@ function SectionHeader({
 
 function EmptyCard({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-dashed border-line bg-card/40 px-4 py-8 text-center text-body text-fg-muted">
+    <div className="border-line bg-card/40 text-body text-fg-muted rounded-lg border border-dashed px-4 py-8 text-center">
       {message}
     </div>
   );

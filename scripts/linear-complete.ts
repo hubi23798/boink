@@ -8,15 +8,62 @@ import { resolve } from "node:path";
 const API = "https://api.linear.app/graphql";
 
 const EXECUTION_ORDER = [
-  "TRU-DOC-01", "TRU-A-02", "TRU-A-00", "TRU-A-01", "TRU-A-03", "TRU-A-04", "TRU-A-05",
-  "TRU-DOC-02", "TRU-BEU-00", "TRU-GTM-01", "TRU-A-06", "TRU-A-07", "TRU-A-08", "TRU-BEU-01",
-  "TRU-BEU-02", "TRU-BEU-03", "TRU-BEU-04", "TRU-BEU-05", "TRU-BEU-06", "TRU-BEU-07",
-  "TRU-BEU-08", "TRU-BEU-09", "TRU-BEU-10", "TRU-DOC-03", "TRU-BTR-01", "TRU-BTR-02",
-  "TRU-BTR-03", "TRU-BTR-04", "TRU-BTR-05", "TRU-BTR-06", "TRU-BTR-07", "TRU-BTR-08",
-  "TRU-BTR-09", "TRU-BTR-10", "TRU-C-01", "TRU-C-02", "TRU-C-07", "TRU-C-03", "TRU-C-04",
-  "TRU-C-05", "TRU-C-06", "TRU-C-08", "TRU-C-09", "TRU-C-10", "TRU-GTM-02", "TRU-GTM-03",
-  "TRU-GTM-04", "TRU-GTM-05", "TRU-A-09", "TRU-A-10", "TRU-D-01", "TRU-D-02", "TRU-D-03",
-  "TRU-D-04", "TRU-D-05", "TRU-US-01",
+  "TRU-DOC-01",
+  "TRU-A-02",
+  "TRU-A-00",
+  "TRU-A-01",
+  "TRU-A-03",
+  "TRU-A-04",
+  "TRU-A-05",
+  "TRU-DOC-02",
+  "TRU-BEU-00",
+  "TRU-GTM-01",
+  "TRU-A-06",
+  "TRU-A-07",
+  "TRU-A-08",
+  "TRU-BEU-01",
+  "TRU-BEU-02",
+  "TRU-BEU-03",
+  "TRU-BEU-04",
+  "TRU-BEU-05",
+  "TRU-BEU-06",
+  "TRU-BEU-07",
+  "TRU-BEU-08",
+  "TRU-BEU-09",
+  "TRU-BEU-10",
+  "TRU-DOC-03",
+  "TRU-BTR-01",
+  "TRU-BTR-02",
+  "TRU-BTR-03",
+  "TRU-BTR-04",
+  "TRU-BTR-05",
+  "TRU-BTR-06",
+  "TRU-BTR-07",
+  "TRU-BTR-08",
+  "TRU-BTR-09",
+  "TRU-BTR-10",
+  "TRU-C-01",
+  "TRU-C-02",
+  "TRU-C-07",
+  "TRU-C-03",
+  "TRU-C-04",
+  "TRU-C-05",
+  "TRU-C-06",
+  "TRU-C-08",
+  "TRU-C-09",
+  "TRU-C-10",
+  "TRU-GTM-02",
+  "TRU-GTM-03",
+  "TRU-GTM-04",
+  "TRU-GTM-05",
+  "TRU-A-09",
+  "TRU-A-10",
+  "TRU-D-01",
+  "TRU-D-02",
+  "TRU-D-03",
+  "TRU-D-04",
+  "TRU-D-05",
+  "TRU-US-01",
 ];
 
 function loadKey(): string {
@@ -27,7 +74,9 @@ function loadKey(): string {
         const m = line.match(/^LINEAR_API_KEY=(.+)/);
         if (m) return m[1]!.trim().replace(/^["']|["']$/g, "");
       }
-    } catch { /* skip */ }
+    } catch {
+      /* skip */
+    }
   }
   throw new Error("Missing LINEAR_API_KEY");
 }
@@ -40,7 +89,10 @@ async function gql(key: string, query: string, variables?: Record<string, unknow
     headers: { "Content-Type": "application/json", Authorization: key },
     body: JSON.stringify({ query, variables }),
   });
-  const json = (await res.json()) as { data?: Record<string, unknown>; errors?: { message: string }[] };
+  const json = (await res.json()) as {
+    data?: Record<string, unknown>;
+    errors?: { message: string }[];
+  };
   const msg = json.errors?.map((e) => e.message).join("; ") ?? "";
   if (msg.includes("ratelimit") && attempt < 5) {
     await sleep(2000 * (attempt + 1));
@@ -61,10 +113,10 @@ async function findIssue(key: string, teamId: string, apiKey: string) {
     { term: key, teamId },
   );
   const nodes = (
-    data.searchIssues as { nodes: { id: string; identifier: string; title: string; state: { type: string } }[] }
-  ).nodes.filter(
-    (n) => n.title.includes(key) && !n.title.toLowerCase().includes("[duplicate]"),
-  );
+    data.searchIssues as {
+      nodes: { id: string; identifier: string; title: string; state: { type: string } }[];
+    }
+  ).nodes.filter((n) => n.title.includes(key) && !n.title.toLowerCase().includes("[duplicate]"));
   if (!nodes.length) return null;
   return [...nodes].sort((a, b) => {
     const na = parseInt(a.identifier.split("-")[1] ?? "0", 10);
@@ -85,9 +137,16 @@ async function main() {
     apiKey,
     `{ viewer { id } teams { nodes { id key states { nodes { id name type } } } } }`,
   );
-  const team = (boot.teams as { nodes: { id: string; key: string; states: { nodes: { id: string; name: string; type: string }[] } }[] }).nodes.find(
-    (t) => t.key === "TRF",
-  ) ?? (boot.teams as { nodes: { id: string }[] }).nodes[0]!;
+  const team =
+    (
+      boot.teams as {
+        nodes: {
+          id: string;
+          key: string;
+          states: { nodes: { id: string; name: string; type: string }[] };
+        }[];
+      }
+    ).nodes.find((t) => t.key === "TRF") ?? (boot.teams as { nodes: { id: string }[] }).nodes[0]!;
   const teamId = team.id;
   const states = team.states.nodes;
   const viewerId = (boot.viewer as { id: string }).id;
@@ -99,10 +158,14 @@ async function main() {
   const target = await findIssue(completeKey, teamId, apiKey);
   if (!target) throw new Error(`Issue not found: ${completeKey}`);
 
-  await gql(apiKey, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`, {
-    id: target.id,
-    input: { stateId: doneId },
-  });
+  await gql(
+    apiKey,
+    `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`,
+    {
+      id: target.id,
+      input: { stateId: doneId },
+    },
+  );
   console.log(`Done: ${target.identifier} — ${completeKey}`);
 
   const nextProgress = new Set<string>();
@@ -118,13 +181,17 @@ async function main() {
     if (k === completeKey) continue;
     const row = await findIssue(k, teamId, apiKey);
     if (!row || row.state.type === "completed" || row.state.type === "canceled") continue;
-    await gql(apiKey, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`, {
-      id: row.id,
-      input: {
-        stateId: nextProgress.has(k) ? progressId : backlogId,
-        assigneeId: viewerId,
+    await gql(
+      apiKey,
+      `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`,
+      {
+        id: row.id,
+        input: {
+          stateId: nextProgress.has(k) ? progressId : backlogId,
+          assigneeId: viewerId,
+        },
       },
-    });
+    );
     if (nextProgress.has(k)) console.log(`In Progress: ${row.identifier} ${k}`);
     await sleep(500);
   }

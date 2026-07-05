@@ -53,15 +53,16 @@ describe("redact", () => {
   });
 
   it("walks nested objects", () => {
-    expect(
-      redact({ user: { access_token: "x", email: "a@b.c" } }),
-    ).toEqual({ user: { access_token: "[redacted]", email: "a@b.c" } });
+    expect(redact({ user: { access_token: "x", email: "a@b.c" } })).toEqual({
+      user: { access_token: "[redacted]", email: "a@b.c" },
+    });
   });
 
   it("walks arrays of objects", () => {
-    expect(
-      redact([{ access_token: "x" }, { other: "ok" }]),
-    ).toEqual([{ access_token: "[redacted]" }, { other: "ok" }]);
+    expect(redact([{ access_token: "x" }, { other: "ok" }])).toEqual([
+      { access_token: "[redacted]" },
+      { other: "ok" },
+    ]);
   });
 
   it("passes through primitives unchanged", () => {

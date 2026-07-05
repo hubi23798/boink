@@ -1,12 +1,10 @@
-const DAILY_URL =
-  "https://www.ecb.europa.eu/stats/eurofx/eurofxref/eurofxref-daily.xml";
-const HIST_URL =
-  "https://www.ecb.europa.eu/stats/eurofx/eurofxref/eurofxref-hist.xml";
+const DAILY_URL = "https://www.ecb.europa.eu/stats/eurofx/eurofxref/eurofxref-daily.xml";
+const HIST_URL = "https://www.ecb.europa.eu/stats/eurofx/eurofxref/eurofxref-hist.xml";
 
 export interface EcbRate {
-  date: string;   // YYYY-MM-DD
+  date: string; // YYYY-MM-DD
   currency: string;
-  rate: number;   // ECB reference rate: 1 EUR = `rate` units of `currency`
+  rate: number; // ECB reference rate: 1 EUR = `rate` units of `currency`
 }
 
 function parseXml(xml: string, since?: string): EcbRate[] {

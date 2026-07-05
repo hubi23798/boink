@@ -14,9 +14,7 @@ export async function applyTransferHeuristic(db: Db, transactionIds: string[]): 
   });
 
   // Only consider rows where typeRaw is 'Transfer' (case-insensitive)
-  const candidates = transfers.filter(
-    (t) => (t.typeRaw ?? "").toLowerCase() === "transfer",
-  );
+  const candidates = transfers.filter((t) => (t.typeRaw ?? "").toLowerCase() === "transfer");
 
   if (candidates.length === 0) return 0;
 

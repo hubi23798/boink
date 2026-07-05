@@ -3,11 +3,7 @@ import Link from "next/link";
 import { and, desc, eq } from "drizzle-orm";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  account,
-  balanceSnapshot,
-  transaction,
-} from "@/lib/db/schema";
+import { account, balanceSnapshot, transaction } from "@/lib/db/schema";
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -65,7 +61,9 @@ export default async function AccountDetailPage({ params }: Props) {
   return (
     <main className="mx-auto max-w-2xl space-y-8 p-6">
       <div>
-        <Link href="/wealth/accounts" className="text-fg-muted text-sm hover:underline">← Accounts</Link>
+        <Link href="/wealth/accounts" className="text-fg-muted text-sm hover:underline">
+          ← Accounts
+        </Link>
         <h1 className="mt-2 text-xl font-semibold">{acct.name}</h1>
         <p className="text-fg-muted mt-1 text-xs">
           {acct.currency} · {acct.kind}
@@ -106,11 +104,15 @@ export default async function AccountDetailPage({ params }: Props) {
                   <p className="truncate">{txn.descriptionRaw || "—"}</p>
                   <p className="text-fg-muted text-xs">
                     {new Date(txn.startedAt).toLocaleDateString()}
-                    {txn.categoryId ? ` · ${catName.get(txn.categoryId) ?? ""}` : " · uncategorized"}
+                    {txn.categoryId
+                      ? ` · ${catName.get(txn.categoryId) ?? ""}`
+                      : " · uncategorized"}
                     {txn.state !== "completed" ? ` · ${txn.state}` : ""}
                   </p>
                 </div>
-                <span className={`shrink-0 ${txn.amountNative < 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}>
+                <span
+                  className={`shrink-0 ${txn.amountNative < 0 ? "text-red-600 dark:text-red-400" : "text-green-600 dark:text-green-400"}`}
+                >
                   {fmt(txn.amountNative)}
                 </span>
               </div>

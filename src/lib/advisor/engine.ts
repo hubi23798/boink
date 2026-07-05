@@ -2,10 +2,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { eq, gte, sql } from "drizzle-orm";
 import { env } from "@/env";
 import type { Db } from "@/lib/db/client";
-import {
-  advisorMessage,
-  pendingProposal,
-} from "@/lib/db/schema";
+import { advisorMessage, pendingProposal } from "@/lib/db/schema";
 import { TOOL_DEFINITIONS, type ToolContext, executeTool } from "./tools";
 import { SYSTEM_PROMPT, buildSnapshotBlock, buildUserProfileBlock } from "./system-prompt";
 import { DISCLAIMER, applyOutputFilter } from "./filter";

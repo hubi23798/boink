@@ -1,6 +1,6 @@
 export interface GoalProgress {
-  currentAmount: number;          // cents — how much has been saved/paid off
-  progressPct: number;            // 0–100, capped at 100
+  currentAmount: number; // cents — how much has been saved/paid off
+  progressPct: number; // 0–100, capped at 100
   requiredMonthly: number | null; // null if no target date or already complete
 }
 

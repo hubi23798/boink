@@ -55,8 +55,8 @@ Pure function — no DB access, fully testable.
 
 ```typescript
 export interface GoalProgress {
-  currentAmount: number;       // cents — how much has been saved/paid
-  progressPct: number;         // 0–100, capped at 100
+  currentAmount: number; // cents — how much has been saved/paid
+  progressPct: number; // 0–100, capped at 100
   requiredMonthly: number | null; // null if no target date or already complete
 }
 
@@ -64,26 +64,27 @@ export function calculateGoalProgress(
   goal: {
     kind: string;
     targetAmount: number;
-    targetDate: string | null;   // YYYY-MM-DD
+    targetDate: string | null; // YYYY-MM-DD
     initialBalance: number | null;
   },
   linkedAccountBalances: number[], // balanceBaseCcy from latest snapshot, one per linked account
   today: string, // YYYY-MM-DD, injected for testability
-): GoalProgress
+): GoalProgress;
 ```
 
 **Per-kind logic:**
 
-| Kind | `currentAmount` |
-|------|----------------|
-| `cash_target` | `sum(linkedAccountBalances)` |
-| `emergency_fund` | `sum(linkedAccountBalances)` |
-| `portfolio_target` | `sum(linkedAccountBalances)` |
-| `debt_payoff` | `(initialBalance ?? 0) − sum(linkedAccountBalances)` clamped to ≥ 0. Note: liability account snapshots store balances as negative integers in this codebase; use `abs()`. |
+| Kind               | `currentAmount`                                                                                                                                                           |
+| ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cash_target`      | `sum(linkedAccountBalances)`                                                                                                                                              |
+| `emergency_fund`   | `sum(linkedAccountBalances)`                                                                                                                                              |
+| `portfolio_target` | `sum(linkedAccountBalances)`                                                                                                                                              |
+| `debt_payoff`      | `(initialBalance ?? 0) − sum(linkedAccountBalances)` clamped to ≥ 0. Note: liability account snapshots store balances as negative integers in this codebase; use `abs()`. |
 
 `progressPct = Math.min(100, Math.round((currentAmount / targetAmount) * 100))`
 
 **`requiredMonthly`:**
+
 - Returns `null` if `targetDate` is null, `progressPct >= 100`, or `monthsLeft <= 0`
 - `monthsLeft = max(1, fractionalMonthsBetween(today, targetDate))`
 - `requiredMonthly = Math.ceil((targetAmount - currentAmount) / monthsLeft)`
@@ -95,7 +96,7 @@ export function calculateGoalProgress(
 export async function suggestEmergencyFund(db: Db): Promise<{
   suggested3x: number; // cents
   suggested6x: number; // cents
-}>
+}>;
 ```
 
 Queries `transaction` joined to `category` where `category.kind = 'expense'` and `transaction.state = 'cleared'` for the past 90 days. Computes average monthly expense, returns `3x` and `6x` values. Returns `{ suggested3x: 0, suggested6x: 0 }` if no expense data.
@@ -111,6 +112,7 @@ All routes use the existing session auth pattern (session cookie validated again
 Returns all non-archived goals for the session user, with live progress computed server-side.
 
 Response shape:
+
 ```typescript
 {
   goals: Array<{
@@ -122,7 +124,7 @@ Response shape:
     linkedAccountIds: string[];
     progress: GoalProgress;
     createdAt: string;
-  }>
+  }>;
 }
 ```
 
@@ -133,6 +135,7 @@ Implementation: fetch all goals → fetch latest balance snapshot for each linke
 Creates a new goal.
 
 Request body (Zod-validated):
+
 ```typescript
 {
   name: z.string().min(1).max(100),
@@ -180,6 +183,7 @@ Server component. Fetches goals via direct DB queries (not via the API route —
 Renders list of `GoalCard` components + a "New goal" button that expands an inline `GoalForm`.
 
 **`GoalCard`:**
+
 - Name + kind badge (color-coded: green for savings kinds, red for debt, blue for portfolio)
 - Progress bar (filled portion = `progressPct`)
 - Amount text: "€3,240 of €10,000 saved" (or "paid" for `debt_payoff`)
@@ -188,6 +192,7 @@ Renders list of `GoalCard` components + a "New goal" button that expands an inli
 - Edit (pencil) and archive (×) icon buttons → inline form expansion (same UX pattern as recurring subscriptions)
 
 **`GoalForm` (create and edit):**
+
 1. Kind selector — 4 radio options with one-line descriptions
 2. Name field
 3. Target amount field (numeric, in base currency)
@@ -202,18 +207,18 @@ Form validation: all required fields, `targetAmount > 0`, at least one account l
 
 ## File Map
 
-| File | Action |
-|------|--------|
-| `src/lib/db/schema.ts` | Modify — add `goalKindEnum`, `goal` table, inferred types |
-| `src/lib/db/migrations/XXXX_goals.sql` | Create — generated by `pnpm db:generate` |
-| `src/lib/goals/progress.ts` | Create — `calculateGoalProgress` pure function |
-| `src/lib/goals/suggest.ts` | Create — `suggestEmergencyFund` DB helper |
-| `src/app/api/goals/route.ts` | Create — GET + POST |
-| `src/app/api/goals/[id]/route.ts` | Create — PATCH + DELETE |
-| `src/app/api/goals/emergency-suggestion/route.ts` | Create — GET |
-| `src/app/goals/page.tsx` | Create — server component |
-| `src/app/goals/goals-view.tsx` | Create — client component |
-| `tests/unit/goal-progress.test.ts` | Create — unit tests for `calculateGoalProgress` |
+| File                                              | Action                                                    |
+| ------------------------------------------------- | --------------------------------------------------------- |
+| `src/lib/db/schema.ts`                            | Modify — add `goalKindEnum`, `goal` table, inferred types |
+| `src/lib/db/migrations/XXXX_goals.sql`            | Create — generated by `pnpm db:generate`                  |
+| `src/lib/goals/progress.ts`                       | Create — `calculateGoalProgress` pure function            |
+| `src/lib/goals/suggest.ts`                        | Create — `suggestEmergencyFund` DB helper                 |
+| `src/app/api/goals/route.ts`                      | Create — GET + POST                                       |
+| `src/app/api/goals/[id]/route.ts`                 | Create — PATCH + DELETE                                   |
+| `src/app/api/goals/emergency-suggestion/route.ts` | Create — GET                                              |
+| `src/app/goals/page.tsx`                          | Create — server component                                 |
+| `src/app/goals/goals-view.tsx`                    | Create — client component                                 |
+| `tests/unit/goal-progress.test.ts`                | Create — unit tests for `calculateGoalProgress`           |
 
 ---
 

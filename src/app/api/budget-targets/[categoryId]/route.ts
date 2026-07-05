@@ -9,10 +9,7 @@ const putBody = z.object({
   amountMonthly: z.number().int().positive(),
 });
 
-export async function PUT(
-  req: Request,
-  { params }: { params: Promise<{ categoryId: string }> },
-) {
+export async function PUT(req: Request, { params }: { params: Promise<{ categoryId: string }> }) {
   const auth = await requireApiAuth(req);
   if (!auth.ok) return auth.response;
   const { tenantId, userId } = auth.ctx;
@@ -25,7 +22,10 @@ export async function PUT(
   });
   if (!cat) return NextResponse.json({ error: "Not found" }, { status: 404 });
   if (!cat.parentId)
-    return NextResponse.json({ error: "Targets can only be set on leaf categories" }, { status: 422 });
+    return NextResponse.json(
+      { error: "Targets can only be set on leaf categories" },
+      { status: 422 },
+    );
   if (cat.kind !== "expense" && cat.kind !== "investment_flow")
     return NextResponse.json(
       { error: "Targets can only be set on expense or investment_flow categories" },

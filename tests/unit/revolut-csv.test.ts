@@ -35,15 +35,13 @@ describe("RevolutCsvSource.parse", () => {
     });
 
     it("rounds fractional cents correctly (e.g. 10.999 → 1100)", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,10.999,0.00,EUR,COMPLETED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,10.999,0.00,EUR,COMPLETED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.amountNative).toBe(1100); // Math.round(10.999 * 100) = 1100
     });
 
     it("normalizes feeNative to minor units", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.50,EUR,COMPLETED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.50,EUR,COMPLETED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.feeNative).toBe(50);
     });
@@ -59,8 +57,7 @@ describe("RevolutCsvSource.parse", () => {
     });
 
     it("sets completedAt to null when Completed Date is empty", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,COMPLETED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,COMPLETED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.completedAt).toBeNull();
     });
@@ -71,8 +68,7 @@ describe("RevolutCsvSource.parse", () => {
     });
 
     it("sets runningBalanceNative to null when Balance is empty", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,COMPLETED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,COMPLETED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.runningBalanceNative).toBeNull();
     });
@@ -83,36 +79,31 @@ describe("RevolutCsvSource.parse", () => {
     });
 
     it("maps PENDING → pending state", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,PENDING,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,PENDING,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.state).toBe("pending");
     });
 
     it("maps REVERTED → reverted state", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,REVERTED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,REVERTED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.state).toBe("reverted");
     });
 
     it("maps DECLINED → declined state", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,DECLINED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,DECLINED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.state).toBe("declined");
     });
 
     it("maps FAILED → failed state", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,FAILED,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,FAILED,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.state).toBe("failed");
     });
 
     it("is case-insensitive for state values", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,completed,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,completed,";
       const { rows } = src.parse(makeCsv([row]));
       expect(rows[0]!.txn.state).toBe("completed");
     });
@@ -160,8 +151,7 @@ describe("RevolutCsvSource.parse", () => {
 
   describe("rejection cases", () => {
     it("rejects rows with an unknown state", () => {
-      const row =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,UNKNOWN_STATE,";
+      const row = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,UNKNOWN_STATE,";
       const { rows, rejections } = src.parse(makeCsv([row]));
       expect(rows).toHaveLength(0);
       expect(rejections).toHaveLength(1);
@@ -193,15 +183,13 @@ describe("RevolutCsvSource.parse", () => {
     });
 
     it("records the rowIndex (1-based) for rejected rows", () => {
-      const bad =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,UNKNOWN_STATE,";
+      const bad = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,EUR,UNKNOWN_STATE,";
       const { rejections } = src.parse(makeCsv([GOOD_ROW, bad]));
       expect(rejections[0]!.rowIndex).toBe(2);
     });
 
     it("accepts good rows and rejects bad rows in the same file", () => {
-      const bad =
-        "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,,COMPLETED,";
+      const bad = "CARD_PAYMENT,Current,2026-01-15 10:00:00,,Test,-5.00,0.00,,COMPLETED,";
       const { rows, rejections } = src.parse(makeCsv([GOOD_ROW, bad]));
       expect(rows).toHaveLength(1);
       expect(rejections).toHaveLength(1);
@@ -211,7 +199,7 @@ describe("RevolutCsvSource.parse", () => {
   describe("structural errors", () => {
     it("throws when a required header is missing", () => {
       const badCsv = Buffer.from(
-        "Type,Product,Started Date,Description,Amount,Fee,Currency,State,Balance\nCARD_PAYMENT,Current,2026-01-15 10:00:00,Spotify,-9.99,0.00,EUR,COMPLETED,990.01"
+        "Type,Product,Started Date,Description,Amount,Fee,Currency,State,Balance\nCARD_PAYMENT,Current,2026-01-15 10:00:00,Spotify,-9.99,0.00,EUR,COMPLETED,990.01",
       );
       expect(() => src.parse(badCsv)).toThrow(/missing required columns/i);
     });

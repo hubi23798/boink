@@ -36,7 +36,13 @@ const BAR_CLASS: Record<string, string> = {
   no_target: "bg-fg-muted",
 };
 
-export function BudgetRow({ categoryId, categoryName, initialTarget, actual, currency }: BudgetRowProps) {
+export function BudgetRow({
+  categoryId,
+  categoryName,
+  initialTarget,
+  actual,
+  currency,
+}: BudgetRowProps) {
   const [target, setTarget] = useState<number | null>(initialTarget);
   const [editing, setEditing] = useState(false);
   const [inputValue, setInputValue] = useState("");
@@ -81,7 +87,7 @@ export function BudgetRow({ categoryId, categoryName, initialTarget, actual, cur
         setError("Failed to save");
         return;
       }
-      const data = await res.json() as { amountMonthly: number };
+      const data = (await res.json()) as { amountMonthly: number };
       setTarget(data.amountMonthly);
     } catch {
       setError("Failed to save");
@@ -135,13 +141,16 @@ export function BudgetRow({ categoryId, categoryName, initialTarget, actual, cur
                   if (e.key === "Escape") cancelEdit();
                 }}
                 onBlur={() => void commitEdit()}
-                className="border-border-subtle bg-surface w-24 rounded border px-2 py-0.5 text-right text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+                className="border-border-subtle bg-surface focus:ring-fg-muted w-24 rounded border px-2 py-0.5 text-right text-sm focus:ring-1 focus:outline-none"
                 disabled={saving}
               />
               <button
                 onMouseDown={(e) => e.preventDefault()}
-                onClick={(e) => { e.preventDefault(); void removeTarget(); }}
-                className="text-fg-muted hover:text-red-500 ml-1 text-xs"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void removeTarget();
+                }}
+                className="text-fg-muted ml-1 text-xs hover:text-red-500"
                 title="Remove target"
                 disabled={saving}
               >

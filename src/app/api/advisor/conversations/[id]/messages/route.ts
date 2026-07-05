@@ -3,20 +3,14 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  advisorConversation,
-  advisorMessage,
-} from "@/lib/db/schema";
+import { advisorConversation, advisorMessage } from "@/lib/db/schema";
 import { runAdvisorTurn } from "@/lib/advisor/engine";
 
 const bodySchema = z.object({
   message: z.string().min(1).max(4000),
 });
 
-export async function POST(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function POST(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAuth(req);
   if (!auth.ok) return auth.response;
   const { tenantId, userId } = auth.ctx;
@@ -31,9 +25,7 @@ export async function POST(
   const [conv] = await db
     .select({ id: advisorConversation.id, title: advisorConversation.title })
     .from(advisorConversation)
-    .where(
-      and(eq(advisorConversation.id, id), eq(advisorConversation.tenantId, tenantId)),
-    )
+    .where(and(eq(advisorConversation.id, id), eq(advisorConversation.tenantId, tenantId)))
     .limit(1);
 
   if (!conv) return NextResponse.json({ error: "Not found" }, { status: 404 });

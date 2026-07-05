@@ -75,7 +75,7 @@ export function TruffleMark({
   small = false,
   className,
 }: TruffleMarkProps) {
-  const ringCount = small ? 3 : 7 as number;
+  const ringCount = small ? 3 : (7 as number);
   const harmonics = small ? 1 : 3;
   const irregularity = small ? 0.2 : 0.28;
   const ringInnerR = 10;
@@ -96,13 +96,7 @@ export function TruffleMark({
   }
 
   return (
-    <svg
-      viewBox="0 0 200 200"
-      width={size}
-      height={size}
-      className={className}
-      aria-hidden="true"
-    >
+    <svg viewBox="0 0 200 200" width={size} height={size} className={className} aria-hidden="true">
       <path d={BODY} fill={markColor} />
       {rings.map((ring, i) => (
         <path

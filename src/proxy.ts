@@ -37,9 +37,7 @@ function isPublic(pathname: string): boolean {
 }
 
 function hasSupabaseSession(req: NextRequest): boolean {
-  return req.cookies.getAll().some(
-    (c) => c.name.includes("-auth-token") && c.value.length > 0,
-  );
+  return req.cookies.getAll().some((c) => c.name.includes("-auth-token") && c.value.length > 0);
 }
 
 // -- Security headers --------------------------------------------------
@@ -77,9 +75,7 @@ export async function proxy(req: NextRequest) {
 
   if (!hasSupabaseSession(req)) {
     if (pathname.startsWith("/api/")) {
-      return applySecurityHeaders(
-        NextResponse.json({ error: "unauthenticated" }, { status: 401 }),
-      );
+      return applySecurityHeaders(NextResponse.json({ error: "unauthenticated" }, { status: 401 }));
     }
     const login = new URL("/login", req.url);
     login.searchParams.set("from", pathname);

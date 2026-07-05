@@ -40,8 +40,7 @@ export default async function CategoriesPage({ searchParams }: Props) {
 
   const curYear = now.getUTCFullYear();
   const curMonth = now.getUTCMonth() + 1;
-  const isCurrentOrFuture =
-    year > curYear || (year === curYear && month >= curMonth);
+  const isCurrentOrFuture = year > curYear || (year === curYear && month >= curMonth);
 
   const start = new Date(Date.UTC(year, month - 1, 1));
   const end = new Date(Date.UTC(year, month, 1));
@@ -115,18 +114,22 @@ export default async function CategoriesPage({ searchParams }: Props) {
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-xl font-semibold text-[#F7F4EE]">Categories</h1>
         <div className="flex items-center gap-3 text-sm">
-          <a href={`/categories?month=${toParam(prev.year, prev.month)}`}
-            className="text-[#C4B8A8] hover:text-[#F7F4EE] transition-colors">
+          <a
+            href={`/categories?month=${toParam(prev.year, prev.month)}`}
+            className="text-[#C4B8A8] transition-colors hover:text-[#F7F4EE]"
+          >
             ← {monthLabel(prev.year, prev.month).split(" ")[0]}
           </a>
-          <span className="text-[#C4B8A8] text-xs">{monthLabel(year, month)}</span>
+          <span className="text-xs text-[#C4B8A8]">{monthLabel(year, month)}</span>
           {!isCurrentOrFuture ? (
-            <a href={`/categories?month=${toParam(next.year, next.month)}`}
-              className="text-[#C4B8A8] hover:text-[#F7F4EE] transition-colors">
+            <a
+              href={`/categories?month=${toParam(next.year, next.month)}`}
+              className="text-[#C4B8A8] transition-colors hover:text-[#F7F4EE]"
+            >
               {nextMonth(year, month) && monthLabel(next.year, next.month).split(" ")[0]} →
             </a>
           ) : (
-            <span className="text-[#4A2E1A] text-sm select-none">→</span>
+            <span className="text-sm text-[#4A2E1A] select-none">→</span>
           )}
         </div>
       </div>
@@ -146,11 +149,15 @@ export default async function CategoriesPage({ searchParams }: Props) {
               <div className="flex items-center justify-between bg-[#2C1A0E] px-4 py-3">
                 <div className="flex items-center gap-2">
                   <span className="font-medium text-[#F7F4EE]">{parent.name}</span>
-                  <span className="text-[#6B5040] text-xs capitalize">{parent.kind.replace("_", " ")}</span>
+                  <span className="text-xs text-[#6B5040] capitalize">
+                    {parent.kind.replace("_", " ")}
+                  </span>
                 </div>
-                <span className={`font-mono tabular-nums text-sm font-semibold ${
-                  !hasActivity ? "text-[#6B5040]" : isIncome ? "text-[#6BBF85]" : "text-[#F7F4EE]"
-                }`}>
+                <span
+                  className={`font-mono text-sm font-semibold tabular-nums ${
+                    !hasActivity ? "text-[#6B5040]" : isIncome ? "text-[#6BBF85]" : "text-[#F7F4EE]"
+                  }`}
+                >
                   {hasActivity ? fmt(displayTotal) : "—"}
                 </span>
               </div>
@@ -165,13 +172,22 @@ export default async function CategoriesPage({ searchParams }: Props) {
                   const displayAmt = isIncome ? amt : Math.abs(amt);
 
                   return (
-                    <div key={child.id} className="flex items-center justify-between px-4 py-2.5 text-sm">
-                      <span className={hasSpend ? "text-[#F7F4EE]" : "text-[#6B5040]"}>{child.name}</span>
+                    <div
+                      key={child.id}
+                      className="flex items-center justify-between px-4 py-2.5 text-sm"
+                    >
+                      <span className={hasSpend ? "text-[#F7F4EE]" : "text-[#6B5040]"}>
+                        {child.name}
+                      </span>
                       <div className="flex items-center gap-3">
                         {hasSpend ? (
                           <>
-                            <span className="text-[#6B5040] text-xs">{count} {count === 1 ? "txn" : "txns"}</span>
-                            <span className={`font-mono tabular-nums ${isIncome ? "text-[#6BBF85]" : "text-[#F7F4EE]"}`}>
+                            <span className="text-xs text-[#6B5040]">
+                              {count} {count === 1 ? "txn" : "txns"}
+                            </span>
+                            <span
+                              className={`font-mono tabular-nums ${isIncome ? "text-[#6BBF85]" : "text-[#F7F4EE]"}`}
+                            >
                               {fmt(displayAmt)}
                             </span>
                           </>

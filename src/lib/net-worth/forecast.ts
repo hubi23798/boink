@@ -44,8 +44,7 @@ export function buildForecast(history: NetWorthPoint[], _today: string): Forecas
   const latest = sorted[sorted.length - 1]!;
   const daySpan =
     (new Date(latest.date).getTime() - new Date(earliest.date).getTime()) / 86_400_000;
-  const monthlyDelta =
-    daySpan > 0 ? ((latest.netWorth - earliest.netWorth) / daySpan) * 30 : 0;
+  const monthlyDelta = daySpan > 0 ? ((latest.netWorth - earliest.netWorth) / daySpan) * 30 : 0;
 
   return { historicalPoints, monthlyDelta: Math.round(monthlyDelta) };
 }

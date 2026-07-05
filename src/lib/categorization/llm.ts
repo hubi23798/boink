@@ -25,9 +25,7 @@ export async function classifyTransactions(
 ): Promise<LlmClassification[]> {
   if (txns.length === 0) return [];
 
-  const categoryList = categories
-    .map((c) => `${c.id} — ${c.parentName} › ${c.name}`)
-    .join("\n");
+  const categoryList = categories.map((c) => `${c.id} — ${c.parentName} › ${c.name}`).join("\n");
 
   const client = new Anthropic();
 
@@ -64,20 +62,18 @@ Return ONLY the JSON array. No explanation.`,
 
     const validCategoryIds = new Set(categories.map((c) => c.id));
 
-    return (parsed as unknown[]).filter(
-      (item): item is LlmClassification => {
-        if (typeof item !== "object" || item === null) return false;
-        const r = item as Record<string, unknown>;
-        return (
-          typeof r["transactionId"] === "string" &&
-          typeof r["categoryId"] === "string" &&
-          validCategoryIds.has(r["categoryId"] as string) &&
-          typeof r["confidence"] === "number" &&
-          (r["confidence"] as number) >= 0 &&
-          (r["confidence"] as number) <= 1
-        );
-      },
-    );
+    return (parsed as unknown[]).filter((item): item is LlmClassification => {
+      if (typeof item !== "object" || item === null) return false;
+      const r = item as Record<string, unknown>;
+      return (
+        typeof r["transactionId"] === "string" &&
+        typeof r["categoryId"] === "string" &&
+        validCategoryIds.has(r["categoryId"] as string) &&
+        typeof r["confidence"] === "number" &&
+        (r["confidence"] as number) >= 0 &&
+        (r["confidence"] as number) <= 1
+      );
+    });
   } catch (e) {
     console.error("[llm-categorization] failed:", e);
     return [];

@@ -81,10 +81,34 @@ describe("detectRecurring", () => {
 
   it("separates same description from different accounts", () => {
     const txns = [
-      { accountId: "acct-1", descriptionRaw: "Transfer", amountNative: -40000, currency: "EUR", startedAt: d("2026-01-01") },
-      { accountId: "acct-1", descriptionRaw: "Transfer", amountNative: -40000, currency: "EUR", startedAt: d("2026-02-01") },
-      { accountId: "acct-2", descriptionRaw: "Transfer", amountNative: 40000, currency: "EUR", startedAt: d("2026-01-01") },
-      { accountId: "acct-2", descriptionRaw: "Transfer", amountNative: 40000, currency: "EUR", startedAt: d("2026-02-01") },
+      {
+        accountId: "acct-1",
+        descriptionRaw: "Transfer",
+        amountNative: -40000,
+        currency: "EUR",
+        startedAt: d("2026-01-01"),
+      },
+      {
+        accountId: "acct-1",
+        descriptionRaw: "Transfer",
+        amountNative: -40000,
+        currency: "EUR",
+        startedAt: d("2026-02-01"),
+      },
+      {
+        accountId: "acct-2",
+        descriptionRaw: "Transfer",
+        amountNative: 40000,
+        currency: "EUR",
+        startedAt: d("2026-01-01"),
+      },
+      {
+        accountId: "acct-2",
+        descriptionRaw: "Transfer",
+        amountNative: 40000,
+        currency: "EUR",
+        startedAt: d("2026-02-01"),
+      },
     ];
     const results = detectRecurring(txns, d("2026-02-15"));
     expect(results).toHaveLength(2);

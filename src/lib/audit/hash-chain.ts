@@ -38,7 +38,9 @@ export function canonicalize(value: unknown): string {
     return `[${value.map(canonicalize).join(",")}]`;
   }
   if (!isPlainObject(value)) {
-    throw new Error("canonicalize: only plain objects are permitted (no Date/Map/Set/class instances)");
+    throw new Error(
+      "canonicalize: only plain objects are permitted (no Date/Map/Set/class instances)",
+    );
   }
   const entries = Object.entries(value);
   for (const [, v] of entries) {
@@ -68,9 +70,7 @@ export interface ChainRow {
 
 export const GENESIS_HASH: Buffer = Buffer.alloc(HASH_BYTES, 0);
 
-export type VerifyResult =
-  | { valid: true; brokenAt: null }
-  | { valid: false; brokenAt: number };
+export type VerifyResult = { valid: true; brokenAt: null } | { valid: false; brokenAt: number };
 
 export function verifyChain(rows: ChainRow[], genesis: Buffer = GENESIS_HASH): VerifyResult {
   assertHash(genesis, "genesis");

@@ -37,7 +37,12 @@ describe("calculateGoalProgress", () => {
   it("requiredMonthly is computed when targetDate is set and goal not complete", () => {
     // TODAY = 2026-05-21, targetDate = 2026-11-21 => ~6 months
     const result = calculateGoalProgress(
-      { kind: "cash_target", targetAmount: 600_000, targetDate: "2026-11-21", initialBalance: null },
+      {
+        kind: "cash_target",
+        targetAmount: 600_000,
+        targetDate: "2026-11-21",
+        initialBalance: null,
+      },
       [0],
       TODAY,
     );
@@ -56,7 +61,12 @@ describe("calculateGoalProgress", () => {
 
   it("requiredMonthly is null when goal is already at 100%", () => {
     const result = calculateGoalProgress(
-      { kind: "cash_target", targetAmount: 100_000, targetDate: "2026-12-01", initialBalance: null },
+      {
+        kind: "cash_target",
+        targetAmount: 100_000,
+        targetDate: "2026-12-01",
+        initialBalance: null,
+      },
       [100_000],
       TODAY,
     );

@@ -14,9 +14,7 @@ export default async function TenantPickerPage() {
     .select({ id: tenant.id, name: tenant.name })
     .from(tenantMember)
     .innerJoin(tenant, eq(tenantMember.tenantId, tenant.id))
-    .where(
-      and(eq(tenantMember.userId, userData.user.id), isNull(tenantMember.revokedAt)),
-    );
+    .where(and(eq(tenantMember.userId, userData.user.id), isNull(tenantMember.revokedAt)));
 
   if (memberships.length === 0) redirect("/login");
   if (memberships.length === 1) redirect("/");

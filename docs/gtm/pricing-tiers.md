@@ -23,17 +23,17 @@ Annual price: **€468/yr**
 
 **Who it's for:** founder, executive, or creator managing their own wealth across multiple accounts. Has — or has been burned by — a bookkeeper or wealth manager.
 
-| Limit | Value |
-|---|---|
-| Owner accounts | 1 |
-| Observers | 1 (read-only, audit scope only) |
-| Aggregator connections | Up to 10 |
-| Fraud detectors | All (vendor-bec, subscription-trap, crypto-outflow-scam) |
-| Digest | Daily email to owner + observer |
-| Advisor cost ceiling | Standard |
-| Audit export | No |
-| Role scopes | No |
-| Multi-entity | No |
+| Limit                  | Value                                                    |
+| ---------------------- | -------------------------------------------------------- |
+| Owner accounts         | 1                                                        |
+| Observers              | 1 (read-only, audit scope only)                          |
+| Aggregator connections | Up to 10                                                 |
+| Fraud detectors        | All (vendor-bec, subscription-trap, crypto-outflow-scam) |
+| Digest                 | Daily email to owner + observer                          |
+| Advisor cost ceiling   | Standard                                                 |
+| Audit export           | No                                                       |
+| Role scopes            | No                                                       |
+| Multi-entity           | No                                                       |
 
 ---
 
@@ -45,16 +45,16 @@ Annual price: **€1,188/yr**
 
 Includes everything in Solo, plus:
 
-| Limit | Value |
-|---|---|
-| Owner accounts | 1 |
-| Observers | Up to 5 |
-| Aggregator connections | Up to 10 |
-| Observer role scopes | full_read / ledger_only / audit_only per observer |
-| Audit log export | Yes (signed JSON download) |
-| Priority sync | Yes (6h → 2h cadence) |
-| Advisor cost ceiling | Raised |
-| Multi-entity | No |
+| Limit                  | Value                                             |
+| ---------------------- | ------------------------------------------------- |
+| Owner accounts         | 1                                                 |
+| Observers              | Up to 5                                           |
+| Aggregator connections | Up to 10                                          |
+| Observer role scopes   | full_read / ledger_only / audit_only per observer |
+| Audit log export       | Yes (signed JSON download)                        |
+| Priority sync          | Yes (6h → 2h cadence)                             |
+| Advisor cost ceiling   | Raised                                            |
+| Multi-entity           | No                                                |
 
 ---
 
@@ -66,15 +66,15 @@ Annual price: **€4,788/yr**
 
 Includes everything in Family, plus:
 
-| Limit | Value |
-|---|---|
-| Owner identity | 1 (multi-entity under single owner) |
-| Entities per tenant | Trust, LLC, partnership (up to 5 in v1) |
-| Observer portal | White-label (custom domain + logo) |
-| Encryption | BYOK (bring-your-own-key via Supabase BYOK tier) |
-| SOC2 report | Available on request |
-| Support | Named support contact; SLA 4h business hours |
-| Audit export | Yes — signed JSON + CSV |
+| Limit               | Value                                            |
+| ------------------- | ------------------------------------------------ |
+| Owner identity      | 1 (multi-entity under single owner)              |
+| Entities per tenant | Trust, LLC, partnership (up to 5 in v1)          |
+| Observer portal     | White-label (custom domain + logo)               |
+| Encryption          | BYOK (bring-your-own-key via Supabase BYOK tier) |
+| SOC2 report         | Available on request                             |
+| Support             | Named support contact; SLA 4h business hours     |
+| Audit export        | Yes — signed JSON + CSV                          |
 
 ---
 

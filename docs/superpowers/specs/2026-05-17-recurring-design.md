@@ -1,4 +1,5 @@
 # Recurring Transactions — Design Spec
+
 **Date:** 2026-05-17
 **Scope:** Phase 2 — recurring detection + confirmed subscriptions + budget integration
 
@@ -15,11 +16,13 @@ Build on the existing detection scaffold to give the user a curated list of conf
 ### New tables in `src/lib/db/schema.ts`
 
 **`frequency_enum`** (new pgEnum)
+
 ```
 'weekly' | 'fortnightly' | 'monthly'
 ```
 
 **`recurring_subscription`**
+
 ```
 id             uuid         PK, defaultRandom()
 user_id        uuid         FK → user(id) ON DELETE CASCADE, NOT NULL
@@ -37,6 +40,7 @@ updated_at     timestamptz  NOT NULL, defaultNow()
 Index: `(user_id)`.
 
 **`recurring_dismissal`**
+
 ```
 id          uuid         PK, defaultRandom()
 user_id     uuid         FK → user(id) ON DELETE CASCADE, NOT NULL
@@ -46,9 +50,11 @@ UNIQUE (user_id, key)
 ```
 
 ### Type exports
+
 `RecurringSubscription`, `NewRecurringSubscription`, `RecurringDismissal`, `NewRecurringDismissal`
 
 ### Migration
+
 `pnpm db:generate` → `pnpm db:migrate`. Two new tables, no existing table changes.
 
 ---
@@ -61,18 +67,19 @@ Pure function — no DB access:
 
 ```typescript
 export type BudgetProposalAction =
-  | { action: 'none' }
-  | { action: 'create'; amount: number }
-  | { action: 'conflict'; existingAmount: number; proposedAmount: number };
+  | { action: "none" }
+  | { action: "create"; amount: number }
+  | { action: "conflict"; existingAmount: number; proposedAmount: number };
 
 export function computeBudgetProposal(
   categoryId: string | null,
   subscriptionAmount: number,
   existingTarget: number | null,
-): BudgetProposalAction
+): BudgetProposalAction;
 ```
 
 Rules:
+
 - `categoryId` is null → `{ action: 'none' }`
 - No existing target → `{ action: 'create', amount: Math.abs(subscriptionAmount) }`
 - Existing target === `Math.abs(subscriptionAmount)` → `{ action: 'none' }`
@@ -82,18 +89,19 @@ Rules:
 
 ## 4. API Routes
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `POST` | `/api/recurring/subscriptions` | Create confirmed subscription |
-| `PATCH` | `/api/recurring/subscriptions/[id]` | Edit subscription |
-| `DELETE` | `/api/recurring/subscriptions/[id]` | Remove subscription |
-| `POST` | `/api/recurring/dismissals` | Dismiss a detection key |
+| Method   | Path                                | Description                   |
+| -------- | ----------------------------------- | ----------------------------- |
+| `POST`   | `/api/recurring/subscriptions`      | Create confirmed subscription |
+| `PATCH`  | `/api/recurring/subscriptions/[id]` | Edit subscription             |
+| `DELETE` | `/api/recurring/subscriptions/[id]` | Remove subscription           |
+| `POST`   | `/api/recurring/dismissals`         | Dismiss a detection key       |
 
 Budget target updates on conflict reuse the existing `PUT /api/budget-targets/[categoryId]`.
 
 ### POST /api/recurring/subscriptions
 
 Body:
+
 ```typescript
 {
   detectionKey?: string;
@@ -107,6 +115,7 @@ Body:
 ```
 
 Response:
+
 ```typescript
 {
   subscription: RecurringSubscription;
@@ -120,6 +129,7 @@ Response:
 ```
 
 Steps:
+
 1. Validate body with Zod.
 2. Insert `recurring_subscription`.
 3. If `categoryId` set: look up existing `budget_target` for `(PRIMARY_USER_ID, categoryId)`.
@@ -147,6 +157,7 @@ Body: `{ key: string }`. Upsert into `recurring_dismissal` (conflict on `(user_i
 ### Server wrapper: `src/app/recurring/page.tsx`
 
 Fetches initial data, passes as props to `RecurringView`:
+
 1. Load `recurring_subscription` rows for `PRIMARY_USER_ID`.
 2. Load `recurring_dismissal` keys for `PRIMARY_USER_ID`.
 3. Load transactions from last 3 months, run `detectRecurring()`.
@@ -159,6 +170,7 @@ Fetches initial data, passes as props to `RecurringView`:
 ### Client component: `src/app/recurring/recurring-view.tsx`
 
 `"use client"`. Props:
+
 ```typescript
 interface RecurringViewProps {
   subscriptions: RecurringSubscription[];
@@ -170,6 +182,7 @@ interface RecurringViewProps {
 ```
 
 State:
+
 - `subs` — confirmed subscriptions (optimistic updates)
 - `candidates` — detected unconfirmed items
 - `expandedKey` — which inline form is open (`null` | detection_key | `'new'` | subscription id)
@@ -200,16 +213,19 @@ Recurring
 **Summary strip**: Confirmed amount normalised to monthly (`weekly × 52/12`, `fortnightly × 26/12`, `monthly × 1`). Detected amount same calculation. Only subscriptions/candidates whose `currency` matches the user's base currency are included in the totals; others are silently excluded to avoid FX conversion complexity.
 
 **Confirmed rows** (grouped monthly → fortnightly → weekly):
+
 - Name, formatted amount (− prefix for expenses, + for income), next_due label from `daysLabel()`.
 - Edit pencil → opens inline form in place.
 - Remove × → `DELETE` immediately, optimistic removal.
 
 **Suggested rows**:
+
 - Description (from `RecurringItem`), amount, frequency label.
 - **Confirm** → expand inline form below the row.
 - **×** → `POST /api/recurring/dismissals`, optimistic removal from candidates list.
 
 **Inline form** (shared for confirm, manual add, edit):
+
 - Name (text input, pre-filled from description)
 - Amount (number input in major units, pre-filled)
 - Frequency (select: Monthly / Fortnightly / Weekly)
@@ -218,6 +234,7 @@ Recurring
 - **Save** / **Cancel** buttons
 
 **Budget conflict card** (appears below confirmed row after save):
+
 - "Budget target for [Category] is €X/mo — this subscription costs €Y/mo. Update?"
 - **Update** → `PUT /api/budget-targets/[categoryId]` with new amount, card disappears.
 - **Keep** → card disappears, no change.
@@ -229,6 +246,7 @@ Recurring
 ## 7. Files Touched / Created
 
 **New:**
+
 - `src/lib/recurring/budget-proposal.ts` — `computeBudgetProposal` pure function
 - `src/app/recurring/recurring-view.tsx` — `"use client"` full UI
 - `src/app/api/recurring/subscriptions/route.ts` — POST
@@ -237,10 +255,12 @@ Recurring
 - `tests/unit/recurring-budget.test.ts` — unit tests for `computeBudgetProposal`
 
 **Modified:**
+
 - `src/lib/db/schema.ts` — add `frequencyEnum`, `recurringSubscription`, `recurringDismissal`
 - `src/app/recurring/page.tsx` — thin server wrapper (replaces current full page)
 
 **Committed as-is (untracked → tracked):**
+
 - `src/lib/recurring/detect.ts`
 - `tests/unit/recurring.test.ts`
 
@@ -256,13 +276,13 @@ Already covers: monthly/weekly/fortnightly detection, single-occurrence ignored,
 
 Tests `computeBudgetProposal(categoryId, subscriptionAmount, existingTarget)`:
 
-| Scenario | Input | Expected |
-|----------|-------|----------|
-| No category | `null, -8999, null` | `{ action: 'none' }` |
-| Category, no target | `'cat-1', -8999, null` | `{ action: 'create', amount: 8999 }` |
-| Category, same amount | `'cat-1', -8999, 8999` | `{ action: 'none' }` |
-| Category, different amount | `'cat-1', -8999, 8000` | `{ action: 'conflict', existingAmount: 8000, proposedAmount: 8999 }` |
-| Income (positive) | `'cat-1', 175000, null` | `{ action: 'create', amount: 175000 }` |
+| Scenario                   | Input                   | Expected                                                             |
+| -------------------------- | ----------------------- | -------------------------------------------------------------------- |
+| No category                | `null, -8999, null`     | `{ action: 'none' }`                                                 |
+| Category, no target        | `'cat-1', -8999, null`  | `{ action: 'create', amount: 8999 }`                                 |
+| Category, same amount      | `'cat-1', -8999, 8999`  | `{ action: 'none' }`                                                 |
+| Category, different amount | `'cat-1', -8999, 8000`  | `{ action: 'conflict', existingAmount: 8000, proposedAmount: 8999 }` |
+| Income (positive)          | `'cat-1', 175000, null` | `{ action: 'create', amount: 175000 }`                               |
 
 ---
 

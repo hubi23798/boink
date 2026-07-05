@@ -10,10 +10,7 @@ export type AuthContext = {
 };
 
 /** Resolve app `user.id` for inserts — prefers Supabase auth user when linked to tenant. */
-export async function resolveAppUserId(
-  supabaseUserId: string,
-  tenantId: string,
-): Promise<string> {
+export async function resolveAppUserId(supabaseUserId: string, tenantId: string): Promise<string> {
   const db = getDb();
   const linked = await db.query.user.findFirst({
     where: eq(user.id, supabaseUserId),

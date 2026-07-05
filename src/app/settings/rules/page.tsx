@@ -25,13 +25,13 @@ export default async function RulesPage() {
     <main className="mx-auto max-w-2xl space-y-6 p-6">
       <div>
         <h1 className="text-xl font-semibold">Categorization rules</h1>
-        <p className="text-fg-muted mt-1 text-sm">
-          Rules run in priority order. First match wins.
-        </p>
+        <p className="text-fg-muted mt-1 text-sm">Rules run in priority order. First match wins.</p>
       </div>
 
       {rules.length === 0 ? (
-        <p className="text-fg-muted text-sm">No rules yet. Create one via the API: POST /api/rules</p>
+        <p className="text-fg-muted text-sm">
+          No rules yet. Create one via the API: POST /api/rules
+        </p>
       ) : (
         <div className="divide-border-subtle divide-y rounded-lg border text-sm">
           {rules.map((rule) => (
@@ -43,7 +43,9 @@ export default async function RulesPage() {
                 </p>
                 <p className="text-fg-muted text-xs">
                   Priority {rule.priority} · matched {rule.matchCount}×
-                  {rule.lastMatchedAt ? ` · last ${new Date(rule.lastMatchedAt).toLocaleDateString()}` : ""}
+                  {rule.lastMatchedAt
+                    ? ` · last ${new Date(rule.lastMatchedAt).toLocaleDateString()}`
+                    : ""}
                 </p>
               </div>
               <span className="text-fg-muted shrink-0 text-xs">{rule.source}</span>

@@ -17,7 +17,10 @@ export interface RedactOptions {
 function normalizeKey(k: string): string {
   // camelCase / PascalCase -> snake_case: insert '_' at lower->upper boundaries
   // then lowercase and convert '-' / whitespace to '_'.
-  return k.replace(/([a-z0-9])([A-Z])/g, "$1_$2").toLowerCase().replace(/[-\s]/g, "_");
+  return k
+    .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+    .toLowerCase()
+    .replace(/[-\s]/g, "_");
 }
 
 function walk(input: unknown, opts: RedactOptions, seen: WeakSet<object>): unknown {

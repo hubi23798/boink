@@ -25,7 +25,10 @@ async function gql(key: string, query: string, variables?: Record<string, unknow
     headers: { "Content-Type": "application/json", Authorization: key },
     body: JSON.stringify({ query, variables }),
   });
-  const json = (await res.json()) as { data?: Record<string, unknown>; errors?: { message: string }[] };
+  const json = (await res.json()) as {
+    data?: Record<string, unknown>;
+    errors?: { message: string }[];
+  };
   if (json.errors?.length) throw new Error(json.errors.map((e) => e.message).join("; "));
   return json.data ?? {};
 }
@@ -41,7 +44,9 @@ type Issue = {
 async function main() {
   const apiKey = loadKey();
   const boot = await gql(apiKey, `{ teams { nodes { id key } } }`);
-  const team = (boot.teams as { nodes: { id: string; key: string }[] }).nodes.find((t) => t.key === "TRF");
+  const team = (boot.teams as { nodes: { id: string; key: string }[] }).nodes.find(
+    (t) => t.key === "TRF",
+  );
   if (!team) throw new Error("TRF team not found");
 
   const data = await gql(
@@ -72,7 +77,9 @@ async function main() {
   }
 
   console.log("\n=== TRU-A-* (open) ===");
-  for (const i of issues.filter((x) => x.title.includes("TRU-A-") && x.state.type !== "completed")) {
+  for (const i of issues.filter(
+    (x) => x.title.includes("TRU-A-") && x.state.type !== "completed",
+  )) {
     const labels = i.labels.nodes.map((l) => l.name).join(",");
     console.log(`${i.identifier}\t${i.state.name}\t[${labels}]\t${i.title.slice(0, 80)}`);
   }
@@ -92,7 +99,9 @@ async function main() {
   }
 
   console.log("\n=== TRU-A-* Done ===");
-  for (const i of issues.filter((x) => x.title.includes("TRU-A-") && x.state.type === "completed")) {
+  for (const i of issues.filter(
+    (x) => x.title.includes("TRU-A-") && x.state.type === "completed",
+  )) {
     console.log(`${i.identifier}\t${i.title.slice(0, 90)}`);
   }
 }

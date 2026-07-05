@@ -2,9 +2,9 @@ import { createServerClient } from "@/lib/supabase/server";
 
 function decodeActiveTenantId(token: string): string | undefined {
   try {
-    const payload = JSON.parse(
-      Buffer.from(token.split(".")[1]!, "base64url").toString("utf8"),
-    ) as { active_tenant_id?: string };
+    const payload = JSON.parse(Buffer.from(token.split(".")[1]!, "base64url").toString("utf8")) as {
+      active_tenant_id?: string;
+    };
     return payload.active_tenant_id;
   } catch {
     return undefined;

@@ -38,7 +38,7 @@ function ProposalCard({
 
   return (
     <div className="border-border-subtle bg-surface mt-2 rounded-lg border p-3 text-sm">
-      <p className="text-fg-muted mb-1 text-xs font-medium uppercase tracking-wide">
+      <p className="text-fg-muted mb-1 text-xs font-medium tracking-wide uppercase">
         Proposal — Create categorization rule
       </p>
       <p className="mb-1">{summary}</p>
@@ -143,7 +143,7 @@ export function ChatView({ id, initialMessage = "" }: { id: string; initialMessa
       if (!getRes.ok) {
         throw new Error(`Reload failed: ${getRes.status}`);
       }
-      const updated = await getRes.json() as ConversationData;
+      const updated = (await getRes.json()) as ConversationData;
       setData(updated);
       setProposals(updated.proposals);
     } catch (e) {
@@ -179,18 +179,15 @@ export function ChatView({ id, initialMessage = "" }: { id: string; initialMessa
   }
 
   const visibleMessages =
-    data?.messages.filter(
-      (m) => m.role === "user" || (m.role === "assistant" && m.contentText),
-    ) ?? [];
+    data?.messages.filter((m) => m.role === "user" || (m.role === "assistant" && m.contentText)) ??
+    [];
 
   return (
     <div className="mx-auto flex max-w-2xl flex-col" style={{ height: "calc(100vh - 4rem)" }}>
       {/* Message list */}
       <div className="flex-1 space-y-4 overflow-y-auto p-6">
         {visibleMessages.length === 0 && !sending && (
-          <p className="text-fg-muted text-center text-sm">
-            Ask me anything about your finances.
-          </p>
+          <p className="text-fg-muted text-center text-sm">Ask me anything about your finances.</p>
         )}
 
         {visibleMessages.map((msg) => {
@@ -239,13 +236,13 @@ export function ChatView({ id, initialMessage = "" }: { id: string; initialMessa
       )}
 
       {/* Send error */}
-      {sendError && (
-        <p className="text-red-500 px-6 text-xs text-center">{sendError}</p>
-      )}
+      {sendError && <p className="px-6 text-center text-xs text-red-500">{sendError}</p>}
 
       {/* Send box */}
       <div className="border-border-subtle flex gap-2 border-t px-6 py-4">
-        <label htmlFor="chat-input" className="sr-only">Message</label>
+        <label htmlFor="chat-input" className="sr-only">
+          Message
+        </label>
         <textarea
           id="chat-input"
           value={input}
@@ -259,7 +256,7 @@ export function ChatView({ id, initialMessage = "" }: { id: string; initialMessa
           disabled={sending}
           placeholder="Ask about your finances…"
           rows={2}
-          className="border-border-subtle bg-surface flex-1 resize-none rounded-lg border px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted disabled:opacity-50"
+          className="border-border-subtle bg-surface focus:ring-fg-muted flex-1 resize-none rounded-lg border px-3 py-2 text-sm focus:ring-1 focus:outline-none disabled:opacity-50"
         />
         <button
           onClick={() => void sendMessage()}

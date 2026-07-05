@@ -85,8 +85,18 @@ describe("applyTransferHeuristic", () => {
 
   it("does not pair transfers in different minute buckets", async () => {
     const txns = [
-      makeTxn({ id: "a", accountId: "acct-1", amountNative: 10000, startedAt: new Date("2026-01-15T10:00:00Z") }),
-      makeTxn({ id: "b", accountId: "acct-2", amountNative: -10000, startedAt: new Date("2026-01-15T10:01:00Z") }),
+      makeTxn({
+        id: "a",
+        accountId: "acct-1",
+        amountNative: 10000,
+        startedAt: new Date("2026-01-15T10:00:00Z"),
+      }),
+      makeTxn({
+        id: "b",
+        accountId: "acct-2",
+        amountNative: -10000,
+        startedAt: new Date("2026-01-15T10:01:00Z"),
+      }),
     ];
     const db = makeDb(txns);
     const result = await applyTransferHeuristic(db, ["a", "b"]);
@@ -107,8 +117,20 @@ describe("applyTransferHeuristic", () => {
   it("only considers typeRaw=Transfer (case-insensitive)", async () => {
     const t = new Date("2026-01-15T10:00:30Z");
     const txns = [
-      makeTxn({ id: "a", accountId: "acct-1", amountNative: 10000, startedAt: t, typeRaw: "CARD_PAYMENT" }),
-      makeTxn({ id: "b", accountId: "acct-2", amountNative: -10000, startedAt: t, typeRaw: "CARD_PAYMENT" }),
+      makeTxn({
+        id: "a",
+        accountId: "acct-1",
+        amountNative: 10000,
+        startedAt: t,
+        typeRaw: "CARD_PAYMENT",
+      }),
+      makeTxn({
+        id: "b",
+        accountId: "acct-2",
+        amountNative: -10000,
+        startedAt: t,
+        typeRaw: "CARD_PAYMENT",
+      }),
     ];
     const db = makeDb(txns);
     const result = await applyTransferHeuristic(db, ["a", "b"]);
@@ -118,8 +140,20 @@ describe("applyTransferHeuristic", () => {
   it("treats 'TRANSFER' (upper-case) as a transfer type", async () => {
     const t = new Date("2026-01-15T10:00:30Z");
     const txns = [
-      makeTxn({ id: "a", accountId: "acct-1", amountNative: 5000, startedAt: t, typeRaw: "TRANSFER" }),
-      makeTxn({ id: "b", accountId: "acct-2", amountNative: -5000, startedAt: t, typeRaw: "TRANSFER" }),
+      makeTxn({
+        id: "a",
+        accountId: "acct-1",
+        amountNative: 5000,
+        startedAt: t,
+        typeRaw: "TRANSFER",
+      }),
+      makeTxn({
+        id: "b",
+        accountId: "acct-2",
+        amountNative: -5000,
+        startedAt: t,
+        typeRaw: "TRANSFER",
+      }),
     ];
     const db = makeDb(txns);
     const result = await applyTransferHeuristic(db, ["a", "b"]);

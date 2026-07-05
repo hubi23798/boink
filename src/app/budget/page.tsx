@@ -1,12 +1,7 @@
 import { and, eq, gte, inArray, lt, sum } from "drizzle-orm";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  budgetTarget,
-  category,
-  transaction,
-  user,
-} from "@/lib/db/schema";
+import { budgetTarget, category, transaction, user } from "@/lib/db/schema";
 import { BudgetRow } from "./budget-row";
 import type { Route } from "next";
 import Link from "next/link";
@@ -141,23 +136,42 @@ export default async function BudgetPage({ searchParams }: Props) {
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-semibold text-[#F7F4EE]">Budget</h1>
         <div className="flex items-center gap-2 text-sm">
-          <Link href={`/budget?month=${prevMonthParam}` as Route} className="text-[#C4B8A8] hover:text-[#F7F4EE] px-1">←</Link>
-          <span className="w-28 text-center font-medium text-[#F7F4EE]">{monthLabel(selectedMonth)}</span>
+          <Link
+            href={`/budget?month=${prevMonthParam}` as Route}
+            className="px-1 text-[#C4B8A8] hover:text-[#F7F4EE]"
+          >
+            ←
+          </Link>
+          <span className="w-28 text-center font-medium text-[#F7F4EE]">
+            {monthLabel(selectedMonth)}
+          </span>
           {isCurrentMonth ? (
-            <span className="text-[#4A2E1A] px-1">→</span>
+            <span className="px-1 text-[#4A2E1A]">→</span>
           ) : (
-            <Link href={`/budget?month=${nextMonthParam}` as Route} className="text-[#C4B8A8] hover:text-[#F7F4EE] px-1">→</Link>
+            <Link
+              href={`/budget?month=${nextMonthParam}` as Route}
+              className="px-1 text-[#C4B8A8] hover:text-[#F7F4EE]"
+            >
+              →
+            </Link>
           )}
           {!isCurrentMonth && (
-            <Link href="/budget" className="text-[#C4B8A8] hover:text-[#F7F4EE] ml-2 text-xs underline">This month</Link>
+            <Link
+              href="/budget"
+              className="ml-2 text-xs text-[#C4B8A8] underline hover:text-[#F7F4EE]"
+            >
+              This month
+            </Link>
           )}
         </div>
       </div>
 
       {leafCats.length === 0 ? (
-        <p className="text-[#C4B8A8] text-sm">
+        <p className="text-sm text-[#C4B8A8]">
           Add categories in{" "}
-          <Link href="/settings/categories" className="text-[#6BBF85] underline">Settings → Categories</Link>{" "}
+          <Link href="/settings/categories" className="text-[#6BBF85] underline">
+            Settings → Categories
+          </Link>{" "}
           first.
         </p>
       ) : (
@@ -167,11 +181,14 @@ export default async function BudgetPage({ searchParams }: Props) {
             const groupTarget = leaves.reduce((s, l) => s + (targetMap.get(l.id) ?? 0), 0);
 
             return (
-              <section key={parentId} className="space-y-0 overflow-hidden rounded-xl border border-[#4A2E1A]">
+              <section
+                key={parentId}
+                className="space-y-0 overflow-hidden rounded-xl border border-[#4A2E1A]"
+              >
                 {/* Parent group header */}
-                <div className="flex items-center justify-between border-b border-[#4A2E1A] bg-[#2C1A0E] px-4 py-2 text-xs font-semibold uppercase tracking-wide">
+                <div className="flex items-center justify-between border-b border-[#4A2E1A] bg-[#2C1A0E] px-4 py-2 text-xs font-semibold tracking-wide uppercase">
                   <span className="text-[#C4B8A8]">{parentName}</span>
-                  <span className="text-[#6B5040] tabular-nums font-mono">
+                  <span className="font-mono text-[#6B5040] tabular-nums">
                     {fmt(groupActual, currency)} spent
                     {groupTarget > 0 && ` / ${fmt(groupTarget, currency)} target`}
                   </span>

@@ -25,7 +25,10 @@ async function gql(key: string, query: string, variables?: Record<string, unknow
     headers: { "Content-Type": "application/json", Authorization: key },
     body: JSON.stringify({ query, variables }),
   });
-  const json = (await res.json()) as { data?: Record<string, unknown>; errors?: { message: string }[] };
+  const json = (await res.json()) as {
+    data?: Record<string, unknown>;
+    errors?: { message: string }[];
+  };
   if (json.errors?.length) throw new Error(json.errors.map((e) => e.message).join("; "));
   return json.data ?? {};
 }
@@ -38,10 +41,15 @@ async function main() {
   }
 
   const apiKey = loadKey();
-  const boot = await gql(apiKey, `{ teams { nodes { id key states { nodes { id name type } } } } }`);
-  const team = (boot.teams as { nodes: { id: string; key: string; states: { nodes: { id: string; name: string }[] } }[] }).nodes.find(
-    (t) => t.key === "TRF",
-  )!;
+  const boot = await gql(
+    apiKey,
+    `{ teams { nodes { id key states { nodes { id name type } } } } }`,
+  );
+  const team = (
+    boot.teams as {
+      nodes: { id: string; key: string; states: { nodes: { id: string; name: string }[] } }[];
+    }
+  ).nodes.find((t) => t.key === "TRF")!;
   const backlogId = team.states.nodes.find((s) => s.name === "Backlog")!.id;
 
   for (const id of identifiers) {
@@ -55,17 +63,23 @@ async function main() {
       }`,
       { term: id, teamId: team.id },
     );
-    const row = (data.searchIssues as { nodes: { id: string; identifier: string; title: string; state: { name: string } }[] }).nodes.find(
-      (n) => n.identifier === id || n.identifier === `TRF-${num}`,
-    );
+    const row = (
+      data.searchIssues as {
+        nodes: { id: string; identifier: string; title: string; state: { name: string } }[];
+      }
+    ).nodes.find((n) => n.identifier === id || n.identifier === `TRF-${num}`);
     if (!row) {
       console.warn(`Not found: ${id}`);
       continue;
     }
-    await gql(apiKey, `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`, {
-      id: row.id,
-      input: { stateId: backlogId },
-    });
+    await gql(
+      apiKey,
+      `mutation($id: String!, $input: IssueUpdateInput!) { issueUpdate(id: $id, input: $input) { success } }`,
+      {
+        id: row.id,
+        input: { stateId: backlogId },
+      },
+    );
     console.log(`Backlog: ${row.identifier} — ${row.title.slice(0, 60)}`);
   }
 }

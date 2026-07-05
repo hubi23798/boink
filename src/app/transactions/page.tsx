@@ -38,9 +38,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
   ]);
 
   // Build expense/income leaf categories for the dropdown (exclude transfer)
-  const leafCategories = allCategories.filter(
-    (c) => c.parentId !== null && c.kind !== "transfer",
-  );
+  const leafCategories = allCategories.filter((c) => c.parentId !== null && c.kind !== "transfer");
 
   const conditions = [eq(transaction.tenantId, tenantId)];
   if (filters.accountId) conditions.push(eq(transaction.accountId, filters.accountId));
@@ -58,7 +56,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
   const txns = await db.query.transaction.findMany({
     where:
       conditions.length > 0
-        ? and(...(conditions as [typeof conditions[0], ...typeof conditions]))
+        ? and(...(conditions as [(typeof conditions)[0], ...typeof conditions]))
         : undefined,
     orderBy: [desc(transaction.startedAt)],
     limit: 200,
@@ -102,8 +100,11 @@ export default async function TransactionsPage({ searchParams }: Props) {
     <div className="space-y-6 px-6 py-8">
       <div>
         <h1 className="text-xl font-semibold text-[#F7F4EE]">Transactions</h1>
-        <p className="text-[#C4B8A8] mt-1 text-xs">
-          {txns.length} rows (max 200){activeFilterCount > 0 ? ` · ${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""} active` : ""}
+        <p className="mt-1 text-xs text-[#C4B8A8]">
+          {txns.length} rows (max 200)
+          {activeFilterCount > 0
+            ? ` · ${activeFilterCount} filter${activeFilterCount > 1 ? "s" : ""} active`
+            : ""}
         </p>
       </div>
 
@@ -114,7 +115,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
           name="q"
           defaultValue={filters.q ?? ""}
           placeholder="Search description…"
-          className="w-full rounded-md border border-[#4A2E1A] bg-[#3A2414] px-3 py-1.5 text-sm text-[#F7F4EE] placeholder:text-[#6B5040] focus:outline-none focus:ring-1 focus:ring-[#C9A84C]"
+          className="w-full rounded-md border border-[#4A2E1A] bg-[#3A2414] px-3 py-1.5 text-sm text-[#F7F4EE] placeholder:text-[#6B5040] focus:ring-1 focus:ring-[#C9A84C] focus:outline-none"
         />
 
         <div className="flex flex-wrap gap-2">
@@ -125,7 +126,9 @@ export default async function TransactionsPage({ searchParams }: Props) {
           >
             <option value="">All accounts</option>
             {accounts.map((a) => (
-              <option key={a.id} value={a.id}>{a.name}</option>
+              <option key={a.id} value={a.id}>
+                {a.name}
+              </option>
             ))}
           </select>
 
@@ -137,26 +140,46 @@ export default async function TransactionsPage({ searchParams }: Props) {
           >
             <option value="">All categories</option>
             {leafCategories.map((c) => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </select>
 
-          <input type="date" name="from" defaultValue={filters.from ?? ""}
-            className="rounded-md border border-[#4A2E1A] bg-[#3A2414] px-2 py-1 text-sm text-[#F7F4EE]" />
-          <input type="date" name="to" defaultValue={filters.to ?? ""}
-            className="rounded-md border border-[#4A2E1A] bg-[#3A2414] px-2 py-1 text-sm text-[#F7F4EE]" />
+          <input
+            type="date"
+            name="from"
+            defaultValue={filters.from ?? ""}
+            className="rounded-md border border-[#4A2E1A] bg-[#3A2414] px-2 py-1 text-sm text-[#F7F4EE]"
+          />
+          <input
+            type="date"
+            name="to"
+            defaultValue={filters.to ?? ""}
+            className="rounded-md border border-[#4A2E1A] bg-[#3A2414] px-2 py-1 text-sm text-[#F7F4EE]"
+          />
         </div>
 
         <div className="flex items-center gap-3">
           <label className="flex cursor-pointer items-center gap-1.5 rounded-md border border-[#4A2E1A] bg-[#3A2414] px-2 py-1 text-[#C4B8A8]">
-            <input type="checkbox" name="uncategorized" value="1" defaultChecked={filters.uncategorized === "1"} />
+            <input
+              type="checkbox"
+              name="uncategorized"
+              value="1"
+              defaultChecked={filters.uncategorized === "1"}
+            />
             <span>Uncategorized only</span>
           </label>
-          <button type="submit" className="rounded-md bg-[#C9A84C] px-3 py-1 text-sm font-medium text-[#2C1A0E]">
+          <button
+            type="submit"
+            className="rounded-md bg-[#C9A84C] px-3 py-1 text-sm font-medium text-[#2C1A0E]"
+          >
             Apply
           </button>
           {activeFilterCount > 0 && (
-            <a href="/transactions" className="text-[#C4B8A8] hover:text-[#F7F4EE]">Clear</a>
+            <a href="/transactions" className="text-[#C4B8A8] hover:text-[#F7F4EE]">
+              Clear
+            </a>
           )}
         </div>
       </form>
@@ -164,16 +187,18 @@ export default async function TransactionsPage({ searchParams }: Props) {
       {/* Summary */}
       <div className="flex gap-6 text-sm">
         <div>
-          <p className="text-[#C4B8A8] text-xs">In</p>
+          <p className="text-xs text-[#C4B8A8]">In</p>
           <p className="font-mono font-medium text-[#6BBF85]">{fmt(totalIn)}</p>
         </div>
         <div>
-          <p className="text-[#C4B8A8] text-xs">Out</p>
+          <p className="text-xs text-[#C4B8A8]">Out</p>
           <p className="font-mono font-medium text-[#E07070]">{fmt(Math.abs(totalOut))}</p>
         </div>
         <div>
-          <p className="text-[#C4B8A8] text-xs">Net</p>
-          <p className={`font-mono font-medium ${totalIn + totalOut < 0 ? "text-[#E07070]" : "text-[#6BBF85]"}`}>
+          <p className="text-xs text-[#C4B8A8]">Net</p>
+          <p
+            className={`font-mono font-medium ${totalIn + totalOut < 0 ? "text-[#E07070]" : "text-[#6BBF85]"}`}
+          >
             {fmt(totalIn + totalOut)}
           </p>
         </div>
@@ -181,14 +206,17 @@ export default async function TransactionsPage({ searchParams }: Props) {
 
       {/* Transaction list */}
       {txns.length === 0 ? (
-        <p className="text-[#C4B8A8] text-sm">No transactions match these filters.</p>
+        <p className="text-sm text-[#C4B8A8]">No transactions match these filters.</p>
       ) : (
-        <div className="divide-y divide-[#4A2E1A] rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm overflow-hidden">
+        <div className="divide-y divide-[#4A2E1A] overflow-hidden rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm">
           {txns.map((txn) => (
-            <div key={txn.id} className="flex items-center justify-between px-4 py-3 hover:bg-[#4A2E1A] transition-colors">
+            <div
+              key={txn.id}
+              className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-[#4A2E1A]"
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-[#F7F4EE]">{txn.descriptionRaw || "—"}</p>
-                <p className="text-[#C4B8A8] mt-0.5 text-xs font-mono">
+                <p className="mt-0.5 font-mono text-xs text-[#C4B8A8]">
                   {new Date(txn.startedAt).toLocaleDateString("en-IE")}
                   {!filters.accountId && ` · ${acctName.get(txn.accountId) ?? ""}`}
                   {txn.categoryId ? ` · ${catName.get(txn.categoryId) ?? ""}` : ""}
@@ -197,11 +225,13 @@ export default async function TransactionsPage({ searchParams }: Props) {
                 </p>
               </div>
               <div className="ml-3 shrink-0 text-right">
-                <span className={`font-mono font-medium tabular-nums ${txn.amountNative < 0 ? "text-[#F7F4EE]" : "text-[#6BBF85]"}`}>
+                <span
+                  className={`font-mono font-medium tabular-nums ${txn.amountNative < 0 ? "text-[#F7F4EE]" : "text-[#6BBF85]"}`}
+                >
                   {fmt(txn.amountNative, txn.currency)}
                 </span>
                 {txn.feeNative !== 0 && (
-                  <p className="text-[#C4B8A8] text-xs">fee {fmt(txn.feeNative, txn.currency)}</p>
+                  <p className="text-xs text-[#C4B8A8]">fee {fmt(txn.feeNative, txn.currency)}</p>
                 )}
               </div>
             </div>

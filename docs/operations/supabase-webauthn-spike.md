@@ -16,14 +16,14 @@ Do **not** rebuild SimpleWebAuthn + `passkey_credential` (Plan B) unless the pas
 
 ## Current state in truffe
 
-| Area | Today |
-|------|--------|
-| Login UX | Magic link OTP via `signInWithOtp` ([`src/components/login-form.tsx`](../../src/components/login-form.tsx)) |
+| Area           | Today                                                                                                                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Login UX       | Magic link OTP via `signInWithOtp` ([`src/components/login-form.tsx`](../../src/components/login-form.tsx))                                          |
 | Session bridge | Supabase OAuth callback mints legacy `session` cookie → `PRIMARY_USER_ID` ([`src/app/auth/callback/route.ts`](../../src/app/auth/callback/route.ts)) |
-| Passkey tables | Dropped in migration `0001_swap_to_password_auth.sql` |
-| Supabase JS | `^2.45` in package.json — **below passkey minimum** |
-| Local Supabase | `[auth.passkey]` / `[auth.webauthn]` commented out in [`supabase/config.toml`](../../supabase/config.toml) |
-| RP env | `RP_ID=localhost`, `RP_NAME=truffe.ai`, `ORIGIN` in `.env` — ready for WebAuthn RP config |
+| Passkey tables | Dropped in migration `0001_swap_to_password_auth.sql`                                                                                                |
+| Supabase JS    | `^2.45` in package.json — **below passkey minimum**                                                                                                  |
+| Local Supabase | `[auth.passkey]` / `[auth.webauthn]` commented out in [`supabase/config.toml`](../../supabase/config.toml)                                           |
+| RP env         | `RP_ID=localhost`, `RP_NAME=truffe.ai`, `ORIGIN` in `.env` — ready for WebAuthn RP config                                                            |
 
 ---
 
@@ -33,12 +33,12 @@ Source: [Supabase Passkeys docs](https://supabase.com/docs/guides/auth/passkeys)
 
 ### Native passkey API (not MFA-only)
 
-| Method | Purpose |
-|--------|---------|
+| Method                     | Purpose                                                     |
+| -------------------------- | ----------------------------------------------------------- |
 | `auth.signInWithPasskey()` | Discoverable credential login — **no email field required** |
-| `auth.registerPasskey()` | Register passkey for **already authenticated** user |
-| `auth.passkey.*` | Lower-level ceremony control |
-| `auth.admin.passkey.*` | Admin list/delete |
+| `auth.registerPasskey()`   | Register passkey for **already authenticated** user         |
+| `auth.passkey.*`           | Lower-level ceremony control                                |
+| `auth.admin.passkey.*`     | Admin list/delete                                           |
 
 Requirements:
 
@@ -132,11 +132,11 @@ auth: { experimental: { passkey: true } },
 
 ### 4. Login flow (target)
 
-| Step | Action |
-|------|--------|
-| Returning user | `signInWithPasskey()` → session in cookies → JWT hook adds `active_tenant_id` |
-| New user (tenant signup) | Magic link once → `/settings/passkeys` → `registerPasskey()` |
-| Remove | Legacy `createSession` bridge in auth callback |
+| Step                     | Action                                                                        |
+| ------------------------ | ----------------------------------------------------------------------------- |
+| Returning user           | `signInWithPasskey()` → session in cookies → JWT hook adds `active_tenant_id` |
+| New user (tenant signup) | Magic link once → `/settings/passkeys` → `registerPasskey()`                  |
+| Remove                   | Legacy `createSession` bridge in auth callback                                |
 
 ### 5. Remove legacy session table usage
 
@@ -161,13 +161,13 @@ Prerequisites: `supabase start`, upgraded JS, passkey enabled in config, `pnpm d
 
 ## Decision log
 
-| # | Decision | Choice |
-|---|----------|--------|
-| 1 | Primary auth mechanism | Supabase native passkeys (Plan A) |
-| 2 | Bootstrap for first passkey | Magic link once, then register |
-| 3 | SimpleWebAuthn reintroduction | No (Plan B fallback only) |
-| 4 | MFA WebAuthn factor | No — use passkey API, not `mfa.enroll({ factorType: 'webauthn' })` |
-| 5 | SDK upgrade | Required before implementation |
+| #   | Decision                      | Choice                                                             |
+| --- | ----------------------------- | ------------------------------------------------------------------ |
+| 1   | Primary auth mechanism        | Supabase native passkeys (Plan A)                                  |
+| 2   | Bootstrap for first passkey   | Magic link once, then register                                     |
+| 3   | SimpleWebAuthn reintroduction | No (Plan B fallback only)                                          |
+| 4   | MFA WebAuthn factor           | No — use passkey API, not `mfa.enroll({ factorType: 'webauthn' })` |
+| 5   | SDK upgrade                   | Required before implementation                                     |
 
 ---
 

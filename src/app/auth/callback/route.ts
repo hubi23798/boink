@@ -11,7 +11,8 @@ export async function GET(request: Request) {
   if (code) {
     const supabase = await createRouteHandlerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
-    if (error) console.error("[auth/callback] exchangeCodeForSession error:", error.message, error.code);
+    if (error)
+      console.error("[auth/callback] exchangeCodeForSession error:", error.message, error.code);
     if (!error) {
       const { data: userData } = await supabase.auth.getUser();
       const authUser = userData.user;

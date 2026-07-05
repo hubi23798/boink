@@ -18,12 +18,12 @@ The single most impactful change in the entire refresh is replacing the horizont
 
 **Proposed sidebar structure** (7 items, grouped):
 
-| Group | Items |
-|---|---|
-| Core | Home, Wealth, Budget |
+| Group    | Items                   |
+| -------- | ----------------------- |
+| Core     | Home, Wealth, Budget    |
 | Activity | Transactions, Recurring |
-| Planning | Goals, Advisor |
-| Footer | Settings |
+| Planning | Goals, Advisor          |
+| Footer   | Settings                |
 
 The sidebar should be `240px` wide on desktop, collapsing to a bottom tab bar on mobile (5 tabs: Home, Budget, Transactions, Goals, Advisor). The main content area shifts to a `max-w-4xl` two-column layout where appropriate (e.g., Wealth: asset list + chart side by side).
 
@@ -35,13 +35,13 @@ The sidebar should be `240px` wide on desktop, collapsing to a bottom tab bar on
 
 The existing token system is sound. The only changes are to the accent color and the surface warmth. Replace the current neutral-gray surface with a warm off-white, and replace the purple `--color-accent-brand` (262° hue) with a calm teal that reads as "financial intelligence" rather than "generic SaaS."
 
-| Token | Current | Proposed | Role |
-|---|---|---|---|
-| `--color-surface-raw` | `0 0% 100%` | `40 10% 98%` | Warm off-white `#FAFAF8` |
-| `--color-surface-elevated-raw` | `0 0% 98%` | `0 0% 100%` | Pure white cards |
-| `--color-accent-brand-raw` | `262 80% 60%` | `168 48% 33%` | Teal `#2D7D6F` |
-| `--color-success-raw` | `142 71% 45%` | `142 65% 38%` | Slightly deeper green |
-| `--color-warning-raw` | `38 92% 50%` | `38 88% 45%` | Amber `#D97706` |
+| Token                          | Current       | Proposed      | Role                     |
+| ------------------------------ | ------------- | ------------- | ------------------------ |
+| `--color-surface-raw`          | `0 0% 100%`   | `40 10% 98%`  | Warm off-white `#FAFAF8` |
+| `--color-surface-elevated-raw` | `0 0% 98%`    | `0 0% 100%`   | Pure white cards         |
+| `--color-accent-brand-raw`     | `262 80% 60%` | `168 48% 33%` | Teal `#2D7D6F`           |
+| `--color-success-raw`          | `142 71% 45%` | `142 65% 38%` | Slightly deeper green    |
+| `--color-warning-raw`          | `38 92% 50%`  | `38 88% 45%`  | Amber `#D97706`          |
 
 The dark mode tokens require no changes — the existing near-black surface is correct.
 
@@ -49,14 +49,14 @@ The dark mode tokens require no changes — the existing near-black surface is c
 
 The current app uses a single font size (`text-sm`, `text-xs`) for nearly all content. There is no display size, no H1 that commands attention, and no clear hierarchy between section headers and body text. The proposed scale introduces five levels:
 
-| Level | Size | Weight | Usage |
-|---|---|---|---|
-| Display | 32px | 700 | Net worth hero number, primary KPI |
-| H1 | 24px | 600 | Page title |
-| H2 | 18px | 600 | Section header (e.g., "Housing", "Asset breakdown") |
-| Body | 14px | 400 | Row labels, descriptions |
-| Caption | 12px | 400 | Muted metadata (dates, account names) |
-| Mono | 14px | 500 | All financial amounts (tabular-nums) |
+| Level   | Size | Weight | Usage                                               |
+| ------- | ---- | ------ | --------------------------------------------------- |
+| Display | 32px | 700    | Net worth hero number, primary KPI                  |
+| H1      | 24px | 600    | Page title                                          |
+| H2      | 18px | 600    | Section header (e.g., "Housing", "Asset breakdown") |
+| Body    | 14px | 400    | Row labels, descriptions                            |
+| Caption | 12px | 400    | Muted metadata (dates, account names)               |
+| Mono    | 14px | 500    | All financial amounts (tabular-nums)                |
 
 **Font recommendation:** Replace the system font stack with **Geist** (Vercel's open-source typeface). It is clean, legible at small sizes, has excellent tabular figures, and reads as premium software rather than a generic web app. Add via `next/font/google` or CDN. If Geist is unavailable, Inter at `font-feature-settings: "tnum"` is an acceptable fallback.
 
@@ -166,18 +166,18 @@ Bottom tab bar with 5 items: **Home · Budget · Transactions · Goals · Adviso
 
 The following changes are ordered by impact-to-effort ratio. Each can be shipped independently without breaking existing functionality.
 
-| Priority | Change | Effort | Impact |
-|---|---|---|---|
-| 1 | Replace horizontal nav with sidebar | Medium | Very High |
-| 2 | Add typography scale (Display, H1, H2) | Low | High |
-| 3 | Warm up surface color + replace accent | Low | High |
-| 4 | Budget monthly summary bar | Low | High |
-| 5 | Progress bar height + color coding | Low | High |
-| 6 | Wealth net worth hero card | Low | High |
-| 7 | Transaction date grouping | Medium | Medium |
-| 8 | Goal type icons + required monthly badge | Low | Medium |
-| 9 | Recurring merchant logos + Suggested section | Medium | Medium |
-| 10 | Filter chip components (Transactions) | High | Medium |
+| Priority | Change                                       | Effort | Impact    |
+| -------- | -------------------------------------------- | ------ | --------- |
+| 1        | Replace horizontal nav with sidebar          | Medium | Very High |
+| 2        | Add typography scale (Display, H1, H2)       | Low    | High      |
+| 3        | Warm up surface color + replace accent       | Low    | High      |
+| 4        | Budget monthly summary bar                   | Low    | High      |
+| 5        | Progress bar height + color coding           | Low    | High      |
+| 6        | Wealth net worth hero card                   | Low    | High      |
+| 7        | Transaction date grouping                    | Medium | Medium    |
+| 8        | Goal type icons + required monthly badge     | Low    | Medium    |
+| 9        | Recurring merchant logos + Suggested section | Medium | Medium    |
+| 10       | Filter chip components (Transactions)        | High   | Medium    |
 
 ---
 
@@ -188,11 +188,11 @@ The following is the minimal diff to `globals.css` to implement the color change
 ```css
 :root {
   /* CHANGE: warm off-white surface */
-  --color-surface-raw: 40 10% 98%;           /* was: 0 0% 100% */
-  --color-surface-elevated-raw: 0 0% 100%;   /* was: 0 0% 98% */
+  --color-surface-raw: 40 10% 98%; /* was: 0 0% 100% */
+  --color-surface-elevated-raw: 0 0% 100%; /* was: 0 0% 98% */
 
   /* CHANGE: teal accent replaces purple */
-  --color-accent-brand-raw: 168 48% 33%;     /* was: 262 80% 60% */
+  --color-accent-brand-raw: 168 48% 33%; /* was: 262 80% 60% */
 }
 ```
 
@@ -207,7 +207,10 @@ Add to `client/index.html` or `layout.tsx`:
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap" rel="stylesheet" />
+<link
+  href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&display=swap"
+  rel="stylesheet"
+/>
 ```
 
 Add to `globals.css`:
@@ -215,7 +218,7 @@ Add to `globals.css`:
 ```css
 @layer base {
   body {
-    font-family: 'Geist', 'Inter', system-ui, sans-serif;
+    font-family: "Geist", "Inter", system-ui, sans-serif;
     font-feature-settings: "tnum" 0; /* disable by default */
   }
   .tabular-nums {
@@ -226,4 +229,4 @@ Add to `globals.css`:
 
 ---
 
-*All before/after visual comparisons are provided as separate image attachments.*
+_All before/after visual comparisons are provided as separate image attachments._

@@ -1,4 +1,5 @@
 # Budget Feature — Design Spec
+
 **Date:** 2026-05-17
 **Scope:** Phase 2, part 1 — monthly budget targets vs actuals. Forecast, rollover, and review wizard deferred.
 
@@ -48,6 +49,7 @@ Set (create or update) a monthly target for a leaf category.
 **Request body:** `{ amountMonthly: number }` (positive integer, minor units)
 
 **Validation:**
+
 - `categoryId` must belong to the authenticated user
 - Category must be a leaf (has a `parentId`) and kind must be `expense` or `investment_flow`
 - `amountMonthly` must be a positive integer
@@ -105,6 +107,7 @@ SUBSCRIPTIONS                     €45 spent  /  no target
 **Parent group row:** name, total spent across ALL leaves in the group (whether targeted or not), total target (sum of set targets only). No status pill — just the numbers.
 
 **Leaf row:**
+
 - Category name
 - Progress bar (only rendered if target set; hidden for no-target rows)
 - `€spent / €target` or just `€spent` if no target
@@ -133,12 +136,12 @@ The inline edit component is isolated: `BudgetRow` client component receives `{ 
 
 Computed from `(actual / target)` ratio. Income and transfer categories are excluded entirely — they don't appear on the budget page.
 
-| Condition                  | Label          | Colour token          |
-|----------------------------|----------------|-----------------------|
-| No target set              | No target      | `text-fg-muted`       |
-| ratio < 0.80               | On track       | green                 |
-| 0.80 ≤ ratio < 1.00        | Getting close  | amber / warning       |
-| ratio ≥ 1.00               | Over budget    | red                   |
+| Condition           | Label         | Colour token    |
+| ------------------- | ------------- | --------------- |
+| No target set       | No target     | `text-fg-muted` |
+| ratio < 0.80        | On track      | green           |
+| 0.80 ≤ ratio < 1.00 | Getting close | amber / warning |
+| ratio ≥ 1.00        | Over budget   | red             |
 
 The 80% threshold is a constant `BUDGET_WARN_THRESHOLD = 0.8` in the budget utility module.
 
@@ -153,6 +156,7 @@ Add `/budget` between `Recurring` and `Categories` in `src/components/nav.tsx`.
 ## 7. Files Touched / Created
 
 **New:**
+
 - `src/lib/db/migrations/XXXX_budget_target.sql` (generated)
 - `src/app/budget/page.tsx` — server component (data loading + layout)
 - `src/app/budget/budget-row.tsx` — client component (inline editing)
@@ -161,6 +165,7 @@ Add `/budget` between `Recurring` and `Categories` in `src/components/nav.tsx`.
 - `tests/unit/budget.test.ts` — unit tests for compute.ts
 
 **Modified:**
+
 - `src/lib/db/schema.ts` — add `budgetTarget` table + types
 - `src/components/nav.tsx` — add `/budget` link
 

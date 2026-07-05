@@ -2,17 +2,10 @@ import { NextResponse } from "next/server";
 import { and, eq, gte, lt, sql } from "drizzle-orm";
 import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  advisorConversation,
-  advisorMessage,
-  pendingProposal,
-} from "@/lib/db/schema";
+import { advisorConversation, advisorMessage, pendingProposal } from "@/lib/db/schema";
 import { env } from "@/env";
 
-export async function GET(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function GET(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAuth();
   if (!auth.ok) return auth.response;
   const { tenantId } = auth.ctx;
@@ -27,9 +20,7 @@ export async function GET(
   const [conv] = await db
     .select()
     .from(advisorConversation)
-    .where(
-      and(eq(advisorConversation.id, id), eq(advisorConversation.tenantId, tenantId)),
-    )
+    .where(and(eq(advisorConversation.id, id), eq(advisorConversation.tenantId, tenantId)))
     .limit(1);
 
   if (!conv) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -38,12 +29,7 @@ export async function GET(
   await db
     .update(pendingProposal)
     .set({ status: "expired", resolvedAt: new Date() })
-    .where(
-      and(
-        eq(pendingProposal.status, "pending"),
-        lt(pendingProposal.createdAt, sevenDaysAgo),
-      ),
-    );
+    .where(and(eq(pendingProposal.status, "pending"), lt(pendingProposal.createdAt, sevenDaysAgo)));
 
   const messages = await db.query.advisorMessage.findMany({
     where: eq(advisorMessage.conversationId, id),

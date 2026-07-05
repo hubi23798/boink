@@ -16,10 +16,16 @@ const bodySchema = z.object({
   detectionKey: z.string().optional(),
   name: z.string().min(1).max(200),
   frequency: z.enum(["weekly", "fortnightly", "monthly"]),
-  amountNative: z.number().int().refine((n) => n !== 0, { message: "amountNative cannot be zero" }),
+  amountNative: z
+    .number()
+    .int()
+    .refine((n) => n !== 0, { message: "amountNative cannot be zero" }),
   currency: z.string().length(3),
   categoryId: z.string().uuid().optional(),
-  nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  nextDue: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -60,9 +66,7 @@ export async function POST(req: Request) {
   const [existingRow] = await db
     .select({ amountMonthly: budgetTarget.amountMonthly })
     .from(budgetTarget)
-    .where(
-      and(eq(budgetTarget.tenantId, tenantId), eq(budgetTarget.categoryId, categoryId)),
-    );
+    .where(and(eq(budgetTarget.tenantId, tenantId), eq(budgetTarget.categoryId, categoryId)));
 
   const monthlyAmount = toMonthlyAbs(Math.abs(amountNative), frequency);
   const proposal = computeBudgetProposal(

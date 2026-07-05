@@ -16,15 +16,15 @@ The original specs remain authoritative for their respective scopes:
 
 ## Decisions log (settled during 2026-06-27 brainstorming)
 
-| # | Decision | Choice |
-|---|---|---|
-| V1 | Vertical | HNW operator + anti-fraud spine (declined: elder protection, IFA tooling, CDFA, insolvency, SEA backpacking fintech — last evaluated and rejected on unit economics) |
-| V2 | Advisor authority | Detective-only — advisor flags, user decides; never blocks, never auto-acts |
-| V3 | Data ingest | Aggregator-first EU (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV retained as escape hatch for unaggregable assets |
-| V4 | Multi-party access | Owner + read-only observers (spouse, accountant, attorney); roles deferred to v2 |
-| V5 | MVP fraud wedges | `vendor-bec`, `subscription-trap`, `crypto-outflow-scam` (advisor/manager embezzlement emerges from observer+audit log, promoted to first-class in v2) |
-| V6 | Compliance posture | GDPR + SOC2 Type I in-progress from day 0; not registering as RIA/IFA (positioned as information service, not regulated advice) |
-| V7 | Deployment | Supabase (Postgres + Auth + Vault + Storage + Edge Functions + Realtime) + Vercel; replaces Fly.io self-hosted Postgres |
+| #   | Decision           | Choice                                                                                                                                                               |
+| --- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| V1  | Vertical           | HNW operator + anti-fraud spine (declined: elder protection, IFA tooling, CDFA, insolvency, SEA backpacking fintech — last evaluated and rejected on unit economics) |
+| V2  | Advisor authority  | Detective-only — advisor flags, user decides; never blocks, never auto-acts                                                                                          |
+| V3  | Data ingest        | Aggregator-first EU (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV retained as escape hatch for unaggregable assets                              |
+| V4  | Multi-party access | Owner + read-only observers (spouse, accountant, attorney); roles deferred to v2                                                                                     |
+| V5  | MVP fraud wedges   | `vendor-bec`, `subscription-trap`, `crypto-outflow-scam` (advisor/manager embezzlement emerges from observer+audit log, promoted to first-class in v2)               |
+| V6  | Compliance posture | GDPR + SOC2 Type I in-progress from day 0; not registering as RIA/IFA (positioned as information service, not regulated advice)                                      |
+| V7  | Deployment         | Supabase (Postgres + Auth + Vault + Storage + Edge Functions + Realtime) + Vercel; replaces Fly.io self-hosted Postgres                                              |
 
 ## Standing rules
 
@@ -44,7 +44,7 @@ The original specs remain authoritative for their respective scopes:
 
 **Primary persona:** founder / executive / creator / professional with 8–20 accounts across cash, brokerage, crypto, property, private investments, and multiple jurisdictions. Has a bookkeeper or wealth manager (or has been burned by one). Distrustful of robo-advisors. Values calm UI + provability over flashy.
 
-**Secondary persona (observer):** spouse, accountant, attorney, family-office staff. Read-only audit access. The observer's *existence* is the anti-embezzlement primitive — bookkeepers behave differently when the spouse can see the audit log.
+**Secondary persona (observer):** spouse, accountant, attorney, family-office staff. Read-only audit access. The observer's _existence_ is the anti-embezzlement primitive — bookkeepers behave differently when the spouse can see the audit log.
 
 **Wedge (MVP fraud detectors, all detective-only, all evidence-cited):**
 
@@ -431,10 +431,10 @@ Three phases to first paying customer. Each ends with usable end-to-end product.
 
 Three tiers, annual-billed-default, monthly available at 20% premium.
 
-| Tier | Price | Includes | Limits |
-|---|---|---|---|
-| **Solo** | $39/mo | Owner, up to 10 connections, all detectors, 1 observer (read-only audit only), daily digest | 1 user, 1 observer |
-| **Family** | $99/mo | Solo + up to 5 observers, role scopes, audit export, priority sync, advisor cost ceiling raised | 1 owner, 5 observers |
+| Tier              | Price   | Includes                                                                                                                             | Limits                                    |
+| ----------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------ | ----------------------------------------- |
+| **Solo**          | $39/mo  | Owner, up to 10 connections, all detectors, 1 observer (read-only audit only), daily digest                                          | 1 user, 1 observer                        |
+| **Family**        | $99/mo  | Solo + up to 5 observers, role scopes, audit export, priority sync, advisor cost ceiling raised                                      | 1 owner, 5 observers                      |
 | **Family Office** | $399/mo | Family + multi-entity (trust, LLC, partnership), white-label observer portal, BYOK encryption, SOC2 report on request, named support | 1 owner identity, multi-entity per tenant |
 
 No free tier. 14-day trial. Demo tenant always accessible without signup for prospect evaluation.
@@ -531,18 +531,18 @@ Inputs (conservative assumptions, document explicitly):
 
 ### 7.2 Changed (existing surfaces reshaped)
 
-| Surface | Current | After |
-|---|---|---|
-| **Auth** | Self-hosted SimpleWebAuthn + bootstrap-token | Supabase Auth + WebAuthn factor; bootstrap-token removed (tenant signup via passkey enrollment) |
-| **Account model** | Single user owns all data | Tenant owns data; user is a member with role + scope |
-| **Login landing** | `/` dashboard | If multi-tenant member → tenant picker first; otherwise `/` |
-| **Ingest** | CSV upload only (Revolut tested) | Aggregator-first (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV kept as escape hatch for unaggregable assets |
-| **Audit log** | Single-row append, basic | Hash-chained `audit_log_v2`; observer-readable; export-signed-JSON; S3 Object Lock mirror |
-| **Advisor convos** | Owner-only | Visibility flag; fraud-related convos auto-shared with observers |
-| **Settings** | `/settings/accounts`, profile, passkeys | + `/settings/observers`, `/settings/connections`, `/settings/policy` |
-| **Deployment** | Fly.io self-hosted Postgres | Vercel + Supabase + KMS-backed Vault |
-| **Mutation badges** | None | "Visible to N observers" inline on every state change |
-| **Daily cron** | FX + snapshot + forecast | + connection sync (6h), + detector batch re-scan (nightly), + digest email |
+| Surface             | Current                                      | After                                                                                                                            |
+| ------------------- | -------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| **Auth**            | Self-hosted SimpleWebAuthn + bootstrap-token | Supabase Auth + WebAuthn factor; bootstrap-token removed (tenant signup via passkey enrollment)                                  |
+| **Account model**   | Single user owns all data                    | Tenant owns data; user is a member with role + scope                                                                             |
+| **Login landing**   | `/` dashboard                                | If multi-tenant member → tenant picker first; otherwise `/`                                                                      |
+| **Ingest**          | CSV upload only (Revolut tested)             | Aggregator-first (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV kept as escape hatch for unaggregable assets |
+| **Audit log**       | Single-row append, basic                     | Hash-chained `audit_log_v2`; observer-readable; export-signed-JSON; S3 Object Lock mirror                                        |
+| **Advisor convos**  | Owner-only                                   | Visibility flag; fraud-related convos auto-shared with observers                                                                 |
+| **Settings**        | `/settings/accounts`, profile, passkeys      | + `/settings/observers`, `/settings/connections`, `/settings/policy`                                                             |
+| **Deployment**      | Fly.io self-hosted Postgres                  | Vercel + Supabase + KMS-backed Vault                                                                                             |
+| **Mutation badges** | None                                         | "Visible to N observers" inline on every state change                                                                            |
+| **Daily cron**      | FX + snapshot + forecast                     | + connection sync (6h), + detector batch re-scan (nightly), + digest email                                                       |
 
 ### 7.3 Net-new surfaces
 
@@ -607,7 +607,7 @@ Inputs (conservative assumptions, document explicitly):
 - **BYOK at Family Office tier** — Supabase BYOK is enterprise-tier feature. Pricing needs validation before promising on the tier.
 - **Bug bounty payout funding** — small at launch ($500–$5k bounty range); requires LLC + insurance + payout rails (HackerOne handles, but adds platform cost).
 - **Anthropic outage handling** — if advisor unavailable, fraud detector ingest paths must still write `fraud_signal` rows (detectors are deterministic, not LLM-dependent for MVP). Verified in Phase B test plan.
-- **Supabase WebAuthn maturity** — Supabase Auth WebAuthn factor must be verified production-ready for *primary* auth (not just second-factor MFA) before Phase A passkey migration. If insufficient, plan B: keep self-hosted passkey credential table + use Supabase Auth as JWT issuer only. Spike at Phase A kickoff.
+- **Supabase WebAuthn maturity** — Supabase Auth WebAuthn factor must be verified production-ready for _primary_ auth (not just second-factor MFA) before Phase A passkey migration. If insufficient, plan B: keep self-hosted passkey credential table + use Supabase Auth as JWT issuer only. Spike at Phase A kickoff.
 
 ## Open questions to resolve before plan-writing
 

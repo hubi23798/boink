@@ -73,7 +73,7 @@ export function ImportUploadForm() {
             {result.acceptedCount} new · {result.dedupedCount} skipped (duplicate) ·{" "}
             {result.rejectedCount} rejected
             {result.newAccountNames.length > 0 && (
-              <span className="block mt-1 text-xs">
+              <span className="mt-1 block text-xs">
                 New accounts created: {result.newAccountNames.join(", ")}
               </span>
             )}
@@ -82,7 +82,9 @@ export function ImportUploadForm() {
         <div className="flex gap-2">
           <Button
             variant="outline"
-            onClick={() => { window.location.href = `/settings/import/${result.batchId}`; }}
+            onClick={() => {
+              window.location.href = `/settings/import/${result.batchId}`;
+            }}
           >
             View batch detail
           </Button>

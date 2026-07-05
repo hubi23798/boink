@@ -106,7 +106,15 @@ interface InlineFormProps {
   onCancel: () => void;
 }
 
-function InlineForm({ form, setForm, saving, formError, categories, onSave, onCancel }: InlineFormProps) {
+function InlineForm({
+  form,
+  setForm,
+  saving,
+  formError,
+  categories,
+  onSave,
+  onCancel,
+}: InlineFormProps) {
   return (
     <div className="border-border-subtle space-y-3 border-t px-4 py-3">
       <div className="grid grid-cols-2 gap-2">
@@ -116,7 +124,7 @@ function InlineForm({ form, setForm, saving, formError, categories, onSave, onCa
             type="text"
             value={form.name}
             onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
-            className="border-border-subtle bg-surface w-full rounded border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+            className="border-border-subtle bg-surface focus:ring-fg-muted w-full rounded border px-2 py-1.5 text-sm focus:ring-1 focus:outline-none"
           />
         </div>
         <div>
@@ -127,7 +135,7 @@ function InlineForm({ form, setForm, saving, formError, categories, onSave, onCa
             step="0.01"
             value={form.amount}
             onChange={(e) => setForm((f) => ({ ...f, amount: e.target.value }))}
-            className="border-border-subtle bg-surface w-full rounded border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+            className="border-border-subtle bg-surface focus:ring-fg-muted w-full rounded border px-2 py-1.5 text-sm focus:ring-1 focus:outline-none"
           />
         </div>
         <div>
@@ -135,7 +143,7 @@ function InlineForm({ form, setForm, saving, formError, categories, onSave, onCa
           <select
             value={form.frequency}
             onChange={(e) => setForm((f) => ({ ...f, frequency: e.target.value as Frequency }))}
-            className="border-border-subtle bg-surface w-full rounded border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+            className="border-border-subtle bg-surface focus:ring-fg-muted w-full rounded border px-2 py-1.5 text-sm focus:ring-1 focus:outline-none"
           >
             <option value="monthly">Monthly</option>
             <option value="fortnightly">Fortnightly</option>
@@ -147,7 +155,7 @@ function InlineForm({ form, setForm, saving, formError, categories, onSave, onCa
           <select
             value={form.categoryId}
             onChange={(e) => setForm((f) => ({ ...f, categoryId: e.target.value }))}
-            className="border-border-subtle bg-surface w-full rounded border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+            className="border-border-subtle bg-surface focus:ring-fg-muted w-full rounded border px-2 py-1.5 text-sm focus:ring-1 focus:outline-none"
           >
             <option value="">— none —</option>
             {categories.map((c) => (
@@ -163,7 +171,7 @@ function InlineForm({ form, setForm, saving, formError, categories, onSave, onCa
             type="date"
             value={form.nextDue}
             onChange={(e) => setForm((f) => ({ ...f, nextDue: e.target.value }))}
-            className="border-border-subtle bg-surface w-full rounded border px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-fg-muted"
+            className="border-border-subtle bg-surface focus:ring-fg-muted w-full rounded border px-2 py-1.5 text-sm focus:ring-1 focus:outline-none"
           />
         </div>
       </div>
@@ -238,10 +246,11 @@ export function RecurringView({
     await fetch(`/api/recurring/subscriptions/${id}`, { method: "DELETE" });
   }
 
-  async function handleSave(opts:
-    | { mode: "confirm"; detectionKey: string; candidateCurrency: string; amountSign: -1 | 1 }
-    | { mode: "edit"; id: string; subCurrency: string; amountSign: -1 | 1 }
-    | { mode: "new" }
+  async function handleSave(
+    opts:
+      | { mode: "confirm"; detectionKey: string; candidateCurrency: string; amountSign: -1 | 1 }
+      | { mode: "edit"; id: string; subCurrency: string; amountSign: -1 | 1 }
+      | { mode: "new" },
   ) {
     setSaving(true);
     setFormError(null);
@@ -378,13 +387,19 @@ export function RecurringView({
           <h1 className="text-xl font-semibold">Recurring</h1>
           <p className="text-fg-muted mt-1 text-sm tabular-nums">
             {fmt(confirmedMonthly, currency)}/mo confirmed
-            {detectedMonthly > 0 && (
-              <> · {fmt(detectedMonthly, currency)}/mo detected</>
-            )}
+            {detectedMonthly > 0 && <> · {fmt(detectedMonthly, currency)}/mo detected</>}
           </p>
         </div>
         <button
-          onClick={() => openForm("new", { name: "", amount: "", frequency: "monthly", categoryId: "", nextDue: "" })}
+          onClick={() =>
+            openForm("new", {
+              name: "",
+              amount: "",
+              frequency: "monthly",
+              categoryId: "",
+              nextDue: "",
+            })
+          }
           className="border-border-subtle text-fg-muted hover:text-fg-default rounded border px-3 py-1.5 text-sm"
         >
           + Add subscription
@@ -412,7 +427,7 @@ export function RecurringView({
         if (items.length === 0) return null;
         return (
           <section key={freq} className="space-y-0">
-            <div className="border-border-subtle border-b px-4 py-2 text-xs font-semibold uppercase tracking-wide">
+            <div className="border-border-subtle border-b px-4 py-2 text-xs font-semibold tracking-wide uppercase">
               {freqLabel(freq)}
             </div>
             <div className="border-border-subtle divide-border-subtle divide-y overflow-hidden rounded-b-xl border border-t-0">
@@ -426,13 +441,15 @@ export function RecurringView({
                       <div className="min-w-0">
                         <p className="truncate font-medium">{sub.name}</p>
                         {sub.nextDue && (
-                          <p className={`text-xs tabular-nums ${dueSoon ? "text-red-600 dark:text-red-400" : "text-fg-muted"}`}>
+                          <p
+                            className={`text-xs tabular-nums ${dueSoon ? "text-red-600 dark:text-red-400" : "text-fg-muted"}`}
+                          >
                             {nextDueLabel(sub.nextDue)}
                           </p>
                         )}
                       </div>
                       <div className="ml-4 flex shrink-0 items-center gap-3">
-                        <span className="tabular-nums font-medium">
+                        <span className="font-medium tabular-nums">
                           {sub.amountNative < 0 ? "−" : "+"}
                           {fmt(Math.abs(sub.amountNative), sub.currency)}
                         </span>
@@ -447,7 +464,7 @@ export function RecurringView({
                         </button>
                         <button
                           onClick={() => void handleDelete(sub.id)}
-                          className="text-fg-muted hover:text-red-500 text-xs"
+                          className="text-fg-muted text-xs hover:text-red-500"
                           title="Remove"
                         >
                           ×
@@ -506,7 +523,7 @@ export function RecurringView({
       {/* Suggested candidates */}
       {candidates.length > 0 && (
         <section className="space-y-0">
-          <div className="border-border-subtle text-fg-muted border-b px-4 py-2 text-xs font-semibold uppercase tracking-wide">
+          <div className="border-border-subtle text-fg-muted border-b px-4 py-2 text-xs font-semibold tracking-wide uppercase">
             Suggested
           </div>
           <div className="border-border-subtle divide-border-subtle divide-y overflow-hidden rounded-b-xl border border-t-0">
@@ -540,7 +557,7 @@ export function RecurringView({
                       </button>
                       <button
                         onClick={() => void handleDismiss(item.key)}
-                        className="text-fg-muted hover:text-red-500 text-xs"
+                        className="text-fg-muted text-xs hover:text-red-500"
                         title="Dismiss"
                       >
                         ×

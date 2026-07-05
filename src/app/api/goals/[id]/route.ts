@@ -10,14 +10,15 @@ import { UUID_RE } from "@/lib/validation/uuid";
 const patchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
   targetAmount: z.number().int().positive().optional(),
-  targetDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  targetDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   linkedAccountIds: z.array(z.string().regex(UUID_RE)).min(1).optional(),
 });
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAuth(req);
   if (!auth.ok) return auth.response;
   const { tenantId } = auth.ctx;
@@ -34,8 +35,7 @@ export async function PATCH(
   }
 
   const existing = await db.query.goal.findFirst({
-    where: (g, { and, eq }) =>
-      and(eq(g.id, id), eq(g.tenantId, tenantId), eq(g.isArchived, false)),
+    where: (g, { and, eq }) => and(eq(g.id, id), eq(g.tenantId, tenantId), eq(g.isArchived, false)),
   });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -53,7 +53,10 @@ export async function PATCH(
   let newInitialBalance: number | undefined;
   if (existing.kind === "debt_payoff" && parsed.data.linkedAccountIds !== undefined) {
     const balances = await getLatestBalances(db, parsed.data.linkedAccountIds);
-    newInitialBalance = parsed.data.linkedAccountIds.reduce((s, aid) => s + (balances.get(aid) ?? 0), 0);
+    newInitialBalance = parsed.data.linkedAccountIds.reduce(
+      (s, aid) => s + (balances.get(aid) ?? 0),
+      0,
+    );
   }
 
   const now = new Date();
@@ -77,10 +80,7 @@ export async function PATCH(
   return NextResponse.json({ goal: updated });
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const auth = await requireApiAuth();
   if (!auth.ok) return auth.response;
   const { tenantId } = auth.ctx;

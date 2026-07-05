@@ -17,6 +17,7 @@
 ## File Structure
 
 **New files:**
+
 - `src/lib/tenancy/context.ts` — request-scoped tenant resolver; replaces `PRIMARY_USER_ID`.
 - `src/lib/tenancy/service-role.ts` — `runAsService<T>(fn)` for cron/webhook paths that must bypass RLS.
 - `src/lib/tenancy/jwt-hook.ts` — Supabase Auth Hook to inject `active_tenant_id` claim.
@@ -45,6 +46,7 @@
 - `docs/compliance/soc2-controls-phase-a.md` — control evidence index.
 
 **Modified files:**
+
 - `src/lib/db/schema.ts` — add `tenant`, `tenantMember` tables, `tenantId` columns, `auditLogV2`, drop `PRIMARY_USER_ID` constant.
 - `src/lib/db/client.ts` — accept optional RLS bypass for service-role contexts.
 - `src/lib/auth/session.ts`, `src/lib/auth/cookies.ts`, `src/lib/auth/password.ts` — delegate to Supabase Auth; legacy enrollment removed.
@@ -57,6 +59,7 @@
 - `package.json` — add `@supabase/supabase-js`, `@supabase/ssr`, `axiom-js`.
 
 **Deleted (post-cutover):**
+
 - `Dockerfile`, `fly.toml`, `docker-compose.yml` — archived to `docs/archive/fly/` for one release, then removed.
 - Self-hosted SimpleWebAuthn endpoints under `src/app/api/auth/passkey/*` (if present) — replaced by Supabase Auth callbacks.
 - `bootstrap_token` table (if present in schema) — dropped in migration 0011.
@@ -66,15 +69,17 @@
 ## Task 0: Spike — Supabase WebAuthn factor viability
 
 **Files:**
+
 - Create: `docs/operations/supabase-webauthn-spike.md`
 
-**Why this task exists:** Spec open item — Supabase Auth WebAuthn maturity for *primary* auth (not MFA second factor) is unverified. Outcome decides Task 11-12 implementation path.
+**Why this task exists:** Spec open item — Supabase Auth WebAuthn maturity for _primary_ auth (not MFA second factor) is unverified. Outcome decides Task 11-12 implementation path.
 
 - [ ] **Step 1: Research current Supabase WebAuthn capability**
 
 Read Supabase Auth WebAuthn factor docs. Check GitHub issues for "passkey primary auth" limitations. Test in a throwaway Supabase project: enroll a passkey, log in with passkey alone (no email OTP fallback). Record findings.
 
 Run (local Supabase emulator or hosted free-tier project):
+
 ```bash
 npx supabase init
 npx supabase start
@@ -101,6 +106,7 @@ git commit -m "docs(ops): Supabase WebAuthn spike outcome"
 ## Task 1: Supabase project provisioning
 
 **Files:**
+
 - Modify: `.env.example`
 - Modify: `drizzle.config.ts`
 
@@ -111,6 +117,7 @@ Via Supabase dashboard: create project `truffe-us`, region `us-west-1` (proximit
 - [ ] **Step 2: Add env vars to .env.example**
 
 Edit `.env.example`:
+
 ```
 # Supabase
 SUPABASE_URL=https://<project-ref>.supabase.co
@@ -125,6 +132,7 @@ SUPABASE_DB_DIRECT_URL=postgres://postgres:<password>@<direct-host>:5432/postgre
 - [ ] **Step 3: Update drizzle.config.ts to use Supabase direct URL for migrations**
 
 Edit `drizzle.config.ts`:
+
 ```ts
 import { defineConfig } from "drizzle-kit";
 
@@ -150,6 +158,7 @@ git commit -m "chore(supabase): provision project + env vars"
 ## Task 2: Install Supabase + Axiom SDKs
 
 **Files:**
+
 - Modify: `package.json`
 
 - [ ] **Step 1: Install packages**
@@ -163,6 +172,7 @@ pnpm add @supabase/supabase-js@^2.45 @supabase/ssr@^0.5 @axiomhq/js@^1.3
 ```bash
 pnpm typecheck
 ```
+
 Expected: no errors.
 
 - [ ] **Step 3: Commit**
@@ -177,6 +187,7 @@ git commit -m "chore(deps): add @supabase/supabase-js, @supabase/ssr, @axiomhq/j
 ## Task 3: Tenancy primitives schema — `tenant` table
 
 **Files:**
+
 - Modify: `src/lib/db/schema.ts`
 - Create: `src/lib/db/migrations/0009_tenancy_primitives.sql`
 - Create: `tests/unit/tenancy-context.test.ts` (skeleton; expanded in Task 6)
@@ -184,6 +195,7 @@ git commit -m "chore(deps): add @supabase/supabase-js, @supabase/ssr, @axiomhq/j
 - [ ] **Step 1: Write failing test for tenant table presence**
 
 Create `tests/unit/tenancy-context.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { tenant, tenantMember } from "@/lib/db/schema";
@@ -204,6 +216,7 @@ describe("tenancy schema", () => {
 ```bash
 pnpm test:unit tests/unit/tenancy-context.test.ts
 ```
+
 Expected: FAIL — `tenant` and `tenantMember` not exported.
 
 - [ ] **Step 3: Add tenant + tenantMember to schema.ts**
@@ -211,22 +224,13 @@ Expected: FAIL — `tenant` and `tenantMember` not exported.
 Edit `src/lib/db/schema.ts` — add after line 28 (PRIMARY_USER_ID, which we will remove in Task 6):
 
 ```ts
-export const tenantPlanEnum = pgEnum("tenant_plan", [
-  "trial",
-  "solo",
-  "family",
-  "family_office",
-]);
+export const tenantPlanEnum = pgEnum("tenant_plan", ["trial", "solo", "family", "family_office"]);
 
 export const tenantRegionEnum = pgEnum("tenant_region", ["us", "eu", "uk"]);
 
 export const memberRoleEnum = pgEnum("member_role", ["owner", "observer"]);
 
-export const memberScopeEnum = pgEnum("member_scope", [
-  "full_read",
-  "ledger_only",
-  "audit_only",
-]);
+export const memberScopeEnum = pgEnum("member_scope", ["full_read", "ledger_only", "audit_only"]);
 
 export const tenant = pgTable("tenant", {
   id: uuid("id").primaryKey().defaultRandom(),
@@ -268,6 +272,7 @@ Add `primaryKey` to the `drizzle-orm/pg-core` import line at top of file if miss
 ```bash
 pnpm test:unit tests/unit/tenancy-context.test.ts
 ```
+
 Expected: PASS.
 
 - [ ] **Step 5: Generate migration**
@@ -283,6 +288,7 @@ Verify generated file in `src/lib/db/migrations/` is named with a `0009_` prefix
 ```bash
 pnpm db:migrate
 ```
+
 Expected: migration runs without error against `SUPABASE_DB_DIRECT_URL`.
 
 - [ ] **Step 7: Commit**
@@ -297,11 +303,13 @@ git commit -m "feat(tenancy): add tenant + tenant_member tables"
 ## Task 4: Seed primary tenant from existing single-user row
 
 **Files:**
+
 - Create: `src/lib/db/migrations/0010_seed_primary_tenant.sql`
 
 - [ ] **Step 1: Write the migration**
 
 Create `src/lib/db/migrations/0010_seed_primary_tenant.sql`:
+
 ```sql
 -- Seed one tenant for the existing primary user so all subsequent
 -- tenant_id backfills have a target.
@@ -335,9 +343,11 @@ pnpm db:migrate
 - [ ] **Step 3: Verify seed row exists**
 
 Run in Supabase SQL editor or `psql`:
+
 ```sql
 SELECT * FROM tenant_member WHERE tenant_id = '00000000-0000-0000-0000-0000000000aa';
 ```
+
 Expected: 1 row, role=owner.
 
 - [ ] **Step 4: Commit**
@@ -352,6 +362,7 @@ git commit -m "feat(tenancy): seed primary tenant from existing single-user"
 ## Task 5: Add `tenant_id` to all tenant-owned tables
 
 **Files:**
+
 - Modify: `src/lib/db/schema.ts`
 - Create: `src/lib/db/migrations/0011_tenant_id_columns.sql`
 
@@ -362,6 +373,7 @@ git commit -m "feat(tenancy): seed primary tenant from existing single-user"
 - [ ] **Step 1: Write the migration (hand-written, not drizzle-generated, for backfill control)**
 
 Create `src/lib/db/migrations/0011_tenant_id_columns.sql`:
+
 ```sql
 -- Phase A: add tenant_id to all tenant-owned tables.
 -- Two-pass: add nullable column, backfill from seeded tenant, then NOT NULL.
@@ -390,6 +402,7 @@ END $$;
 - [ ] **Step 2: Update schema.ts to declare `tenantId` column on each affected table**
 
 For each affected table, add inside the table definition (before existing columns is fine — Drizzle does not care about order):
+
 ```ts
 tenantId: uuid("tenant_id")
   .notNull()
@@ -397,6 +410,7 @@ tenantId: uuid("tenant_id")
 ```
 
 Add composite index on `(tenantId, …)` for hot-path queries. Example pattern for `transaction`:
+
 ```ts
 // inside the index callback of the table definition
 tenantOccurredIdx: index("transaction_tenant_occurred_idx").on(
@@ -426,6 +440,7 @@ pnpm db:migrate
 ```bash
 pnpm test:unit
 ```
+
 Expected: existing tests pass (single-user inserts still satisfy `tenant_id NOT NULL` because seed tenant is the only tenant).
 
 Note: tests that insert rows directly may now fail with `null value in column "tenant_id"`. Fix by updating test helpers to set `tenantId: PRIMARY_TENANT_ID` (constant we add in Task 6).
@@ -442,6 +457,7 @@ git commit -m "feat(tenancy): add tenant_id to all tenant-owned tables"
 ## Task 6: Replace `PRIMARY_USER_ID` with tenant-aware context resolver
 
 **Files:**
+
 - Create: `src/lib/tenancy/context.ts`
 - Modify: `src/lib/db/schema.ts` (remove `PRIMARY_USER_ID`, add `PRIMARY_TENANT_ID` for test seed convenience only)
 - Modify: ~132 call sites (use grep + replace)
@@ -449,13 +465,18 @@ git commit -m "feat(tenancy): add tenant_id to all tenant-owned tables"
 - [ ] **Step 1: Write failing test for context resolver**
 
 Append to `tests/unit/tenancy-context.test.ts`:
+
 ```ts
 import { resolveTenantId } from "@/lib/tenancy/context";
 
 describe("resolveTenantId", () => {
   it("returns claim from a request with active_tenant_id JWT claim", async () => {
     const req = new Request("http://x", {
-      headers: { "x-supabase-jwt-claims": JSON.stringify({ active_tenant_id: "00000000-0000-0000-0000-0000000000aa" }) },
+      headers: {
+        "x-supabase-jwt-claims": JSON.stringify({
+          active_tenant_id: "00000000-0000-0000-0000-0000000000aa",
+        }),
+      },
     });
     expect(await resolveTenantId(req)).toBe("00000000-0000-0000-0000-0000000000aa");
   });
@@ -472,11 +493,13 @@ describe("resolveTenantId", () => {
 ```bash
 pnpm test:unit tests/unit/tenancy-context.test.ts
 ```
+
 Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement resolver**
 
 Create `src/lib/tenancy/context.ts`:
+
 ```ts
 import { createServerClient } from "@/lib/supabase/server";
 
@@ -501,11 +524,13 @@ export async function resolveTenantId(req: Request): Promise<string> {
 - [ ] **Step 4: Replace `PRIMARY_USER_ID` site-wide**
 
 Find all call sites:
+
 ```bash
 git grep -l "PRIMARY_USER_ID" src/
 ```
 
 For each file, replace the pattern. Common replacements:
+
 - `where(eq(table.userId, PRIMARY_USER_ID))` → remove (RLS will enforce; or use `where(eq(table.tenantId, tenantId))` where `tenantId = await resolveTenantId(req)`).
 - Inserts that set `userId: PRIMARY_USER_ID` → set `tenantId: tenantId` (resolved per request).
 - Schema reference to `PRIMARY_USER_ID` in migration backfills — leave alone (already in old migrations).
@@ -517,6 +542,7 @@ Remove `export const PRIMARY_USER_ID` from `src/lib/db/schema.ts`. Replace with 
 ```bash
 pnpm typecheck && pnpm test:unit
 ```
+
 Expected: pass. Failures here usually mean a `PRIMARY_USER_ID` reference was missed.
 
 - [ ] **Step 6: Commit**
@@ -531,12 +557,14 @@ git commit -m "feat(tenancy): replace PRIMARY_USER_ID with request-scoped tenant
 ## Task 7: Supabase server + browser clients
 
 **Files:**
+
 - Create: `src/lib/supabase/server.ts`
 - Create: `src/lib/supabase/browser.ts`
 
 - [ ] **Step 1: Implement server client**
 
 Create `src/lib/supabase/server.ts`:
+
 ```ts
 import { createServerClient as ssr } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -568,17 +596,18 @@ export function createServiceRoleClient() {
 - [ ] **Step 2: Implement browser client**
 
 Create `src/lib/supabase/browser.ts`:
+
 ```ts
 import { createBrowserClient as ssr } from "@supabase/ssr";
 import { env } from "@/env";
 
-export const supabaseBrowser = () =>
-  ssr(env().SUPABASE_URL, env().SUPABASE_ANON_KEY);
+export const supabaseBrowser = () => ssr(env().SUPABASE_URL, env().SUPABASE_ANON_KEY);
 ```
 
 - [ ] **Step 3: Extend env schema**
 
 In `src/env.ts` (or wherever env validation lives), add:
+
 ```ts
 SUPABASE_URL: z.string().url(),
 SUPABASE_ANON_KEY: z.string().min(1),
@@ -594,6 +623,7 @@ AXIOM_TOKEN: z.string().optional(),
 ```bash
 pnpm typecheck
 ```
+
 Expected: pass.
 
 - [ ] **Step 5: Commit**
@@ -608,12 +638,14 @@ git commit -m "feat(supabase): server + browser clients + env schema"
 ## Task 8: Service-role helper for cron/webhook RLS bypass
 
 **Files:**
+
 - Create: `src/lib/tenancy/service-role.ts`
 - Create: `tests/unit/service-role.test.ts`
 
 - [ ] **Step 1: Write failing test**
 
 Create `tests/unit/service-role.test.ts`:
+
 ```ts
 import { describe, it, expect, vi } from "vitest";
 import { runAsService } from "@/lib/tenancy/service-role";
@@ -629,9 +661,9 @@ describe("runAsService", () => {
   it("throws if invoked from a request context (no x-cron-secret header in test)", async () => {
     // Marker: this guard exists to prevent service-role leakage into request handlers.
     // Implementation reads from AsyncLocalStorage or env flag; test asserts the throw path.
-    await expect(
-      runAsService(async () => "x", { requireCronContext: true }),
-    ).rejects.toThrow(/cron context/);
+    await expect(runAsService(async () => "x", { requireCronContext: true })).rejects.toThrow(
+      /cron context/,
+    );
   });
 });
 ```
@@ -641,11 +673,13 @@ describe("runAsService", () => {
 ```bash
 pnpm test:unit tests/unit/service-role.test.ts
 ```
+
 Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement**
 
 Create `src/lib/tenancy/service-role.ts`:
+
 ```ts
 import { createServiceRoleClient } from "@/lib/supabase/server";
 
@@ -672,6 +706,7 @@ Cron entry points (Edge Functions, route handlers tagged as cron) set `process.e
 ```bash
 pnpm test:unit tests/unit/service-role.test.ts
 ```
+
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -686,11 +721,13 @@ git commit -m "feat(tenancy): service-role helper with cron-context guard"
 ## Task 9: RLS policies — enable + apply
 
 **Files:**
+
 - Create: `src/lib/db/migrations/0013_rls_policies.sql`
 
 - [ ] **Step 1: Write the migration**
 
 Create `src/lib/db/migrations/0013_rls_policies.sql`:
+
 ```sql
 -- Phase A: enable RLS + tenant-isolation policies on all tenant-owned tables.
 -- Service-role connections bypass RLS by design (Supabase managed).
@@ -738,11 +775,13 @@ pnpm db:migrate
 - [ ] **Step 3: Manually verify RLS enabled**
 
 In Supabase SQL editor:
+
 ```sql
 SELECT tablename, rowsecurity
 FROM pg_tables
 WHERE schemaname = 'public' AND tablename IN ('transaction', 'account', 'tenant', 'tenant_member');
 ```
+
 Expected: `rowsecurity = true` for all four.
 
 - [ ] **Step 4: Commit**
@@ -757,6 +796,7 @@ git commit -m "feat(tenancy): enable RLS + tenant_isolation policies"
 ## Task 10: Supabase Auth — login + callback wiring
 
 **Files:**
+
 - Create: `src/app/auth/callback/route.ts`
 - Modify: `src/app/api/auth/login/route.ts`
 - Modify: `src/app/api/auth/logout/route.ts`
@@ -767,6 +807,7 @@ git commit -m "feat(tenancy): enable RLS + tenant_isolation policies"
 - [ ] **Step 1: Callback handler**
 
 Create `src/app/auth/callback/route.ts`:
+
 ```ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
@@ -790,6 +831,7 @@ export async function GET(request: Request) {
 - [ ] **Step 2: Login route — initiate Supabase Auth WebAuthn challenge**
 
 Rewrite `src/app/api/auth/login/route.ts`:
+
 ```ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
@@ -814,6 +856,7 @@ export async function POST(req: Request) {
 - [ ] **Step 3: Logout route**
 
 Rewrite `src/app/api/auth/logout/route.ts`:
+
 ```ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
@@ -869,6 +912,7 @@ git commit -m "feat(auth): Supabase Auth login + callback + logout (spike outcom
 ## Task 11: Auth Hook — inject `active_tenant_id` into JWT
 
 **Files:**
+
 - Create: `supabase/functions/jwt-claims/index.ts` (Supabase Edge Function deployed via CLI)
 - Create: `docs/operations/jwt-hook-setup.md`
 
@@ -877,6 +921,7 @@ git commit -m "feat(auth): Supabase Auth login + callback + logout (spike outcom
 - [ ] **Step 1: Write the hook**
 
 Create `supabase/functions/jwt-claims/index.ts`:
+
 ```ts
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 
@@ -925,11 +970,13 @@ Deno.serve(async (req) => {
 - [ ] **Step 2: Add `default_tenant_id` column to user table**
 
 In `src/lib/db/schema.ts`, extend `user`:
+
 ```ts
 defaultTenantId: uuid("default_tenant_id").references(() => tenant.id),
 ```
 
 Generate migration:
+
 ```bash
 pnpm db:generate && pnpm db:migrate
 ```
@@ -943,6 +990,7 @@ npx supabase functions deploy jwt-claims --no-verify-jwt
 - [ ] **Step 4: Configure Supabase to invoke the hook**
 
 Via Supabase dashboard → Auth → Hooks → Custom Access Token Hook → select `jwt-claims`. Or via `supabase/config.toml`:
+
 ```toml
 [auth.hook.custom_access_token]
 enabled = true
@@ -956,9 +1004,11 @@ Create `docs/operations/jwt-hook-setup.md` recording dashboard config steps + ho
 - [ ] **Step 6: Test the claim is present**
 
 After logging in via the new flow, inspect the JWT in browser DevTools:
+
 ```
 document.cookie  // find sb-access-token, decode at jwt.io
 ```
+
 Expected: `active_tenant_id` claim present.
 
 - [ ] **Step 7: Commit**
@@ -973,6 +1023,7 @@ git commit -m "feat(auth): inject active_tenant_id JWT claim via Auth Hook"
 ## Task 12: Tenant picker page
 
 **Files:**
+
 - Create: `src/app/tenants/page.tsx`
 - Create: `src/app/api/tenants/switch/route.ts`
 - Create: `tests/e2e/tenant-picker.spec.ts`
@@ -980,6 +1031,7 @@ git commit -m "feat(auth): inject active_tenant_id JWT claim via Auth Hook"
 - [ ] **Step 1: Page**
 
 Create `src/app/tenants/page.tsx`:
+
 ```tsx
 import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase/server";
@@ -997,21 +1049,19 @@ export default async function TenantPicker() {
     .select({ id: tenant.id, name: tenant.name })
     .from(tenantMember)
     .innerJoin(tenant, eq(tenantMember.tenantId, tenant.id))
-    .where(
-      and(eq(tenantMember.userId, userData.user.id), isNull(tenantMember.revokedAt)),
-    );
+    .where(and(eq(tenantMember.userId, userData.user.id), isNull(tenantMember.revokedAt)));
 
   if (memberships.length === 1) redirect(`/?tenant=${memberships[0].id}`);
 
   return (
     <main className="mx-auto max-w-md py-16">
-      <h1 className="text-2xl font-semibold mb-6">Choose a workspace</h1>
+      <h1 className="mb-6 text-2xl font-semibold">Choose a workspace</h1>
       <ul className="space-y-2">
         {memberships.map((m) => (
           <li key={m.id}>
             <form action="/api/tenants/switch" method="POST">
               <input type="hidden" name="tenantId" value={m.id} />
-              <button className="w-full text-left p-4 rounded border hover:bg-muted">
+              <button className="hover:bg-muted w-full rounded border p-4 text-left">
                 {m.name}
               </button>
             </form>
@@ -1026,6 +1076,7 @@ export default async function TenantPicker() {
 - [ ] **Step 2: Switch route — updates `default_tenant_id` and forces JWT refresh**
 
 Create `src/app/api/tenants/switch/route.ts`:
+
 ```ts
 import { NextResponse } from "next/server";
 import { createServerClient } from "@/lib/supabase/server";
@@ -1062,6 +1113,7 @@ export async function POST(req: Request) {
 - [ ] **Step 3: E2E test**
 
 Create `tests/e2e/tenant-picker.spec.ts`:
+
 ```ts
 import { test, expect } from "@playwright/test";
 
@@ -1079,6 +1131,7 @@ test("single-membership user is redirected straight to /", async ({ page }) => {
 ```bash
 pnpm test:e2e tests/e2e/tenant-picker.spec.ts
 ```
+
 Expected: PASS (after Task 10 + 11 are live).
 
 - [ ] **Step 5: Commit**
@@ -1093,12 +1146,14 @@ git commit -m "feat(tenancy): tenant picker page + switch endpoint"
 ## Task 13: Audit hash chain — pure functions
 
 **Files:**
+
 - Create: `src/lib/audit/hash-chain.ts`
 - Create: `tests/unit/audit-hash-chain.test.ts`
 
 - [ ] **Step 1: Write failing tests**
 
 Create `tests/unit/audit-hash-chain.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { computeHash, verifyChain } from "@/lib/audit/hash-chain";
@@ -1151,11 +1206,13 @@ describe("verifyChain", () => {
 ```bash
 pnpm test:unit tests/unit/audit-hash-chain.test.ts
 ```
+
 Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement**
 
 Create `src/lib/audit/hash-chain.ts`:
+
 ```ts
 import { createHash } from "node:crypto";
 
@@ -1198,6 +1255,7 @@ export function verifyChain(rows: ChainRow[]): { valid: boolean; brokenAt: numbe
 ```bash
 pnpm test:unit tests/unit/audit-hash-chain.test.ts
 ```
+
 Expected: PASS.
 
 - [ ] **Step 5: Commit**
@@ -1212,18 +1270,22 @@ git commit -m "feat(audit): hash-chain compute + verify pure functions"
 ## Task 14: `audit_log_v2` table + schema
 
 **Files:**
+
 - Modify: `src/lib/db/schema.ts`
 - Create: `src/lib/db/migrations/0014_audit_log_v2.sql`
 
 - [ ] **Step 1: Add table to schema**
 
 In `src/lib/db/schema.ts`:
+
 ```ts
 export const auditLogV2 = pgTable(
   "audit_log_v2",
   {
     id: bigserial("id", { mode: "number" }).primaryKey(),
-    tenantId: uuid("tenant_id").notNull().references(() => tenant.id),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id),
     actorUserId: uuid("actor_user_id").references(() => user.id),
     action: text("action").notNull(),
     targetType: text("target_type"),
@@ -1244,12 +1306,16 @@ export type AuditLogV2 = typeof auditLogV2.$inferSelect;
 ```
 
 Note: Drizzle does not ship a `bytea` helper natively; use `customType` from `drizzle-orm/pg-core`:
+
 ```ts
 import { customType } from "drizzle-orm/pg-core";
 const bytea = customType<{ data: Buffer; default: false }>({
-  dataType() { return "bytea"; },
+  dataType() {
+    return "bytea";
+  },
 });
 ```
+
 Place this near the top of `schema.ts`, after imports.
 
 - [ ] **Step 2: Generate + apply migration**
@@ -1259,7 +1325,9 @@ pnpm db:generate && pnpm db:migrate
 ```
 
 Verify migration creates the table + enables RLS:
+
 - Append to the generated migration (or hand-write to `0014_audit_log_v2.sql`):
+
 ```sql
 ALTER TABLE audit_log_v2 ENABLE ROW LEVEL SECURITY;
 CREATE POLICY tenant_isolation ON audit_log_v2
@@ -1270,6 +1338,7 @@ REVOKE INSERT, UPDATE, DELETE ON audit_log_v2 FROM authenticated;
 ```
 
 Re-apply:
+
 ```bash
 pnpm db:migrate
 ```
@@ -1286,6 +1355,7 @@ git commit -m "feat(audit): audit_log_v2 table + RLS + WORM-style grants"
 ## Task 15: `appendAudit` writer with hash linking
 
 **Files:**
+
 - Create: `src/lib/audit/append.ts`
 - Create: `tests/unit/audit-append.test.ts`
 - Modify: `src/lib/audit.ts` (re-export from new location; old shape becomes wrapper)
@@ -1293,6 +1363,7 @@ git commit -m "feat(audit): audit_log_v2 table + RLS + WORM-style grants"
 - [ ] **Step 1: Write failing test**
 
 Create `tests/unit/audit-append.test.ts`:
+
 ```ts
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { appendAudit, __resetForTests } from "@/lib/audit/append";
@@ -1341,11 +1412,13 @@ describe("appendAudit", () => {
 ```bash
 pnpm test:unit tests/unit/audit-append.test.ts
 ```
+
 Expected: FAIL — module not found.
 
 - [ ] **Step 3: Implement**
 
 Create `src/lib/audit/append.ts`:
+
 ```ts
 import { desc, eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
@@ -1405,6 +1478,7 @@ export function __resetForTests() {
 ```bash
 pnpm test:unit tests/unit/audit-append.test.ts
 ```
+
 Expected: PASS.
 
 - [ ] **Step 5: Replace old audit writer**
@@ -1416,6 +1490,7 @@ Modify `src/lib/audit.ts` so any existing `appendAuditLog(...)` API delegates to
 ```bash
 pnpm test:unit
 ```
+
 Expected: all pass.
 
 - [ ] **Step 7: Commit**
@@ -1430,11 +1505,13 @@ git commit -m "feat(audit): appendAudit writer + replace old audit_log call site
 ## Task 16: Backfill `audit_log` → `audit_log_v2`
 
 **Files:**
+
 - Create: `src/lib/db/migrations/0015_audit_log_v2_backfill.sql`
 
 - [ ] **Step 1: Write the backfill migration**
 
 Create `src/lib/db/migrations/0015_audit_log_v2_backfill.sql`:
+
 ```sql
 -- Backfill audit_log → audit_log_v2 with synthesized hash chain.
 -- Existing rows tagged with seeded primary tenant since they predate tenancy.
@@ -1481,6 +1558,7 @@ END $$;
 - [ ] **Step 2: Enable `pgcrypto` for `digest()` if not present**
 
 Prepend the migration with:
+
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgcrypto;
 ```
@@ -1494,6 +1572,7 @@ pnpm db:migrate
 - [ ] **Step 4: Spot-check chain integrity**
 
 In Supabase SQL editor or `psql`, run a small TS script:
+
 ```bash
 pnpm tsx -e '
 import { getDb } from "./src/lib/db/client.js";
@@ -1524,6 +1603,7 @@ git commit -m "feat(audit): backfill audit_log into audit_log_v2 with hash chain
 ## Task 17: PII redaction middleware + Axiom
 
 **Files:**
+
 - Create: `src/lib/logging/redact.ts`
 - Create: `src/lib/logging/axiom.ts`
 - Create: `tests/unit/log-redact.test.ts`
@@ -1531,6 +1611,7 @@ git commit -m "feat(audit): backfill audit_log into audit_log_v2 with hash chain
 - [ ] **Step 1: Write failing test**
 
 Create `tests/unit/log-redact.test.ts`:
+
 ```ts
 import { describe, it, expect } from "vitest";
 import { redact } from "@/lib/logging/redact";
@@ -1545,7 +1626,9 @@ describe("redact", () => {
   });
 
   it("masks amounts above threshold", () => {
-    expect(redact({ amount: 250_00 }, { amountThresholdCents: 100_00 })).toEqual({ amount: "[redacted]" });
+    expect(redact({ amount: 250_00 }, { amountThresholdCents: 100_00 })).toEqual({
+      amount: "[redacted]",
+    });
   });
 
   it("preserves small amounts", () => {
@@ -1553,9 +1636,9 @@ describe("redact", () => {
   });
 
   it("walks nested objects", () => {
-    expect(
-      redact({ user: { access_token: "x", email: "a@b.c" } }),
-    ).toEqual({ user: { access_token: "[redacted]", email: "a@b.c" } });
+    expect(redact({ user: { access_token: "x", email: "a@b.c" } })).toEqual({
+      user: { access_token: "[redacted]", email: "a@b.c" },
+    });
   });
 });
 ```
@@ -1565,16 +1648,27 @@ describe("redact", () => {
 ```bash
 pnpm test:unit tests/unit/log-redact.test.ts
 ```
+
 Expected: FAIL.
 
 - [ ] **Step 3: Implement**
 
 Create `src/lib/logging/redact.ts`:
+
 ```ts
-const SECRET_KEYS = new Set(["access_token", "refresh_token", "password", "service_role_key", "anon_key", "api_key"]);
+const SECRET_KEYS = new Set([
+  "access_token",
+  "refresh_token",
+  "password",
+  "service_role_key",
+  "anon_key",
+  "api_key",
+]);
 const DIGIT_RUN = /^\d{8,}$/;
 
-interface Options { amountThresholdCents?: number }
+interface Options {
+  amountThresholdCents?: number;
+}
 
 export function redact(input: unknown, opts: Options = {}): unknown {
   const threshold = opts.amountThresholdCents;
@@ -1582,10 +1676,17 @@ export function redact(input: unknown, opts: Options = {}): unknown {
   if (Array.isArray(input)) return input.map((x) => redact(x, opts));
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(input as Record<string, unknown>)) {
-    if (SECRET_KEYS.has(k)) { out[k] = "[redacted]"; continue; }
-    if (typeof v === "string" && DIGIT_RUN.test(v)) { out[k] = "[redacted]"; continue; }
+    if (SECRET_KEYS.has(k)) {
+      out[k] = "[redacted]";
+      continue;
+    }
+    if (typeof v === "string" && DIGIT_RUN.test(v)) {
+      out[k] = "[redacted]";
+      continue;
+    }
     if (k === "amount" && typeof v === "number" && threshold !== undefined && v >= threshold) {
-      out[k] = "[redacted]"; continue;
+      out[k] = "[redacted]";
+      continue;
     }
     out[k] = redact(v, opts);
   }
@@ -1596,6 +1697,7 @@ export function redact(input: unknown, opts: Options = {}): unknown {
 - [ ] **Step 4: Axiom transport**
 
 Create `src/lib/logging/axiom.ts`:
+
 ```ts
 import { Axiom } from "@axiomhq/js";
 import { env } from "@/env";
@@ -1625,6 +1727,7 @@ export function log(event: string, data: Record<string, unknown>) {
 ```bash
 pnpm test:unit tests/unit/log-redact.test.ts
 ```
+
 Expected: PASS.
 
 - [ ] **Step 6: Commit**
@@ -1639,12 +1742,14 @@ git commit -m "feat(logging): PII redaction + Axiom transport"
 ## Task 18: Adversarial RLS test — cross-tenant isolation
 
 **Files:**
+
 - Create: `tests/e2e/multi-tenant-isolation.spec.ts`
 - Create: `tests/e2e/fixtures/two-tenants.ts`
 
 - [ ] **Step 1: Fixture to seed two tenants + two users**
 
 Create `tests/e2e/fixtures/two-tenants.ts`:
+
 ```ts
 import { createClient } from "@supabase/supabase-js";
 import { getDb } from "@/lib/db/client";
@@ -1657,12 +1762,36 @@ export async function seedTwoTenants() {
   const userA = await admin.auth.admin.createUser({ email: "a@truffe.test", email_confirm: true });
   const userB = await admin.auth.admin.createUser({ email: "b@truffe.test", email_confirm: true });
 
-  const [tA] = await db.insert(tenant).values({ name: "A", plan: "trial", region: "us" }).returning();
-  const [tB] = await db.insert(tenant).values({ name: "B", plan: "trial", region: "us" }).returning();
-  await db.insert(tenantMember).values({ tenantId: tA.id, userId: userA.data.user!.id, role: "owner", acceptedAt: new Date() });
-  await db.insert(tenantMember).values({ tenantId: tB.id, userId: userB.data.user!.id, role: "owner", acceptedAt: new Date() });
-  await db.insert(account).values({ tenantId: tA.id, name: "A-checking", kind: "cash", currency: "USD" });
-  await db.insert(account).values({ tenantId: tB.id, name: "B-checking", kind: "cash", currency: "USD" });
+  const [tA] = await db
+    .insert(tenant)
+    .values({ name: "A", plan: "trial", region: "us" })
+    .returning();
+  const [tB] = await db
+    .insert(tenant)
+    .values({ name: "B", plan: "trial", region: "us" })
+    .returning();
+  await db
+    .insert(tenantMember)
+    .values({
+      tenantId: tA.id,
+      userId: userA.data.user!.id,
+      role: "owner",
+      acceptedAt: new Date(),
+    });
+  await db
+    .insert(tenantMember)
+    .values({
+      tenantId: tB.id,
+      userId: userB.data.user!.id,
+      role: "owner",
+      acceptedAt: new Date(),
+    });
+  await db
+    .insert(account)
+    .values({ tenantId: tA.id, name: "A-checking", kind: "cash", currency: "USD" });
+  await db
+    .insert(account)
+    .values({ tenantId: tB.id, name: "B-checking", kind: "cash", currency: "USD" });
 
   return { tA: tA.id, tB: tB.id, userA: userA.data.user!.id, userB: userB.data.user!.id };
 }
@@ -1671,6 +1800,7 @@ export async function seedTwoTenants() {
 - [ ] **Step 2: Adversarial test**
 
 Create `tests/e2e/multi-tenant-isolation.spec.ts`:
+
 ```ts
 import { test, expect } from "@playwright/test";
 import { createClient } from "@supabase/supabase-js";
@@ -1681,8 +1811,14 @@ test("user A cannot read user B's accounts via Supabase REST", async () => {
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);
   await supabase.auth.admin; // placeholder, replace with sign-in for userA via magic link or admin-issued token
   // Issue a JWT for userA via service-role; set active_tenant_id = tA.
-  const adminClient = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!);
-  const { data: session } = await adminClient.auth.admin.generateLink({ type: "magiclink", email: "a@truffe.test" });
+  const adminClient = createClient(
+    process.env.SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  );
+  const { data: session } = await adminClient.auth.admin.generateLink({
+    type: "magiclink",
+    email: "a@truffe.test",
+  });
   // Replace next line with auth.setSession using a token derived for userA when test infra supports.
   const { data } = await supabase.from("account").select("*").eq("tenant_id", tB);
   expect(data ?? []).toEqual([]);
@@ -1696,6 +1832,7 @@ Note: full e2e auth flow with Playwright + Supabase Auth requires session-stub h
 ```bash
 pnpm test:e2e tests/e2e/multi-tenant-isolation.spec.ts
 ```
+
 Expected: PASS (data array is empty — RLS rejected the read).
 
 - [ ] **Step 4: Commit**
@@ -1710,6 +1847,7 @@ git commit -m "test(rls): adversarial cross-tenant read isolation"
 ## Task 19: Vercel project + preview deploys
 
 **Files:**
+
 - Modify: `next.config.ts`
 - Create: `vercel.json` (only if needed for cron schedule overrides; otherwise omit)
 - Create: `docs/operations/vercel-cutover-runbook.md`
@@ -1717,6 +1855,7 @@ git commit -m "test(rls): adversarial cross-tenant read isolation"
 - [ ] **Step 1: Create Vercel project**
 
 Via Vercel CLI (`npx vercel`) or dashboard:
+
 - Import the `truffe` repo.
 - Framework preset: Next.js.
 - Set all env vars from `.env.example` (including `SUPABASE_*`, `AXIOM_*`, `DATABASE_URL` pointing at `SUPABASE_DB_URL`).
@@ -1729,6 +1868,7 @@ Edit `next.config.ts` — remove any standalone-output config or Fly-specific tw
 - [ ] **Step 3: Write cutover runbook**
 
 Create `docs/operations/vercel-cutover-runbook.md` with steps:
+
 1. Verify preview deploy of latest `main` on Vercel is green.
 2. Take Fly production traffic snapshot (volume + active sessions).
 3. Update DNS CNAME from Fly app → Vercel project (TTL 300).
@@ -1773,6 +1913,7 @@ git commit -m "chore(deploy): archive Fly.io artifacts post-Vercel cutover"
 ## Task 21: SOC2 Phase A control evidence
 
 **Files:**
+
 - Create: `docs/compliance/soc2-controls-phase-a.md`
 
 - [ ] **Step 1: Write the evidence index**
@@ -1785,31 +1926,38 @@ Create `docs/compliance/soc2-controls-phase-a.md`:
 Reference: Trust Services Criteria (TSC) 2017 — Common Criteria series.
 
 ## CC6.1 Logical access — RLS
+
 - All tenant-owned tables have RLS enabled (`pg_tables.rowsecurity = true`).
 - Policy: `tenant_isolation` keyed on `auth.jwt() ->> 'active_tenant_id'`.
 - Evidence: migration `0013_rls_policies.sql`; adversarial test `tests/e2e/multi-tenant-isolation.spec.ts`.
 
 ## CC6.6 Encryption in transit
+
 - Supabase enforces TLS 1.2+ on all connections.
 - Vercel enforces HTTPS on all routes; HSTS header set in `next.config.ts`.
 
 ## CC6.7 Encryption at rest
+
 - Supabase Postgres encrypted at rest (AES-256, AWS KMS).
 - Supabase Vault used for any future aggregator tokens (Phase B).
 
 ## CC7.2 System monitoring
+
 - App logs shipped to Axiom with PII redaction (`src/lib/logging/redact.ts`).
 - DB logs in Supabase dashboard with 7-day retention.
 
 ## CC7.3 Anomaly detection
+
 - Audit log (`audit_log_v2`) hash-chained; verification function `verifyChain` runnable on demand.
 - Backfill caveat: pre-v2 rows use Postgres canonical JSON; forward rows use Node canonical JSON. Chain verifies in two segments. Documented for auditor.
 
 ## CC8.1 Change management
+
 - All migrations are forward-only.
 - All code changes go through PR + preview deploy + CI before merge.
 
 ## Open evidence for next phases
+
 - CC6.1 observer-scope policies: Phase B.
 - CC6.6 BYOK for Family Office tier: Phase D.
 - CC7.1 vulnerability management (Snyk/Dependabot): add in Phase A.1.
@@ -1827,11 +1975,13 @@ git commit -m "docs(compliance): SOC2 Phase A control evidence index"
 ## Task 22: Phase A acceptance smoke
 
 **Files:**
+
 - Modify: `tests/e2e/smoke.spec.ts` (existing) — extend to assert tenant-scoped data renders.
 
 - [ ] **Step 1: Update smoke test**
 
 Edit `tests/e2e/smoke.spec.ts` to add a final assertion after the existing login + dashboard check:
+
 ```ts
 test("primary tenant data renders on /", async ({ page }) => {
   // pre-existing login steps
@@ -1849,11 +1999,13 @@ test("primary tenant data renders on /", async ({ page }) => {
 ```bash
 pnpm test:unit && pnpm test:e2e
 ```
+
 Expected: all green.
 
 - [ ] **Step 3: Verify Phase A exit criteria**
 
 Per spec §5 Phase A:
+
 - ✅ Existing single-user functionality unchanged for the operator.
 - ✅ Multi-tenant skeleton present (`tenant`, `tenant_member`, `tenant_id` everywhere).
 - ✅ Supabase Auth issuing sessions; `active_tenant_id` claim populated.
@@ -1874,6 +2026,7 @@ git commit -m "test(e2e): Phase A acceptance smoke covers tenant routing"
 ## Task 23: Drop legacy `audit_log` (Phase A.1, one release after cutover)
 
 **Files:**
+
 - Create: `src/lib/db/migrations/0016_drop_old_audit_log.sql`
 
 **Trigger:** schedule this task for one release cycle after Task 16 (backfill) ships to production. Reason: keep `audit_log` reads available for one window in case any legacy report needs it.
@@ -1881,6 +2034,7 @@ git commit -m "test(e2e): Phase A acceptance smoke covers tenant routing"
 - [ ] **Step 1: Write the migration**
 
 Create `src/lib/db/migrations/0016_drop_old_audit_log.sql`:
+
 ```sql
 DROP TABLE IF EXISTS audit_log;
 ```
@@ -1904,28 +2058,28 @@ git commit -m "chore(audit): drop legacy audit_log table post-backfill window"
 
 Walk the spec section-by-section, point each requirement at a task above:
 
-| Spec section | Covered by task(s) |
-|---|---|
-| §2.1 Multi-tenant from day one | 3, 4, 5, 6 |
-| §2.2 Owner + observer access primitive | partial: tenant_member created (3, 4); observer UX is Phase B |
-| §2.3 Aggregator ingest layer | **Phase B** (not in this plan) |
-| §2.4 Fraud detector module | **Phase B/C** (not in this plan) |
-| §2.5 Supabase + Vercel | 1, 2, 7, 19, 20 |
-| §2.6 What stays untouched | implicit (no engine changes) |
-| §3.1 Untrusted-input discipline | existing in code; adversarial battery is Phase B deliverable |
-| §3.2 Tenant isolation | 9, 18 |
-| §3.3 Advisor refusal policy | **Phase B** |
-| §3.4 Aggregator + token surface | **Phase B** |
-| §3.5 Fraud detector trust model | **Phase B/C** |
-| §3.6 Audit log — tamper-evident | 13, 14, 15, 16, 23 (Object Lock mirror deferred to Phase B alongside observer audit export) |
-| §4.1–4.5 Data model deltas + observer UX | tenancy primitives 3, 4; observer UX **Phase B** |
-| §5 Phase A deliverables | full coverage (1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 14, 15, 16, 19, 20, 21, 22) |
-| §6 Pricing / unit economics | docs-only, not implementation |
-| §7 Functionality delta | implicit via 5, 10, 11 (auth swap) |
-| Open item: Supabase WebAuthn maturity | 0 (spike), 10, 11 |
-| Open item: Postmark vs Resend | deferred to Phase B kickoff (no Phase A dependency) |
-| Open item: Axiom vs Datadog | resolved in plan: Axiom |
-| Open item: S3 Object Lock mirror | deferred to Phase B (no Phase A dependency for tamper-evident — hash chain alone satisfies Phase A SOC2 evidence) |
+| Spec section                             | Covered by task(s)                                                                                                |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| §2.1 Multi-tenant from day one           | 3, 4, 5, 6                                                                                                        |
+| §2.2 Owner + observer access primitive   | partial: tenant_member created (3, 4); observer UX is Phase B                                                     |
+| §2.3 Aggregator ingest layer             | **Phase B** (not in this plan)                                                                                    |
+| §2.4 Fraud detector module               | **Phase B/C** (not in this plan)                                                                                  |
+| §2.5 Supabase + Vercel                   | 1, 2, 7, 19, 20                                                                                                   |
+| §2.6 What stays untouched                | implicit (no engine changes)                                                                                      |
+| §3.1 Untrusted-input discipline          | existing in code; adversarial battery is Phase B deliverable                                                      |
+| §3.2 Tenant isolation                    | 9, 18                                                                                                             |
+| §3.3 Advisor refusal policy              | **Phase B**                                                                                                       |
+| §3.4 Aggregator + token surface          | **Phase B**                                                                                                       |
+| §3.5 Fraud detector trust model          | **Phase B/C**                                                                                                     |
+| §3.6 Audit log — tamper-evident          | 13, 14, 15, 16, 23 (Object Lock mirror deferred to Phase B alongside observer audit export)                       |
+| §4.1–4.5 Data model deltas + observer UX | tenancy primitives 3, 4; observer UX **Phase B**                                                                  |
+| §5 Phase A deliverables                  | full coverage (1, 2, 3, 4, 5, 6, 9, 10, 11, 13, 14, 15, 16, 19, 20, 21, 22)                                       |
+| §6 Pricing / unit economics              | docs-only, not implementation                                                                                     |
+| §7 Functionality delta                   | implicit via 5, 10, 11 (auth swap)                                                                                |
+| Open item: Supabase WebAuthn maturity    | 0 (spike), 10, 11                                                                                                 |
+| Open item: Postmark vs Resend            | deferred to Phase B kickoff (no Phase A dependency)                                                               |
+| Open item: Axiom vs Datadog              | resolved in plan: Axiom                                                                                           |
+| Open item: S3 Object Lock mirror         | deferred to Phase B (no Phase A dependency for tamper-evident — hash chain alone satisfies Phase A SOC2 evidence) |
 
 **Gap to fix inline:** Object Lock mirror was promised in spec §3.6 "nightly mirror to S3 Object Lock" — but spec also lists it as "tamper-evident posture (SOC2 + observer trust)" which is more of a Phase B observer-trust concern. Deferring is defensible; documented in Task 21 SOC2 evidence index as "open evidence for next phases" — already noted there.
 

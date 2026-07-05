@@ -39,31 +39,35 @@ export default async function InboxPage() {
     <div className="space-y-6 px-6 py-8">
       <div>
         <h1 className="text-xl font-semibold text-[#F7F4EE]">Transactions inbox</h1>
-        <p className="text-[#C4B8A8] mt-1 text-sm">
+        <p className="mt-1 text-sm text-[#C4B8A8]">
           {uncategorized.length} uncategorized transaction{uncategorized.length !== 1 ? "s" : ""}
         </p>
       </div>
 
       {uncategorized.length === 0 ? (
-        <p className="text-[#C4B8A8] text-sm">All transactions are categorized.</p>
+        <p className="text-sm text-[#C4B8A8]">All transactions are categorized.</p>
       ) : (
-        <div className="divide-y divide-[#4A2E1A] rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm overflow-hidden">
+        <div className="divide-y divide-[#4A2E1A] overflow-hidden rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm">
           {uncategorized.map((txn) => (
-            <div key={txn.id} className="flex flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:justify-between hover:bg-[#4A2E1A] transition-colors">
+            <div
+              key={txn.id}
+              className="flex flex-col gap-2 px-4 py-3 transition-colors hover:bg-[#4A2E1A] sm:flex-row sm:items-center sm:justify-between"
+            >
               <div className="min-w-0">
-                <p className="truncate font-medium text-[#F7F4EE]">{txn.descriptionRaw || txn.typeRaw || "—"}</p>
-                <p className="text-[#C4B8A8] text-xs font-mono">
+                <p className="truncate font-medium text-[#F7F4EE]">
+                  {txn.descriptionRaw || txn.typeRaw || "—"}
+                </p>
+                <p className="font-mono text-xs text-[#C4B8A8]">
                   {new Date(txn.startedAt).toLocaleDateString()} · {txn.state}
                 </p>
               </div>
               <div className="flex shrink-0 items-center gap-4">
-                <span className={`font-mono font-medium tabular-nums ${txn.amountNative < 0 ? "text-[#F7F4EE]" : "text-[#6BBF85]"}`}>
+                <span
+                  className={`font-mono font-medium tabular-nums ${txn.amountNative < 0 ? "text-[#F7F4EE]" : "text-[#6BBF85]"}`}
+                >
                   {formatAmount(txn.amountNative, txn.currency)}
                 </span>
-                <CategoryPicker
-                  transactionId={txn.id}
-                  categories={categories}
-                />
+                <CategoryPicker transactionId={txn.id} categories={categories} />
               </div>
             </div>
           ))}

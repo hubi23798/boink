@@ -159,7 +159,9 @@ Return ONLY valid JSON in this exact shape:
 
   const validFlags = (parsed.flags ?? []).filter(
     (f): f is DebriefFlag =>
-      typeof f === "object" && f !== null && VALID_FLAG_KINDS.has((f as Record<string, unknown>)["kind"] as string),
+      typeof f === "object" &&
+      f !== null &&
+      VALID_FLAG_KINDS.has((f as Record<string, unknown>)["kind"] as string),
   );
 
   return {

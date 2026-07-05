@@ -80,7 +80,7 @@ export function ForecastSection({
 
   return (
     <div className="space-y-4">
-      <div className="border-border-subtle rounded-xl border p-4 space-y-4">
+      <div className="border-border-subtle space-y-4 rounded-xl border p-4">
         <ForecastChart points={allPoints} currency={currency} />
 
         {/* Slider */}
@@ -96,7 +96,7 @@ export function ForecastSection({
             step={50}
             value={adjustmentEur}
             onChange={(e) => setAdjustmentEur(Number(e.target.value))}
-            className="w-full accent-current cursor-pointer"
+            className="w-full cursor-pointer accent-current"
           />
           <div className="flex justify-between text-xs opacity-30">
             <span>-€200</span>
@@ -129,7 +129,7 @@ export function ForecastSection({
       {/* Goal crossings */}
       {goalCrossings.length > 0 && (
         <div className="space-y-1">
-          <p className="text-fg-muted text-xs px-1">Goal timeline</p>
+          <p className="text-fg-muted px-1 text-xs">Goal timeline</p>
           <div className="divide-border-subtle divide-y rounded-lg border text-sm">
             {goalCrossings.map((g) => (
               <div key={g.id} className="flex items-center justify-between px-3 py-2">
@@ -137,7 +137,7 @@ export function ForecastSection({
                 <span
                   className={
                     g.done
-                      ? "text-green-600 dark:text-green-400 text-xs font-medium"
+                      ? "text-xs font-medium text-green-600 dark:text-green-400"
                       : g.reachDate
                         ? "text-xs"
                         : "text-fg-muted text-xs"

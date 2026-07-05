@@ -23,9 +23,7 @@ function fmtCompact(cents: number, currency: string) {
 }
 
 function toPath(pts: { x: number; y: number }[]) {
-  return pts
-    .map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`)
-    .join(" ");
+  return pts.map((p, i) => `${i === 0 ? "M" : "L"} ${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join(" ");
 }
 
 export function ForecastChart({ points, currency = "EUR" }: Props) {
@@ -42,8 +40,7 @@ export function ForecastChart({ points, currency = "EUR" }: Props) {
   const pad = rangeV * 0.12;
 
   const scaleX = (ts: number) => PAD.left + ((ts - minX) / (maxX - minX)) * CW;
-  const scaleY = (v: number) =>
-    PAD.top + CH - ((v - (minV - pad)) / (rangeV + 2 * pad)) * CH;
+  const scaleY = (v: number) => PAD.top + CH - ((v - (minV - pad)) / (rangeV + 2 * pad)) * CH;
 
   const hist = points.filter((p) => !p.isForecast);
   const fore = points.filter((p) => p.isForecast);
@@ -70,11 +67,7 @@ export function ForecastChart({ points, currency = "EUR" }: Props) {
   const todayX = joinFrom ? scaleX(new Date(joinFrom.date).getTime()) : null;
 
   return (
-    <svg
-      viewBox={`0 0 ${W} ${H}`}
-      className="w-full"
-      aria-label="Net worth forecast"
-    >
+    <svg viewBox={`0 0 ${W} ${H}`} className="w-full" aria-label="Net worth forecast">
       {/* Grid + Y labels */}
       {yTicks.map((v, i) => (
         <g key={i}>

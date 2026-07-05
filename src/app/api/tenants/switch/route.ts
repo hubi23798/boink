@@ -29,10 +29,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "no membership" }, { status: 403 });
   }
 
-  await db
-    .update(user)
-    .set({ defaultTenantId: tenantId })
-    .where(eq(user.id, userData.user.id));
+  await db.update(user).set({ defaultTenantId: tenantId }).where(eq(user.id, userData.user.id));
 
   await supabase.auth.refreshSession();
   return NextResponse.redirect(new URL("/", req.url));

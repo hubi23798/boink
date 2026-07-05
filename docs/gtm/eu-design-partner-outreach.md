@@ -31,6 +31,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Multiple account types, currency mix, bookkeeper relationship = all three fraud wedges are relevant on day one. The SPV / nominee account mix is unaggregable by Revolut alone.
 
 **Contact strategy:**
+
 - Channel: Founders Forum London (member list), Antler London alumni network, or Twitter/X DM following a relevant essay post.
 - Intro ask: find a mutual YC or Antler alum in common. One-line: "I'm building wealth software that gives you an audit trail your bookkeeper can see."
 - Hook: APP fraud / pig-butchering if they're active on crypto Twitter. Bookkeeper accountability if they've tweeted about post-exit financial complexity.
@@ -46,6 +47,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Mixing company and personal flows is a subscription-trap and vendor-bec risk vector. Irish CGT and R&D credit complexity means the advisor's "suggest a professional" refusal is valued — they want signals, not advice.
 
 **Contact strategy:**
+
 - Channel: Silicon Docks slack, NDRC alumni, or direct LinkedIn from a shared Stripe / Intercom connection.
 - Hook: "Your CFO can see everything your company spends. Do they have the same view on your personal accounts?"
 
@@ -60,6 +62,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** `crypto-outflow-scam` detector is the primary hook. Pig-butchering and address-poisoning attacks are endemic in this cohort. They want an audit trail for on-chain movements they can show a lawyer if needed.
 
 **Contact strategy:**
+
 - Channel: ETHAmsterdam alumni, Rockstart Blockchain cohort, or Twitter/Farcaster.
 - Hook: "You already know how to read a block explorer. truffe.ai does that for your entire financial life and flags the addresses you shouldn't be sending to."
 
@@ -74,6 +77,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Observer model is the core sell — they want the attorney to see the audit log without giving the attorney discretionary access. Advisor/manager embezzlement detection (implicit in observer + audit log) is the underlying fear.
 
 **Contact strategy:**
+
 - Channel: Founders Forum family-office track, Campden Wealth network, or CFA Society London events.
 - Hook: "The wealth manager reports to you. Who audits the wealth manager?"
 - Intro: Ideally via their solicitor or accountant — IFA partnership pilot angle (spec §6.3 item 5).
@@ -89,6 +93,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Business manager relationship is a classic BEC risk surface (new payee, urgency memo). Multi-currency subscription traps (US platforms billed in USD, UK bank billed in GBP) are common. No existing audit-trail discipline.
 
 **Contact strategy:**
+
 - Channel: Creator Economy London events, direct DM after a relevant tweet about financial complexity or a scam they've seen in their network.
 - Hook: "Your business manager handles payments you never see. Here's how to see them."
 
@@ -103,6 +108,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Subscription trap and vendor-bec are the wedges. More importantly: they're analytical, they want to understand their own data, and the structured-answer advisor format resonates with how they think.
 
 **Contact strategy:**
+
 - Channel: LinkedIn outreach referencing a specific RSU / equity comp post they made. Or Silicon Docks / Irish Times Tech podcast community.
 - Hook: "Your equity vest schedule is more complex than your advisor's spreadsheet. Here's the audit trail."
 
@@ -117,6 +123,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Family Office tier sale. The white-label observer portal and BYOK encryption are the differentiators. The trust deed likely mandates an audit trail; truffe.ai satisfies it at 10% of Big 4 cost.
 
 **Contact strategy:**
+
 - Channel: TNW conference side dinners, StartupAmsterdam family-office track, or direct via a Dutch notary firm (IFA partnership angle).
 - Hook: "The trust deed says audit trail. We're the audit trail."
 - Deal shape: Annual Family Office contract (€4,788/yr) with a DPA for the Stichting.
@@ -132,6 +139,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Observer model is secondary here; primary sell is the structured-answer + audit log. They appreciate that the advisor explicitly declines legal advice and points to a solicitor — that boundary matters to them professionally.
 
 **Contact strategy:**
+
 - Channel: LinkedIn from a shared Chambers / Legal 500 adjacent connection, or via a property law firm they're a client of (IFA partner angle).
 - Hook: "You audit your clients' financial lives. Who audits yours?"
 
@@ -146,6 +154,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** SPV + brokerage + bank mix = CSV escape hatch + aggregator combo. Analytically sharp, values data-first tooling. Will share with their portfolio founders if they like it — referral multiplier.
 
 **Contact strategy:**
+
 - Channel: Twitter/X DM after a carry / personal finance thread, or Lux Capital / Balderton / Accel alumni network.
 - Hook: "You model cap tables all day. Here's how to model your own balance sheet."
 
@@ -160,6 +169,7 @@ Targets are archetypes derived from the primary persona (spec §1). No cold emai
 **Why truffe.ai:** Subscription trap and vendor-bec are the wedges (recurring expenses they don't review). The calm-cockpit UX is the differentiator — they don't want another dashboard, they want an advisor that tells them what matters.
 
 **Contact strategy:**
+
 - Channel: BMA Finance / Doctors in Finance community (UK), or LinkedIn from a shared alumni network (Oxbridge, Imperial, TCD).
 - Hook: "Your accountant reviews your tax return. Nobody reviews your subscriptions."
 

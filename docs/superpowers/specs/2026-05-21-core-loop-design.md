@@ -48,20 +48,23 @@ async function classifyTransactions(
     name: string;
     parentName: string;
   }>,
-): Promise<LlmClassification[]>
+): Promise<LlmClassification[]>;
 ```
 
 **Prompt design:**
+
 - System prompt: full category list (id, parentName › name) once — eligible for prompt caching
 - User message: JSON array of transactions
 - Claude returns a JSON array: `[{ transactionId, categoryId, confidence }]`
 
 **Validation before applying:**
+
 - Strip any `categoryId` not present in the provided category list
 - Strip entries with missing or non-UUID `categoryId`
 - If response is unparseable JSON, return `[]`
 
 **Error handling:**
+
 - Any Anthropic API error → `console.error` + return `[]`
 - Parse failure → `console.error` + return `[]`
 - Empty `txns` input → return `[]` immediately (no API call)
@@ -103,8 +106,8 @@ export const weeklyDebrief = pgTable("weekly_debrief", {
   userId: uuid("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
-  weekStart: date("week_start").notNull(),           // Monday (UTC)
-  weekEnd: date("week_end").notNull(),               // Sunday (UTC)
+  weekStart: date("week_start").notNull(), // Monday (UTC)
+  weekEnd: date("week_end").notNull(), // Sunday (UTC)
   generatedAt: timestamp("generated_at", { withTimezone: true }).defaultNow().notNull(),
   narrativeText: text("narrative_text").notNull(),
   flags: jsonb("flags").$type<DebriefFlag[]>().notNull().default([]),
@@ -118,12 +121,12 @@ export const weeklyDebrief = pgTable("weekly_debrief", {
 
 ```typescript
 type DebriefFlag =
-  | { kind: "spending_spike";  category: string; changePct: number; message: string }
-  | { kind: "spending_drop";   category: string; changePct: number; message: string }
-  | { kind: "budget_overrun";  category: string; message: string }
-  | { kind: "recurring_due";   name: string;     message: string }
-  | { kind: "income_change";   changePct: number; message: string }
-  | { kind: "new_category";    category: string; message: string };
+  | { kind: "spending_spike"; category: string; changePct: number; message: string }
+  | { kind: "spending_drop"; category: string; changePct: number; message: string }
+  | { kind: "budget_overrun"; category: string; message: string }
+  | { kind: "recurring_due"; name: string; message: string }
+  | { kind: "income_change"; changePct: number; message: string }
+  | { kind: "new_category"; category: string; message: string };
 ```
 
 ### New File: `src/lib/debrief/generate.ts`
@@ -132,8 +135,8 @@ Pure function (receives db, produces output — no HTTP calls except Anthropic).
 
 ```typescript
 interface DebriefInput {
-  weekStart: Date;  // Monday 00:00 UTC
-  weekEnd: Date;    // Sunday 23:59 UTC
+  weekStart: Date; // Monday 00:00 UTC
+  weekEnd: Date; // Sunday 23:59 UTC
 }
 
 interface DebriefOutput {
@@ -141,19 +144,19 @@ interface DebriefOutput {
   flags: DebriefFlag[];
 }
 
-async function generateDebrief(db: Db, input: DebriefInput): Promise<DebriefOutput>
+async function generateDebrief(db: Db, input: DebriefInput): Promise<DebriefOutput>;
 ```
 
 **Context built and passed to Claude:**
 
-| Data | Source | Purpose |
-|------|--------|---------|
-| This week: income, expenses, net, by-category spend | `transaction` + `category` | Primary analysis |
-| Previous week: same shape | `transaction` + `category` | % deltas |
-| 3-month category averages | `transaction` + `category` | Baseline ("normal") |
-| Budget targets vs actuals | `budget_target` | Budget overrun flags |
-| Recurring subscriptions due in next 7 days | `recurring_subscription` | `recurring_due` flags |
-| User's base currency | `user.baseCurrency` | Formatting |
+| Data                                                | Source                     | Purpose               |
+| --------------------------------------------------- | -------------------------- | --------------------- |
+| This week: income, expenses, net, by-category spend | `transaction` + `category` | Primary analysis      |
+| Previous week: same shape                           | `transaction` + `category` | % deltas              |
+| 3-month category averages                           | `transaction` + `category` | Baseline ("normal")   |
+| Budget targets vs actuals                           | `budget_target`            | Budget overrun flags  |
+| Recurring subscriptions due in next 7 days          | `recurring_subscription`   | `recurring_due` flags |
+| User's base currency                                | `user.baseCurrency`        | Formatting            |
 
 **Claude output format (structured JSON, not freeform):**
 
@@ -161,8 +164,17 @@ async function generateDebrief(db: Db, input: DebriefInput): Promise<DebriefOutp
 {
   "narrative": "This week you spent €847, up 23% from last week...",
   "flags": [
-    { "kind": "spending_spike", "category": "Food & Dining", "changePct": 40, "message": "40% more than last week" },
-    { "kind": "budget_overrun", "category": "Entertainment", "message": "€45 over budget with 10 days remaining" }
+    {
+      "kind": "spending_spike",
+      "category": "Food & Dining",
+      "changePct": 40,
+      "message": "40% more than last week"
+    },
+    {
+      "kind": "budget_overrun",
+      "category": "Entertainment",
+      "message": "€45 over budget with 10 days remaining"
+    }
   ]
 }
 ```
@@ -177,6 +189,7 @@ Auth: Authorization: Bearer ${CRON_SECRET}  (same as existing cron routes)
 ```
 
 **Logic:**
+
 1. Validate `CRON_SECRET`
 2. Compute `weekStart` = last Monday 00:00 UTC, `weekEnd` = last Sunday 23:59 UTC
 3. Call `generateDebrief(db, { weekStart, weekEnd })`
@@ -184,6 +197,7 @@ Auth: Authorization: Bearer ${CRON_SECRET}  (same as existing cron routes)
 5. Return `{ ok: true, weekStart }`
 
 **Error handling:**
+
 - Anthropic failure → `generateDebrief` throws → route returns 500 → Vercel Cron retries
 - No transactions for the week → Claude produces a "quiet week" narrative — not an error
 - Re-run for same week → upsert overwrites with fresh result
@@ -197,6 +211,7 @@ New migration file adds `weekly_debrief` table with `UNIQUE (user_id, week_start
 Add to the `Promise.all` data fetch: latest `weekly_debrief` row for `PRIMARY_USER_ID`.
 
 Render a new card between the "This month summary" and "Next actions" sections:
+
 - If no debrief exists yet → card is omitted (no placeholder)
 - If debrief exists → show `narrativeText` as prose + flag list as a compact row of badges
 
@@ -211,17 +226,17 @@ Render a new card between the "This month summary" and "Next actions" sections:
 
 ## File Map
 
-| File | Action |
-|------|--------|
-| `src/lib/categorization/llm.ts` | Create |
-| `src/app/api/settings/import/route.ts` | Modify — add LLM step |
-| `src/lib/db/schema.ts` | Modify — add `weeklyDebrief` table |
-| `drizzle/migrations/XXXX_weekly_debrief.sql` | Create |
-| `src/lib/debrief/generate.ts` | Create |
-| `src/app/api/cron/weekly-debrief/route.ts` | Create |
-| `src/app/page.tsx` | Modify — add debrief card |
-| `tests/unit/categorization-llm.test.ts` | Create |
-| `tests/unit/debrief-generate.test.ts` | Create |
+| File                                         | Action                             |
+| -------------------------------------------- | ---------------------------------- |
+| `src/lib/categorization/llm.ts`              | Create                             |
+| `src/app/api/settings/import/route.ts`       | Modify — add LLM step              |
+| `src/lib/db/schema.ts`                       | Modify — add `weeklyDebrief` table |
+| `drizzle/migrations/XXXX_weekly_debrief.sql` | Create                             |
+| `src/lib/debrief/generate.ts`                | Create                             |
+| `src/app/api/cron/weekly-debrief/route.ts`   | Create                             |
+| `src/app/page.tsx`                           | Modify — add debrief card          |
+| `tests/unit/categorization-llm.test.ts`      | Create                             |
+| `tests/unit/debrief-generate.test.ts`        | Create                             |
 
 ---
 

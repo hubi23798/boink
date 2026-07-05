@@ -37,7 +37,12 @@ export default async function WealthPage() {
   const goalsForForecast = goals.map((g) => {
     const linkedBalances = g.linkedAccountIds.map((id) => balances.get(id) ?? 0);
     const progress = calculateGoalProgress(
-      { kind: g.kind, targetAmount: g.targetAmount, targetDate: g.targetDate ?? null, initialBalance: g.initialBalance ?? null },
+      {
+        kind: g.kind,
+        targetAmount: g.targetAmount,
+        targetDate: g.targetDate ?? null,
+        initialBalance: g.initialBalance ?? null,
+      },
       linkedBalances,
       today,
     );
@@ -67,15 +72,17 @@ export default async function WealthPage() {
       </div>
 
       <div className="rounded-xl border border-[#C9A84C]/40 bg-[#3A2414] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
-        <p className="text-[#C4B8A8] text-sm">Net worth</p>
-        <p className="mt-1 font-mono text-4xl font-bold tracking-tight text-[#C9A84C]">{fmt(nw.netWorth)}</p>
+        <p className="text-sm text-[#C4B8A8]">Net worth</p>
+        <p className="mt-1 font-mono text-4xl font-bold tracking-tight text-[#C9A84C]">
+          {fmt(nw.netWorth)}
+        </p>
         <div className="mt-4 flex gap-6 text-sm">
           <div>
-            <p className="text-[#C4B8A8] text-xs">Assets</p>
+            <p className="text-xs text-[#C4B8A8]">Assets</p>
             <p className="font-mono font-medium text-[#6BBF85]">{fmt(nw.assets)}</p>
           </div>
           <div>
-            <p className="text-[#C4B8A8] text-xs">Liabilities</p>
+            <p className="text-xs text-[#C4B8A8]">Liabilities</p>
             <p className="font-mono font-medium text-[#E07070]">{fmt(nw.liabilities)}</p>
           </div>
         </div>
@@ -84,13 +91,15 @@ export default async function WealthPage() {
       {Object.entries(nw.byKind).length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-medium text-[#C4B8A8]">Breakdown</h2>
-          <div className="divide-y divide-[#4A2E1A] rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm overflow-hidden">
+          <div className="divide-y divide-[#4A2E1A] overflow-hidden rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm">
             {Object.entries(nw.byKind)
               .sort(([, a], [, b]) => Math.abs(b) - Math.abs(a))
               .map(([kind, amount]) => (
                 <div key={kind} className="flex items-center justify-between px-4 py-2.5">
                   <span className="text-[#F7F4EE]">{kindLabel[kind] ?? kind}</span>
-                  <span className={`font-mono tabular-nums ${amount < 0 ? "text-[#E07070]" : "text-[#F7F4EE]"}`}>
+                  <span
+                    className={`font-mono tabular-nums ${amount < 0 ? "text-[#E07070]" : "text-[#F7F4EE]"}`}
+                  >
                     {fmt(amount)}
                   </span>
                 </div>
@@ -106,18 +115,22 @@ export default async function WealthPage() {
               Accounts →
             </Link>
           </h2>
-          <div className="divide-y divide-[#4A2E1A] rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm overflow-hidden">
+          <div className="divide-y divide-[#4A2E1A] overflow-hidden rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm">
             {nw.accounts.map((acct) => (
               <a
                 key={acct.id}
                 href={`/wealth/accounts/${acct.id}`}
-                className="flex items-center justify-between px-4 py-3 hover:bg-[#4A2E1A] transition-colors"
+                className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-[#4A2E1A]"
               >
                 <div>
                   <p className="font-medium text-[#F7F4EE]">{acct.name}</p>
-                  <p className="text-[#C4B8A8] text-xs">{acct.currency} · {acct.kind}</p>
+                  <p className="text-xs text-[#C4B8A8]">
+                    {acct.currency} · {acct.kind}
+                  </p>
                 </div>
-                <span className={`font-mono tabular-nums ${acct.balanceNative < 0 ? "text-[#E07070]" : "text-[#F7F4EE]"}`}>
+                <span
+                  className={`font-mono tabular-nums ${acct.balanceNative < 0 ? "text-[#E07070]" : "text-[#F7F4EE]"}`}
+                >
                   {fmt(acct.balanceNative, acct.currency)}
                 </span>
               </a>

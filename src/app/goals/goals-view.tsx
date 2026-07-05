@@ -116,16 +116,18 @@ function GoalCard({
   const verbLabel = goal.kind === "debt_payoff" ? "paid" : "saved";
 
   return (
-    <div className="border-border-subtle bg-surface rounded border p-4 space-y-3">
+    <div className="border-border-subtle bg-surface space-y-3 rounded border p-4">
       {/* Header */}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2 min-w-0">
-          <span className="font-medium text-fg-default truncate">{goal.name}</span>
-          <span className={`rounded px-1.5 py-0.5 text-xs font-medium shrink-0 ${kindBadgeClass(goal.kind)}`}>
+        <div className="flex min-w-0 items-center gap-2">
+          <span className="text-fg-default truncate font-medium">{goal.name}</span>
+          <span
+            className={`shrink-0 rounded px-1.5 py-0.5 text-xs font-medium ${kindBadgeClass(goal.kind)}`}
+          >
             {kindLabel(goal.kind)}
           </span>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
+        <div className="flex shrink-0 items-center gap-2">
           <button
             onClick={onEdit}
             className="text-fg-muted hover:text-fg-default text-xs"
@@ -152,7 +154,7 @@ function GoalCard({
       </div>
 
       {/* Amount text */}
-      <p className="text-sm text-fg-muted">
+      <p className="text-fg-muted text-sm">
         {fmt(progress.currentAmount, currency)} of {fmt(goal.targetAmount, currency)} {verbLabel}
       </p>
 
@@ -163,7 +165,7 @@ function GoalCard({
             Goal reached 🎯
           </span>
         ) : progress.requiredMonthly !== null ? (
-          <span className="border-border-subtle rounded-full border px-2 py-0.5 text-xs text-fg-muted">
+          <span className="border-border-subtle text-fg-muted rounded-full border px-2 py-0.5 text-xs">
             {fmt(progress.requiredMonthly, currency)}/mo needed
           </span>
         ) : null}
@@ -232,7 +234,7 @@ function GoalForm({
       try {
         const r = await fetch("/api/goals/emergency-suggestion");
         if (r.ok) {
-          const data = await r.json() as { suggested3x: number; suggested6x: number };
+          const data = (await r.json()) as { suggested3x: number; suggested6x: number };
           setEmergencySuggestion({ low: data.suggested3x, high: data.suggested6x });
         }
       } catch {
@@ -244,39 +246,39 @@ function GoalForm({
   }
 
   return (
-    <div className="border-border-subtle rounded border p-4 space-y-3 mt-2">
+    <div className="border-border-subtle mt-2 space-y-3 rounded border p-4">
       {/* Kind */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-fg-muted">Type</label>
+        <label className="text-fg-muted text-xs font-medium">Type</label>
         {mode === "edit" ? (
-          <p className="text-sm text-fg-default">{kindLabel(form.kind)}</p>
+          <p className="text-fg-default text-sm">{kindLabel(form.kind)}</p>
         ) : (
           <div className="space-y-1.5">
-            {(["cash_target", "emergency_fund", "debt_payoff", "portfolio_target"] as GoalKind[]).map(
-              (k) => (
-                <label key={k} className="flex items-start gap-2 cursor-pointer">
-                  <input
-                    type="radio"
-                    name="goal-kind"
-                    value={k}
-                    checked={form.kind === k}
-                    onChange={() => handleKindChange(k)}
-                    className="mt-0.5"
-                  />
-                  <span className="text-sm text-fg-default">
-                    <span className="font-medium">{kindLabel(k)}</span>
-                    <span className="text-fg-muted"> — {KIND_DESCRIPTIONS[k]}</span>
-                  </span>
-                </label>
-              ),
-            )}
+            {(
+              ["cash_target", "emergency_fund", "debt_payoff", "portfolio_target"] as GoalKind[]
+            ).map((k) => (
+              <label key={k} className="flex cursor-pointer items-start gap-2">
+                <input
+                  type="radio"
+                  name="goal-kind"
+                  value={k}
+                  checked={form.kind === k}
+                  onChange={() => handleKindChange(k)}
+                  className="mt-0.5"
+                />
+                <span className="text-fg-default text-sm">
+                  <span className="font-medium">{kindLabel(k)}</span>
+                  <span className="text-fg-muted"> — {KIND_DESCRIPTIONS[k]}</span>
+                </span>
+              </label>
+            ))}
           </div>
         )}
       </div>
 
       {/* Name */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-fg-muted">Name</label>
+        <label className="text-fg-muted text-xs font-medium">Name</label>
         <input
           type="text"
           value={form.name}
@@ -288,7 +290,7 @@ function GoalForm({
 
       {/* Target amount */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-fg-muted">Target amount ({currency})</label>
+        <label className="text-fg-muted text-xs font-medium">Target amount ({currency})</label>
         <input
           type="number"
           min="0"
@@ -299,7 +301,7 @@ function GoalForm({
           placeholder="0.00"
         />
         {form.kind === "emergency_fund" && emergencySuggestion && (
-          <p className="text-xs text-fg-muted">
+          <p className="text-fg-muted text-xs">
             Suggested: {fmt(emergencySuggestion.low, currency)} (3×) –{" "}
             {fmt(emergencySuggestion.high, currency)} (6×)
           </p>
@@ -308,7 +310,7 @@ function GoalForm({
 
       {/* Target date */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-fg-muted">Target date (optional)</label>
+        <label className="text-fg-muted text-xs font-medium">Target date (optional)</label>
         <input
           type="date"
           value={form.targetDate}
@@ -319,7 +321,7 @@ function GoalForm({
 
       {/* Linked accounts */}
       <div className="space-y-1">
-        <label className="text-xs font-medium text-fg-muted">Linked accounts</label>
+        <label className="text-fg-muted text-xs font-medium">Linked accounts</label>
         <select
           multiple
           value={form.linkedAccountIds}
@@ -351,7 +353,7 @@ function GoalForm({
         </button>
         <button
           onClick={onCancel}
-          className="text-fg-muted hover:text-fg-default text-sm px-3 py-1.5"
+          className="text-fg-muted hover:text-fg-default px-3 py-1.5 text-sm"
         >
           Cancel
         </button>
@@ -396,7 +398,10 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
 
   async function handleCreate() {
     const err = validate(form);
-    if (err) { setFormError(err); return; }
+    if (err) {
+      setFormError(err);
+      return;
+    }
 
     setSaving(true);
     setFormError(null);
@@ -414,12 +419,16 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
         body: JSON.stringify(body),
       });
       if (!r.ok) {
-        const d = await r.json().catch(() => ({})) as { error?: string };
+        const d = (await r.json().catch(() => ({}))) as { error?: string };
         setFormError(d.error ?? "Failed to create goal.");
         return;
       }
-      const data = await r.json() as { id: string };
-      const dummyProgress: GoalProgress = { currentAmount: 0, progressPct: 0, requiredMonthly: null };
+      const data = (await r.json()) as { id: string };
+      const dummyProgress: GoalProgress = {
+        currentAmount: 0,
+        progressPct: 0,
+        requiredMonthly: null,
+      };
       const newGoal: SerializedGoal = {
         id: data.id,
         name: body.name,
@@ -442,7 +451,10 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
 
   async function handleEdit(goalId: string) {
     const err = validate(form);
-    if (err) { setFormError(err); return; }
+    if (err) {
+      setFormError(err);
+      return;
+    }
 
     setSaving(true);
     setFormError(null);
@@ -459,11 +471,21 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
         body: JSON.stringify(body),
       });
       if (!r.ok) {
-        const d = await r.json().catch(() => ({})) as { error?: string };
+        const d = (await r.json().catch(() => ({}))) as { error?: string };
         setFormError(d.error ?? "Failed to update goal.");
         return;
       }
-      const data = await r.json() as { goal?: { id: string; name: string; kind: GoalKind; targetAmount: number; targetDate: string | null; linkedAccountIds: string[]; initialBalance: number | null } };
+      const data = (await r.json()) as {
+        goal?: {
+          id: string;
+          name: string;
+          kind: GoalKind;
+          targetAmount: number;
+          targetDate: string | null;
+          linkedAccountIds: string[];
+          initialBalance: number | null;
+        };
+      };
       setGoals((prev) =>
         prev.map((g) => {
           if (g.id !== goalId) return g;
@@ -515,7 +537,7 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
   return (
     <main className="mx-auto max-w-2xl space-y-8 p-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-fg-default">Goals</h1>
+        <h1 className="text-fg-default text-lg font-semibold">Goals</h1>
         {expandedId !== "new" && (
           <button
             onClick={openCreate}
@@ -542,12 +564,10 @@ export function GoalsView({ goals: initialGoals, accounts, currency }: GoalsView
       )}
 
       {goals.length === 0 && expandedId !== "new" && (
-        <p className="text-sm text-fg-muted">No goals yet. Create your first goal above.</p>
+        <p className="text-fg-muted text-sm">No goals yet. Create your first goal above.</p>
       )}
 
-      {archiveError && (
-        <p className="text-xs text-red-600">{archiveError}</p>
-      )}
+      {archiveError && <p className="text-xs text-red-600">{archiveError}</p>}
 
       <div className="space-y-4">
         {goals.map((g) => (

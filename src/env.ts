@@ -29,7 +29,10 @@ const schema = z.object({
   // Bcrypt hashes are exactly 60 chars ($2a/$2b prefix + 22-char salt + 31-char digest).
   // Optional in dev when AUTH_DISABLED=1 (bypass mode). The dummy default
   // is a valid-length placeholder that will never match a real password.
-  ADMIN_PASSWORD: z.string().min(60).default("$2b$12$DISABLED000000000000000000000000000000000000000000000000"),
+  ADMIN_PASSWORD: z
+    .string()
+    .min(60)
+    .default("$2b$12$DISABLED000000000000000000000000000000000000000000000000"),
   // Shared secret for cron endpoints. If set, callers must pass it as
   // x-cron-secret header. Leave unset in local dev to skip the check.
   CRON_SECRET: z.string().min(16).optional(),

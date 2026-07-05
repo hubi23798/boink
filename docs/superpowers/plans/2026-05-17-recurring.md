@@ -12,22 +12,23 @@
 
 ## File Map
 
-| File | Action | Responsibility |
-|------|--------|----------------|
-| `src/lib/db/schema.ts` | Modify | Add `frequencyEnum`, `recurringSubscription`, `recurringDismissal`, type exports |
-| `src/lib/recurring/budget-proposal.ts` | Create | Pure `computeBudgetProposal` function |
-| `tests/unit/recurring-budget.test.ts` | Create | Unit tests for `computeBudgetProposal` |
-| `src/app/api/recurring/subscriptions/route.ts` | Create | POST — create subscription + budget check |
-| `src/app/api/recurring/subscriptions/[id]/route.ts` | Create | PATCH + DELETE |
-| `src/app/api/recurring/dismissals/route.ts` | Create | POST — dismiss detection key |
-| `src/app/recurring/page.tsx` | Modify | Thin server wrapper — fetch data, render `<RecurringView>` |
-| `src/app/recurring/recurring-view.tsx` | Create | `"use client"` — full interactive UI |
+| File                                                | Action | Responsibility                                                                   |
+| --------------------------------------------------- | ------ | -------------------------------------------------------------------------------- |
+| `src/lib/db/schema.ts`                              | Modify | Add `frequencyEnum`, `recurringSubscription`, `recurringDismissal`, type exports |
+| `src/lib/recurring/budget-proposal.ts`              | Create | Pure `computeBudgetProposal` function                                            |
+| `tests/unit/recurring-budget.test.ts`               | Create | Unit tests for `computeBudgetProposal`                                           |
+| `src/app/api/recurring/subscriptions/route.ts`      | Create | POST — create subscription + budget check                                        |
+| `src/app/api/recurring/subscriptions/[id]/route.ts` | Create | PATCH + DELETE                                                                   |
+| `src/app/api/recurring/dismissals/route.ts`         | Create | POST — dismiss detection key                                                     |
+| `src/app/recurring/page.tsx`                        | Modify | Thin server wrapper — fetch data, render `<RecurringView>`                       |
+| `src/app/recurring/recurring-view.tsx`              | Create | `"use client"` — full interactive UI                                             |
 
 ---
 
 ## Task 1: Schema additions + migration
 
 **Files:**
+
 - Modify: `src/lib/db/schema.ts`
 
 - [ ] **Step 1: Add `frequencyEnum`, `recurringSubscription`, and `recurringDismissal` to schema**
@@ -120,6 +121,7 @@ git commit -m "feat(recurring): add recurring_subscription and recurring_dismiss
 ## Task 2: Budget proposal logic + tests
 
 **Files:**
+
 - Create: `src/lib/recurring/budget-proposal.ts`
 - Create: `tests/unit/recurring-budget.test.ts`
 
@@ -227,6 +229,7 @@ git commit -m "feat(recurring): add computeBudgetProposal pure function + tests"
 ## Task 3: API routes
 
 **Files:**
+
 - Create: `src/app/api/recurring/subscriptions/route.ts`
 - Create: `src/app/api/recurring/subscriptions/[id]/route.ts`
 - Create: `src/app/api/recurring/dismissals/route.ts`
@@ -242,12 +245,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { readSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
-import {
-  PRIMARY_USER_ID,
-  budgetTarget,
-  category,
-  recurringSubscription,
-} from "@/lib/db/schema";
+import { PRIMARY_USER_ID, budgetTarget, category, recurringSubscription } from "@/lib/db/schema";
 import { env } from "@/env";
 import { computeBudgetProposal } from "@/lib/recurring/budget-proposal";
 
@@ -258,7 +256,10 @@ const bodySchema = z.object({
   amountNative: z.number().int(),
   currency: z.string().length(3),
   categoryId: z.string().uuid().optional(),
-  nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+  nextDue: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .optional(),
 });
 
 export async function POST(req: Request) {
@@ -299,9 +300,7 @@ export async function POST(req: Request) {
   const [existingRow] = await db
     .select({ amountMonthly: budgetTarget.amountMonthly })
     .from(budgetTarget)
-    .where(
-      and(eq(budgetTarget.userId, PRIMARY_USER_ID), eq(budgetTarget.categoryId, categoryId)),
-    );
+    .where(and(eq(budgetTarget.userId, PRIMARY_USER_ID), eq(budgetTarget.categoryId, categoryId)));
 
   const proposal = computeBudgetProposal(
     categoryId,
@@ -358,12 +357,7 @@ import { and, eq } from "drizzle-orm";
 import { z } from "zod";
 import { readSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db/client";
-import {
-  PRIMARY_USER_ID,
-  budgetTarget,
-  category,
-  recurringSubscription,
-} from "@/lib/db/schema";
+import { PRIMARY_USER_ID, budgetTarget, category, recurringSubscription } from "@/lib/db/schema";
 import { env } from "@/env";
 import { computeBudgetProposal } from "@/lib/recurring/budget-proposal";
 
@@ -375,13 +369,14 @@ const patchSchema = z.object({
   amountNative: z.number().int().optional(),
   currency: z.string().length(3).optional(),
   categoryId: z.string().uuid().nullable().optional(),
-  nextDue: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).nullable().optional(),
+  nextDue: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
 });
 
-export async function PATCH(
-  req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function PATCH(req: Request, { params }: { params: Promise<{ id: string }> }) {
   const cookieStore = await cookies();
   const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
   if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -397,10 +392,7 @@ export async function PATCH(
   if (!parsed.success) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
   const existing = await db.query.recurringSubscription.findFirst({
-    where: and(
-      eq(recurringSubscription.id, id),
-      eq(recurringSubscription.userId, PRIMARY_USER_ID),
-    ),
+    where: and(eq(recurringSubscription.id, id), eq(recurringSubscription.userId, PRIMARY_USER_ID)),
   });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -416,9 +408,7 @@ export async function PATCH(
       ...("nextDue" in parsed.data ? { nextDue: parsed.data.nextDue ?? null } : {}),
       updatedAt: now,
     })
-    .where(
-      and(eq(recurringSubscription.id, id), eq(recurringSubscription.userId, PRIMARY_USER_ID)),
-    )
+    .where(and(eq(recurringSubscription.id, id), eq(recurringSubscription.userId, PRIMARY_USER_ID)))
     .returning();
 
   const newCategoryId = sub!.categoryId;
@@ -476,10 +466,7 @@ export async function PATCH(
   return NextResponse.json({ subscription: sub });
 }
 
-export async function DELETE(
-  _req: Request,
-  { params }: { params: Promise<{ id: string }> },
-) {
+export async function DELETE(_req: Request, { params }: { params: Promise<{ id: string }> }) {
   const cookieStore = await cookies();
   const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
   if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -557,6 +544,7 @@ git commit -m "feat(recurring): API routes — subscriptions CRUD + dismissals"
 ## Task 4: Page refactor + RecurringView client component
 
 **Files:**
+
 - Modify: `src/app/recurring/page.tsx`
 - Create: `src/app/recurring/recurring-view.tsx`
 

@@ -12,13 +12,7 @@ interface RevealProps {
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 
-export function Reveal({
-  children,
-  delay = 0,
-  className = "",
-  as = "div",
-  id,
-}: RevealProps) {
+export function Reveal({ children, delay = 0, className = "", as = "div", id }: RevealProps) {
   const MotionTag = motion[as] as React.ComponentType<
     MotionProps & { className?: string; id?: string }
   >;

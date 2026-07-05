@@ -1,11 +1,6 @@
 import { and, eq, gte, inArray, lt, sum } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import {
-  budgetTarget,
-  category,
-  transaction,
-  user,
-} from "@/lib/db/schema";
+import { budgetTarget, category, transaction, user } from "@/lib/db/schema";
 import { getNetWorthNow } from "@/lib/net-worth/engine";
 
 export const SYSTEM_PROMPT = `You are truffe.ai — an audit-first financial advisor for high-net-worth operators managing complex wealth across multiple accounts, advisors, and jurisdictions.
@@ -82,7 +77,11 @@ export async function buildUserProfileBlock(db: Db, userId: string): Promise<str
   return `[USER PROFILE]\n${lines.join("\n")}`;
 }
 
-export async function buildSnapshotBlock(db: Db, tenantId: string, _userId: string): Promise<string> {
+export async function buildSnapshotBlock(
+  db: Db,
+  tenantId: string,
+  _userId: string,
+): Promise<string> {
   const today = new Date();
   const monthStart = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), 1));
   const monthEnd = new Date(Date.UTC(today.getUTCFullYear(), today.getUTCMonth() + 1, 1));
