@@ -2,17 +2,11 @@ import { NextResponse } from "next/server";
 import { writeDailySnapshots } from "@/lib/net-worth/snapshots";
 import { getDb } from "@/lib/db/client";
 import { PRIMARY_TENANT_ID } from "@/lib/db/schema";
-import { env } from "@/env";
-
-function isAuthorized(req: Request): boolean {
-  const secret = env().CRON_SECRET;
-  if (!secret) return true;
-  return req.headers.get("x-cron-secret") === secret;
-}
+import { isCronAuthorized } from "@/lib/cron/auth";
 
 /** POST /api/cron/balance-snapshots — write today's balance snapshot for all accounts. */
 export async function POST(req: Request) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

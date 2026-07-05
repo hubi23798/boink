@@ -2,17 +2,11 @@ import { NextResponse } from "next/server";
 import { fetchDailyRates, fetchHistoricalRates } from "@/lib/fx/ecb";
 import { storeRates } from "@/lib/fx/rates";
 import { getDb } from "@/lib/db/client";
-import { env } from "@/env";
-
-function isAuthorized(req: Request): boolean {
-  const secret = env().CRON_SECRET;
-  if (!secret) return true; // no secret configured — allow (dev mode)
-  return req.headers.get("x-cron-secret") === secret;
-}
+import { isCronAuthorized } from "@/lib/cron/auth";
 
 /** POST /api/cron/fx-rates?backfill=true — fetch ECB rates (daily or full history). */
 export async function POST(req: Request) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 

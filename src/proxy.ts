@@ -1,3 +1,4 @@
+import { createServerClient as createSupabaseServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 // -- Public route allowlist --------------------------------------------
@@ -67,7 +68,7 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-export function proxy(req: NextRequest) {
+export async function proxy(req: NextRequest) {
   const { pathname } = req.nextUrl;
 
   if (isPublic(pathname)) {
@@ -83,6 +84,26 @@ export function proxy(req: NextRequest) {
     const login = new URL("/login", req.url);
     login.searchParams.set("from", pathname);
     return applySecurityHeaders(NextResponse.redirect(login, 303));
+  }
+
+  // Refresh Supabase session in proxy (Route Handler / middleware context) so
+  // Server Components can read cookies without mutating them.
+  const supabaseUrl = process.env.SUPABASE_URL;
+  const supabaseAnonKey = process.env.SUPABASE_ANON_KEY;
+  if (supabaseUrl && supabaseAnonKey) {
+    let res = applySecurityHeaders(NextResponse.next({ request: req }));
+    const supabase = createSupabaseServerClient(supabaseUrl, supabaseAnonKey, {
+      cookies: {
+        getAll: () => req.cookies.getAll(),
+        setAll: (toSet) => {
+          toSet.forEach(({ name, value }) => req.cookies.set(name, value));
+          res = applySecurityHeaders(NextResponse.next({ request: req }));
+          toSet.forEach(({ name, value, options }) => res.cookies.set(name, value, options));
+        },
+      },
+    });
+    await supabase.auth.getUser();
+    return res;
   }
 
   return applySecurityHeaders(NextResponse.next());

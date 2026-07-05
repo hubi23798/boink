@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { and, eq, isNull } from "drizzle-orm";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { getDb } from "@/lib/db/client";
 import { tenantMember, user } from "@/lib/db/schema";
 
@@ -11,7 +11,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "tenantId required" }, { status: 400 });
   }
 
-  const supabase = await createServerClient();
+  const supabase = await createRouteHandlerClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) {
     return NextResponse.json({ error: "unauthenticated" }, { status: 401 });

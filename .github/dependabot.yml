@@ -1,0 +1,23 @@
+# Dependency vulnerability + version scanning — SOC2 CC7.1 (TRU-A-10).
+# Dependabot alerts and automated security fixes are enabled at repo level;
+# this file adds scheduled version-update PRs.
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 5
+    groups:
+      minor-and-patch:
+        update-types:
+          - "minor"
+          - "patch"
+
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "weekly"
+      day: "monday"
+    open-pull-requests-limit: 3

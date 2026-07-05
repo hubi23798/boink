@@ -42,7 +42,7 @@ export default async function TransactionsPage({ searchParams }: Props) {
     (c) => c.parentId !== null && c.kind !== "transfer",
   );
 
-  const conditions = [];
+  const conditions = [eq(transaction.tenantId, tenantId)];
   if (filters.accountId) conditions.push(eq(transaction.accountId, filters.accountId));
   if (filters.from) conditions.push(gte(transaction.startedAt, new Date(filters.from)));
   if (filters.to) conditions.push(lte(transaction.startedAt, new Date(filters.to + "T23:59:59Z")));

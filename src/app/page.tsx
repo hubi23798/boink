@@ -1,5 +1,5 @@
 import { redirect } from "next/navigation";
-import { desc, isNull } from "drizzle-orm";
+import { and, desc, eq, isNull } from "drizzle-orm";
 import { getAuthContext } from "@/lib/auth/guard";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
@@ -44,9 +44,10 @@ export default async function HomePage() {
 
   const [nw, thisMo, lastMo, recentTxns, uncategorizedCount, latestDebrief] = await Promise.all([
     getNetWorthNow(db, tenantId),
-    getMonthlySummary(db, curYear, curMonth),
-    getMonthlySummary(db, prev.year, prev.month),
+    getMonthlySummary(db, tenantId, curYear, curMonth),
+    getMonthlySummary(db, tenantId, prev.year, prev.month),
     db.query.transaction.findMany({
+      where: eq(transaction.tenantId, tenantId),
       orderBy: [desc(transaction.startedAt)],
       limit: 8,
       columns: {
@@ -58,7 +59,7 @@ export default async function HomePage() {
         categoryId: true,
       },
     }),
-    db.$count(transaction, isNull(transaction.categoryId)),
+    db.$count(transaction, and(eq(transaction.tenantId, tenantId), isNull(transaction.categoryId))),
     db.query.weeklyDebrief.findFirst({
       where: (d, { eq }) => eq(d.tenantId, tenantId),
       orderBy: (d, { desc }) => [desc(d.weekStart)],
@@ -75,7 +76,8 @@ export default async function HomePage() {
   const categoriesData =
     categoryIds.length > 0
       ? await db.query.category.findMany({
-          where: (cat, { inArray }) => inArray(cat.id, categoryIds),
+          where: (cat, { and, eq, inArray }) =>
+            and(eq(cat.tenantId, tenantId), inArray(cat.id, categoryIds)),
           columns: { id: true, name: true },
         })
       : [];
@@ -121,6 +123,7 @@ export default async function HomePage() {
       <section className="space-y-4">
         <KpiCard
           variant="hero"
+          testId="net-worth-hero"
           label={`Net Worth · as of ${nw.asOf}`}
           value={fmt(nw.netWorth)}
           delta={

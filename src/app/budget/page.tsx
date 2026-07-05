@@ -103,6 +103,7 @@ export default async function BudgetPage({ searchParams }: Props) {
       .from(transaction)
       .where(
         and(
+          eq(transaction.tenantId, tenantId),
           inArray(transaction.categoryId, leafCategoryIds),
           gte(transaction.startedAt, monthStart),
           lt(transaction.startedAt, monthEnd),

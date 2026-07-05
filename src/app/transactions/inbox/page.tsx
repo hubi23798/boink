@@ -1,4 +1,4 @@
-import { asc, desc, eq, isNull } from "drizzle-orm";
+import { and, asc, desc, eq, isNull } from "drizzle-orm";
 import { CategoryPicker } from "@/components/category-picker";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
@@ -11,7 +11,7 @@ export default async function InboxPage() {
 
   const [uncategorized, categories] = await Promise.all([
     db.query.transaction.findMany({
-      where: isNull(transaction.categoryId),
+      where: and(eq(transaction.tenantId, tenantId), isNull(transaction.categoryId)),
       orderBy: [desc(transaction.startedAt)],
       limit: 100,
       columns: {

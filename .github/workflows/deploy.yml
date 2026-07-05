@@ -1,3 +1,6 @@
+# Legacy Fly.io deploy — retained until TRU-A-07 DNS cutover completes.
+# Vercel production deploys via Git integration (docs/operations/vercel-project-setup.md).
+
 name: Deploy
 
 on:

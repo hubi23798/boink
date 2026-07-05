@@ -1,9 +1,21 @@
 # Vercel Cutover Runbook
 
 ## Prerequisites
-- Vercel project `truffe` imported from repo, all env vars set (see `.env.example`)
+- Vercel project `truffe` imported from repo — see `docs/operations/vercel-project-setup.md`
 - Supabase project `truffe-eu` (Frankfurt, eu-central-1) live and migrations applied
 - Production branch: `main`. Preview branches: all.
+
+## Operator checklist (TRU-A-07)
+
+> **Status:** Pending operator execution. Code/config for Vercel is ready (TRU-A-06); DNS cutover requires a scheduled maintenance window.
+
+- [ ] Vercel preview deploy green on latest `main`
+- [ ] All production env vars set in Vercel
+- [ ] Fly traffic snapshot taken
+- [ ] DNS CNAME updated (TTL 300)
+- [ ] 30-min monitoring window complete
+- [ ] Smoke test passed (login, dashboard, transactions, advisor)
+- [ ] 24h soak complete; Fly kept warm for rollback
 
 ## Steps
 

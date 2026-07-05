@@ -77,6 +77,7 @@ export default async function InsightsPage({ searchParams }: Props) {
   const [txns, allCategories] = await Promise.all([
     db.query.transaction.findMany({
       where: and(
+        eq(transaction.tenantId, tenantId),
         gte(transaction.startedAt, windowStart),
         lt(transaction.startedAt, windowEnd),
         or(isNull(transaction.categoryId), ne(transaction.categoryId, INTERNAL_TRANSFER_CAT)),

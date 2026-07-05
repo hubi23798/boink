@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 
 export async function POST(req: Request) {
   const body = (await req.json().catch(() => null)) as unknown;
@@ -7,7 +7,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "email required" }, { status: 400 });
   }
   const { email } = body as { email: string };
-  const supabase = await createServerClient();
+  const supabase = await createRouteHandlerClient();
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: { emailRedirectTo: `${new URL(req.url).origin}/auth/callback` },

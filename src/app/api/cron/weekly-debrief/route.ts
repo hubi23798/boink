@@ -2,18 +2,12 @@ import { NextResponse, type NextRequest } from "next/server";
 import { getDb } from "@/lib/db/client";
 import { weeklyDebrief, PRIMARY_TENANT_ID } from "@/lib/db/schema";
 import { generateDebrief } from "@/lib/debrief/generate";
-import { env } from "@/env";
+import { isCronAuthorized } from "@/lib/cron/auth";
 
 const CRON_USER_ID = "00000000-0000-0000-0000-000000000001";
 
-function isAuthorized(req: Request): boolean {
-  const secret = env().CRON_SECRET;
-  if (!secret) return true;
-  return req.headers.get("x-cron-secret") === secret;
-}
-
 export async function POST(req: NextRequest) {
-  if (!isAuthorized(req)) {
+  if (!isCronAuthorized(req)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 

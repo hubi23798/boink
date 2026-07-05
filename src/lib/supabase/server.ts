@@ -2,19 +2,39 @@ import { createServerClient as ssr } from "@supabase/ssr";
 import { cookies } from "next/headers";
 import { env } from "@/env";
 
-export async function createServerClient() {
+type CreateServerClientOptions = {
+  /** Route Handlers and Server Actions may write cookies; Server Components may not. */
+  allowCookieWrite?: boolean;
+};
+
+async function createSupabaseServerClient(options: CreateServerClientOptions = {}) {
+  const { allowCookieWrite = false } = options;
   const cookieStore = await cookies();
   return ssr(env().SUPABASE_URL!, env().SUPABASE_ANON_KEY!, {
     cookies: {
       getAll: () => cookieStore.getAll(),
       setAll: (toSet) => {
-        for (const { name, value, options } of toSet) {
-          cookieStore.set(name, value, options);
+        if (!allowCookieWrite) {
+          // Session refresh runs in proxy; Server Components must not mutate cookies.
+          return;
+        }
+        for (const { name, value, options: cookieOptions } of toSet) {
+          cookieStore.set(name, value, cookieOptions);
         }
       },
     },
     auth: { experimental: { passkey: true } },
   });
+}
+
+/** Read-only client for Server Components (default). */
+export async function createServerClient() {
+  return createSupabaseServerClient();
+}
+
+/** Writable client for Route Handlers and Server Actions. */
+export async function createRouteHandlerClient() {
+  return createSupabaseServerClient({ allowCookieWrite: true });
 }
 
 export function createServiceRoleClient() {

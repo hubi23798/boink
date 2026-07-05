@@ -1,0 +1,16 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/fx-rates",
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/cron/balance-snapshots",
+      "schedule": "0 1 * * *"
+    },
+    {
+      "path": "/api/cron/weekly-debrief",
+      "schedule": "0 8 * * 1"
+    }
+  ]
+}

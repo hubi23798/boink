@@ -55,6 +55,7 @@ export default async function CategoriesPage({ searchParams }: Props) {
     }),
     db.query.transaction.findMany({
       where: and(
+        eq(transaction.tenantId, tenantId),
         gte(transaction.startedAt, start),
         lt(transaction.startedAt, end),
         or(isNull(transaction.categoryId), ne(transaction.categoryId, INTERNAL_TRANSFER_CAT)),

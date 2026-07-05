@@ -62,6 +62,10 @@ jobs:
       - name: Unit tests
         run: pnpm test:unit -- --run
 
+      - name: Dependency audit (high+)
+        run: pnpm audit --audit-level=high
+        continue-on-error: true
+
       - name: Install Playwright
         run: pnpm exec playwright install --with-deps chromium
 

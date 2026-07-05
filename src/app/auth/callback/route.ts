@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createServerClient } from "@/lib/supabase/server";
+import { createRouteHandlerClient } from "@/lib/supabase/server";
 import { getDb } from "@/lib/db/client";
 import { countActiveMemberships, ensureAppUserForAuth } from "@/lib/tenancy/sync-user";
 
@@ -9,7 +9,7 @@ export async function GET(request: Request) {
   const next = searchParams.get("next") ?? "/";
 
   if (code) {
-    const supabase = await createServerClient();
+    const supabase = await createRouteHandlerClient();
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (error) console.error("[auth/callback] exchangeCodeForSession error:", error.message, error.code);
     if (!error) {

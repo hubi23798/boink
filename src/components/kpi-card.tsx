@@ -13,6 +13,8 @@ export interface KpiCardProps {
   icon?: LucideIcon;
   variant?: KpiVariant;
   className?: string;
+  /** Optional test id for e2e (e.g. net-worth hero on Home). */
+  testId?: string;
 }
 
 function DeltaIcon({ direction }: { direction: KpiDeltaDirection }) {
@@ -30,6 +32,7 @@ export function KpiCard({
   icon: Icon,
   variant = "default",
   className,
+  testId,
 }: KpiCardProps) {
   const isHero = variant === "hero";
 
@@ -41,6 +44,7 @@ export function KpiCard({
 
   return (
     <div
+      data-testid={testId}
       className={cn(
         // Surface + radius
         "relative flex flex-col gap-3 bg-card",
