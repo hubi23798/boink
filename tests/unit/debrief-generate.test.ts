@@ -1,5 +1,4 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import type { DebriefFlag } from "@/lib/db/schema";
 import { PRIMARY_TENANT_ID } from "@/lib/db/schema";
 
 const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";

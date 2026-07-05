@@ -19,11 +19,6 @@ export function CategoryPicker({ transactionId, categories, onDone }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const leaves = categories.filter((c) => categories.every((p) => p.id !== c.parentId) === false
-    ? true
-    : !categories.some((p) => p.parentId === c.id) || c.parentId !== null
-  );
-
   // Simple: show all non-parent categories (those that have a parentId set)
   const options = categories.filter((c) => c.parentId !== null);
 

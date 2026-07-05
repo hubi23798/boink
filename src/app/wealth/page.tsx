@@ -1,4 +1,5 @@
 import { and, asc, eq } from "drizzle-orm";
+import Link from "next/link";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import { goal } from "@/lib/db/schema";
@@ -101,9 +102,9 @@ export default async function WealthPage() {
       {nw.accounts.length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-medium">
-            <a href="/wealth/accounts" className="text-[#6BBF85] hover:underline">
+            <Link href="/wealth/accounts" className="text-[#6BBF85] hover:underline">
               Accounts →
-            </a>
+            </Link>
           </h2>
           <div className="divide-y divide-[#4A2E1A] rounded-xl border border-[#4A2E1A] bg-[#3A2414] text-sm overflow-hidden">
             {nw.accounts.map((acct) => (

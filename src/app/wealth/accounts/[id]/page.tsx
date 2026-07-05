@@ -1,4 +1,5 @@
 import { notFound } from "next/navigation";
+import Link from "next/link";
 import { and, desc, eq } from "drizzle-orm";
 import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
@@ -6,7 +7,6 @@ import {
   account,
   balanceSnapshot,
   transaction,
-  category,
 } from "@/lib/db/schema";
 
 interface Props {
@@ -65,7 +65,7 @@ export default async function AccountDetailPage({ params }: Props) {
   return (
     <main className="mx-auto max-w-2xl space-y-8 p-6">
       <div>
-        <a href="/wealth/accounts" className="text-fg-muted text-sm hover:underline">← Accounts</a>
+        <Link href="/wealth/accounts" className="text-fg-muted text-sm hover:underline">← Accounts</Link>
         <h1 className="mt-2 text-xl font-semibold">{acct.name}</h1>
         <p className="text-fg-muted mt-1 text-xs">
           {acct.currency} · {acct.kind}

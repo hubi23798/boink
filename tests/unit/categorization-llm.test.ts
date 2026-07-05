@@ -10,7 +10,6 @@ vi.mock("@anthropic-ai/sdk", () => {
   };
 });
 
-import Anthropic from "@anthropic-ai/sdk";
 import { classifyTransactions } from "@/lib/categorization/llm";
 
 const CATEGORIES = [

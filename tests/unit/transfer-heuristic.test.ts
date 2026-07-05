@@ -2,8 +2,6 @@ import { describe, expect, it, vi } from "vitest";
 import { applyTransferHeuristic } from "@/lib/categorization/transfer-heuristic";
 import type { Transaction } from "@/lib/db/schema";
 
-const INTERNAL_TRANSFER_CAT = "00000000-0000-0000-0002-000000000021";
-
 function makeTxn(overrides: Partial<Transaction>): Transaction {
   return {
     id: "txn-1",

@@ -3,7 +3,7 @@ import { createClient } from "@supabase/supabase-js";
 import { seedTwoTenants } from "./fixtures/two-tenants";
 
 test("user A cannot read user B's accounts via Supabase REST", async () => {
-  const { userA: _userA, tA, tB } = await seedTwoTenants();
+  const { tB } = await seedTwoTenants();
 
   // Sign in as user A with anon client — JWT will have active_tenant_id = tA (via Auth Hook)
   const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!);

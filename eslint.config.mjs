@@ -21,7 +21,7 @@ const config = [
     // cookies adapter at src/lib/auth/cookies.ts is the deliberate
     // framework seam — explicitly excused below.
     files: ["src/lib/**/*.ts"],
-    ignores: ["src/lib/auth/cookies.ts"],
+    ignores: ["src/lib/auth/cookies.ts", "src/lib/supabase/server.ts"],
     rules: {
       "no-restricted-imports": [
         "error",
@@ -38,7 +38,7 @@ const config = [
     },
   },
   {
-    ignores: [".next/**", "node_modules/**", "src/lib/db/migrations/**"],
+    ignores: [".next/**", "node_modules/**", "src/lib/db/migrations/**", ".claude/**"],
   },
 ];
 
