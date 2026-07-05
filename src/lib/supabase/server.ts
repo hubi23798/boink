@@ -13,6 +13,7 @@ export async function createServerClient() {
         }
       },
     },
+    auth: { experimental: { passkey: true } },
   });
 }
 

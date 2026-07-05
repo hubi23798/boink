@@ -1,21 +1,14 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { asc, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, category } from "@/lib/db/schema";
-import { env } from "@/env";
+import { category } from "@/lib/db/schema";
 
 export default async function CategoriesPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const db = getDb();
   const categories = await db.query.category.findMany({
-    where: eq(category.userId, PRIMARY_USER_ID),
+    where: eq(category.tenantId, tenantId),
     orderBy: [asc(category.name)],
   });
 

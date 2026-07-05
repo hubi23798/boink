@@ -8,9 +8,9 @@ import { AdvisorMockup, BudgetMockup, WealthMockup } from "./mockups";
 import "./landing.css";
 
 export const metadata: Metadata = {
-  title: "truffe.ai — your money already knows. we just help you listen.",
+  title: "truffe.ai — wealth software that works for you.",
   description:
-    "A personal finance OS with an AI advisor that surfaces what your money already knows: budgets, patterns, forecasts, and the questions worth asking.",
+    "A financial OS for founders, executives, and families managing wealth across multiple accounts, advisors, and jurisdictions. Audit-first. Detective-only. Built for trust.",
 };
 
 export default function LandingPage() {
@@ -109,7 +109,7 @@ function HeroPrompt() {
     <div className="hero-prompt">
       <div className="hero-prompt-lead-wrap">
         <PixelPig />
-        <p className="hero-prompt-lead">Ready to sniff out some hidden savings?</p>
+        <p className="hero-prompt-lead">Ask about a vendor, a pattern, or someone with access to your money.</p>
       </div>
 
       <form className="hero-prompt-form" action="/login" method="get">
@@ -329,8 +329,9 @@ function BottomCTA() {
               <span className="strong accent">start listening</span>
             </h2>
             <p className="cta-body">
-              truffe.ai is a personal finance OS built for one person, you. Import your Revolut CSV,
-              connect your accounts, and let the advisor surface what your data already knows.
+              truffe.ai is a financial OS for founders, executives, and families managing wealth
+              across multiple accounts, advisors, and jurisdictions. Connect your accounts, invite a
+              trusted observer, and let the audit trail surface what your data already knows.
             </p>
             <div className="cta-actions">
               <MotionLink href="/login" className="btn btn-primary">
@@ -348,7 +349,7 @@ function BottomCTA() {
               </MotionLink>
             </div>
             <p className="cta-foot">
-              Personal use · Revolut CSV import · AI advisor with strict guardrails
+              Multi-account · Observer access · AI advisor with strict guardrails
             </p>
           </div>
         </Reveal>
@@ -386,12 +387,13 @@ function LandingFooter() {
             links={[
               { href: "/privacy", label: "Privacy" },
               { href: "/terms", label: "Terms" },
+              { href: "/trust", label: "Trust & Security" },
             ]}
           />
         </div>
 
         <div className="footer-bottom">
-          <span>© 2026 truffe.ai · Personal use only</span>
+          <span>© 2026 truffe.ai</span>
         </div>
       </div>
     </footer>

@@ -1,33 +1,26 @@
-import { cookies } from "next/headers";
-import { redirect, notFound } from "next/navigation";
-import { and, asc, desc, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { notFound } from "next/navigation";
+import { and, desc, eq } from "drizzle-orm";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   account,
   balanceSnapshot,
   transaction,
   category,
 } from "@/lib/db/schema";
-import { env } from "@/env";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export default async function AccountDetailPage({ params }: Props) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const { id } = await params;
   const db = getDb();
 
   const acct = await db.query.account.findFirst({
-    where: and(eq(account.id, id), eq(account.userId, PRIMARY_USER_ID)),
+    where: and(eq(account.id, id), eq(account.tenantId, tenantId)),
   });
   if (!acct) notFound();
 
@@ -55,7 +48,6 @@ export default async function AccountDetailPage({ params }: Props) {
     }),
   ]);
 
-  // Fetch category names for displayed transactions
   const categoryIds = [...new Set(recentTxns.map((t) => t.categoryId).filter(Boolean) as string[])];
   const categories =
     categoryIds.length > 0
@@ -81,7 +73,6 @@ export default async function AccountDetailPage({ params }: Props) {
         </p>
       </div>
 
-      {/* Latest snapshot */}
       {snapshots[0] && (
         <div className="border-border-subtle rounded-xl border p-6">
           <p className="text-fg-muted text-sm">Balance as of {snapshots[0].asOfDate}</p>
@@ -89,7 +80,6 @@ export default async function AccountDetailPage({ params }: Props) {
         </div>
       )}
 
-      {/* Balance history */}
       {snapshots.length > 1 && (
         <section className="space-y-2">
           <h2 className="text-sm font-medium">Balance history</h2>
@@ -104,7 +94,6 @@ export default async function AccountDetailPage({ params }: Props) {
         </section>
       )}
 
-      {/* Recent transactions */}
       <section className="space-y-2">
         <h2 className="text-sm font-medium">Recent transactions</h2>
         {recentTxns.length === 0 ? (

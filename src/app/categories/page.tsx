@@ -1,10 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, eq, gte, isNull, lt, ne, or } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, category, transaction } from "@/lib/db/schema";
-import { env } from "@/env";
+import { category, transaction } from "@/lib/db/schema";
 import { monthLabel, prevMonth } from "@/lib/summary";
 
 interface Props {
@@ -26,11 +23,7 @@ function toParam(year: number, month: number) {
 }
 
 export default async function CategoriesPage({ searchParams }: Props) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   // ── Month param ──────────────────────────────────────────────────────────
   const params = await searchParams;
@@ -57,7 +50,7 @@ export default async function CategoriesPage({ searchParams }: Props) {
   const db = getDb();
   const [allCategories, txns] = await Promise.all([
     db.query.category.findMany({
-      where: eq(category.userId, PRIMARY_USER_ID),
+      where: eq(category.tenantId, tenantId),
       columns: { id: true, name: true, parentId: true, kind: true },
     }),
     db.query.transaction.findMany({

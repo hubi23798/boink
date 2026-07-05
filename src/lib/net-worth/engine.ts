@@ -1,6 +1,6 @@
-import { and, asc, desc, eq, isNotNull, sql } from "drizzle-orm";
+import { and, asc, eq, isNotNull, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { PRIMARY_USER_ID, account, balanceSnapshot, transaction } from "@/lib/db/schema";
+import { account, balanceSnapshot, transaction } from "@/lib/db/schema";
 import { getFxRate } from "@/lib/fx/rates";
 
 export interface AccountBalance {
@@ -44,11 +44,11 @@ async function getLedgerBalance(db: Db, accountId: string): Promise<number> {
  * Ledger-derived balance for all transactional accounts.
  * Amounts in base-currency minor units (EUR cents).
  */
-export async function getNetWorthNow(db: Db): Promise<NetWorthNow> {
+export async function getNetWorthNow(db: Db, tenantId: string): Promise<NetWorthNow> {
   const today = new Date().toISOString().split("T")[0]!;
 
   const accounts = await db.query.account.findMany({
-    where: and(eq(account.userId, PRIMARY_USER_ID), eq(account.isActive, true)),
+    where: and(eq(account.tenantId, tenantId), eq(account.isActive, true)),
     columns: { id: true, name: true, kind: true, currency: true, isLiquid: true },
   });
 
@@ -90,10 +90,11 @@ export async function getNetWorthNow(db: Db): Promise<NetWorthNow> {
  */
 export async function getNetWorthHistory(
   db: Db,
+  tenantId: string,
   limit = 365,
 ): Promise<NetWorthPoint[]> {
   const accounts = await db.query.account.findMany({
-    where: and(eq(account.userId, PRIMARY_USER_ID), eq(account.isActive, true)),
+    where: and(eq(account.tenantId, tenantId), eq(account.isActive, true)),
     columns: { id: true, kind: true },
   });
 

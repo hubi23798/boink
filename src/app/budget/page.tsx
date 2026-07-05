@@ -1,16 +1,12 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, eq, gte, inArray, lt, sum } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   budgetTarget,
   category,
   transaction,
   user,
 } from "@/lib/db/schema";
-import { env } from "@/env";
 import { BudgetRow } from "./budget-row";
 import type { Route } from "next";
 import Link from "next/link";
@@ -49,13 +45,9 @@ function fmt(minor: number, currency: string) {
 }
 
 export default async function BudgetPage({ searchParams }: Props) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
+  const { tenantId, userId } = await requirePageAuth();
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) redirect("/login");
 
   const params = await searchParams;
   const selectedMonth = parseMonthParam(params.month);
@@ -76,13 +68,13 @@ export default async function BudgetPage({ searchParams }: Props) {
   const [userRow] = await db
     .select({ baseCurrency: user.baseCurrency })
     .from(user)
-    .where(eq(user.id, PRIMARY_USER_ID))
+    .where(eq(user.id, userId))
     .limit(1);
   const currency = userRow?.baseCurrency ?? "EUR";
 
   // Load all non-archived categories
   const allCats = await db.query.category.findMany({
-    where: and(eq(category.userId, PRIMARY_USER_ID), eq(category.isArchived, false)),
+    where: and(eq(category.tenantId, tenantId), eq(category.isArchived, false)),
     columns: { id: true, name: true, parentId: true, kind: true },
     orderBy: (c, { asc }) => [asc(c.name)],
   });
@@ -94,7 +86,7 @@ export default async function BudgetPage({ searchParams }: Props) {
 
   // Load budget targets
   const targets = await db.query.budgetTarget.findMany({
-    where: eq(budgetTarget.userId, PRIMARY_USER_ID),
+    where: eq(budgetTarget.tenantId, tenantId),
     columns: { categoryId: true, amountMonthly: true },
   });
   const targetMap = new Map(targets.map((t) => [t.categoryId, t.amountMonthly]));

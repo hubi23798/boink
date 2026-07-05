@@ -1,10 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, eq, gte } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   account,
   category,
   recurringDismissal,
@@ -12,27 +9,21 @@ import {
   transaction,
   user,
 } from "@/lib/db/schema";
-import { env } from "@/env";
 import { detectRecurring } from "@/lib/recurring/detect";
 import { RecurringView, type SerializedCandidate } from "./recurring-view";
 
 export default async function RecurringPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
+  const { tenantId, userId } = await requirePageAuth();
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) redirect("/login");
-
   const asOf = new Date();
   const lookback = new Date(
     Date.UTC(asOf.getUTCFullYear(), asOf.getUTCMonth() - 3, asOf.getUTCDate()),
   );
 
   const [subs, dismissals, txns, accounts, allCats, userRows] = await Promise.all([
-    db.select().from(recurringSubscription).where(eq(recurringSubscription.userId, PRIMARY_USER_ID)),
-    db.select({ key: recurringDismissal.key }).from(recurringDismissal).where(eq(recurringDismissal.userId, PRIMARY_USER_ID)),
+    db.select().from(recurringSubscription).where(eq(recurringSubscription.tenantId, tenantId)),
+    db.select({ key: recurringDismissal.key }).from(recurringDismissal).where(eq(recurringDismissal.tenantId, tenantId)),
     db.select({
       accountId: transaction.accountId,
       descriptionRaw: transaction.descriptionRaw,
@@ -40,11 +31,11 @@ export default async function RecurringPage() {
       currency: transaction.currency,
       startedAt: transaction.startedAt,
     }).from(transaction).where(gte(transaction.startedAt, lookback)),
-    db.select({ id: account.id, name: account.name }).from(account).where(eq(account.userId, PRIMARY_USER_ID)),
+    db.select({ id: account.id, name: account.name }).from(account).where(eq(account.tenantId, tenantId)),
     db.select({ id: category.id, name: category.name, parentId: category.parentId, kind: category.kind })
       .from(category)
-      .where(and(eq(category.userId, PRIMARY_USER_ID), eq(category.isArchived, false))),
-    db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, PRIMARY_USER_ID)).limit(1),
+      .where(and(eq(category.tenantId, tenantId), eq(category.isArchived, false))),
+    db.select({ baseCurrency: user.baseCurrency }).from(user).where(eq(user.id, userId)).limit(1),
   ]);
 
   const confirmedKeys = new Set(

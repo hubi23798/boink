@@ -1,10 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, account, goal, user } from "@/lib/db/schema";
-import { env } from "@/env";
+import { account, goal, user } from "@/lib/db/schema";
 import { getLatestBalances } from "@/lib/goals/balance";
 import { calculateGoalProgress } from "@/lib/goals/progress";
 import { GoalsView } from "./goals-view";
@@ -28,28 +25,23 @@ export interface AccountOption {
 }
 
 export default async function GoalsPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
+  const { tenantId, userId } = await requirePageAuth();
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) redirect("/login");
-
   const [goals, accounts, userRows] = await Promise.all([
     db
       .select()
       .from(goal)
-      .where(and(eq(goal.userId, PRIMARY_USER_ID), eq(goal.isArchived, false)))
+      .where(and(eq(goal.tenantId, tenantId), eq(goal.isArchived, false)))
       .orderBy(asc(goal.createdAt)),
     db
       .select({ id: account.id, name: account.name, kind: account.kind })
       .from(account)
-      .where(eq(account.userId, PRIMARY_USER_ID)),
+      .where(eq(account.tenantId, tenantId)),
     db
       .select({ baseCurrency: user.baseCurrency })
       .from(user)
-      .where(eq(user.id, PRIMARY_USER_ID))
+      .where(eq(user.id, userId))
       .limit(1),
   ]);
 

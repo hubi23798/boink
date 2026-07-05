@@ -1,20 +1,14 @@
-import { createHash } from "node:crypto";
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { DuplicateFileError, ingest } from "@/lib/ingestion/ingest";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { env } from "@/env";
 
 const MAX_BYTES = 10 * 1024 * 1024; // 10 MB
 
 export async function POST(req: Request) {
-  // Auth (defense-in-depth; proxy already guards the route)
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-  const sess = await readSession(getDb(), sid);
-  if (!sess) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   let formData: FormData;
   try {
@@ -39,7 +33,7 @@ export async function POST(req: Request) {
   const buffer = Buffer.from(await fileEntry.arrayBuffer());
 
   try {
-    const result = await ingest(getDb(), buffer);
+    const result = await ingest(getDb(), tenantId, userId, buffer);
     return NextResponse.json(result, { status: 200 });
   } catch (e) {
     if (e instanceof DuplicateFileError) {

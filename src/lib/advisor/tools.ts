@@ -3,7 +3,6 @@ import { and, asc, count, desc, eq, gte, inArray, lt, ne, or, isNull, sum } from
 import { z } from "zod";
 import type { Db } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   account,
   budgetTarget,
   category,
@@ -24,6 +23,8 @@ export interface ProposalDraft {
 
 export interface ToolContext {
   db: Db;
+  tenantId: string;
+  userId: string;
   proposals: ProposalDraft[];
 }
 
@@ -191,7 +192,7 @@ export const TOOL_DEFINITIONS = [
 // ---------- executors ---------------------------------------------------------
 
 async function executeGetNetWorthToday(ctx: ToolContext): Promise<unknown> {
-  const nw = await getNetWorthNow(ctx.db);
+  const nw = await getNetWorthNow(ctx.db, ctx.tenantId);
   return {
     total: nw.netWorth,
     assets: nw.assets,
@@ -206,7 +207,7 @@ async function executeGetCashFlow(input: unknown, ctx: ToolContext): Promise<unk
   const toDate = new Date(to);
 
   const allCats = await ctx.db.query.category.findMany({
-    where: eq(category.userId, PRIMARY_USER_ID),
+    where: eq(category.tenantId, ctx.tenantId),
     columns: { id: true, name: true, kind: true },
   });
   const catMap = new Map(allCats.map((c) => [c.id, c]));
@@ -220,7 +221,7 @@ async function executeGetCashFlow(input: unknown, ctx: ToolContext): Promise<unk
     .innerJoin(account, eq(transaction.accountId, account.id))
     .where(
       and(
-        eq(account.userId, PRIMARY_USER_ID),
+        eq(account.tenantId, ctx.tenantId),
         gte(transaction.startedAt, fromDate),
         lt(transaction.startedAt, toDate),
         eq(transaction.state, "completed"),
@@ -263,7 +264,7 @@ async function executeGetBudgetStatus(input: unknown, ctx: ToolContext): Promise
   const monthEnd = new Date(Date.UTC(year, mo, 1));
 
   const allCats = await ctx.db.query.category.findMany({
-    where: and(eq(category.userId, PRIMARY_USER_ID), eq(category.isArchived, false)),
+    where: and(eq(category.tenantId, ctx.tenantId), eq(category.isArchived, false)),
     columns: { id: true, name: true, parentId: true, kind: true },
   });
 
@@ -274,7 +275,7 @@ async function executeGetBudgetStatus(input: unknown, ctx: ToolContext): Promise
   const leafIds = leafCats.map((c) => c.id);
 
   const targets = await ctx.db.query.budgetTarget.findMany({
-    where: eq(budgetTarget.userId, PRIMARY_USER_ID),
+    where: eq(budgetTarget.tenantId, ctx.tenantId),
     columns: { categoryId: true, amountMonthly: true },
   });
   const targetMap = new Map(targets.map((t) => [t.categoryId, t.amountMonthly]));
@@ -321,7 +322,7 @@ async function executeGetRecentTransactions(input: unknown, ctx: ToolContext): P
   const limitVal = params.limit ?? 20;
 
   const conditions = [
-    eq(account.userId, PRIMARY_USER_ID),
+    eq(account.tenantId, ctx.tenantId),
     eq(transaction.state, "completed"),
     ...(params.categoryId ? [eq(transaction.categoryId, params.categoryId)] : []),
     ...(params.from ? [gte(transaction.startedAt, new Date(params.from))] : []),
@@ -363,7 +364,7 @@ async function executeGetSpendingByCategory(input: unknown, ctx: ToolContext): P
   const toDate = new Date(to);
 
   const allCats = await ctx.db.query.category.findMany({
-    where: eq(category.userId, PRIMARY_USER_ID),
+    where: eq(category.tenantId, ctx.tenantId),
     columns: { id: true, name: true, parentId: true },
   });
   const parentMap = new Map(allCats.filter((c) => !c.parentId).map((c) => [c.id, c.name]));
@@ -379,7 +380,7 @@ async function executeGetSpendingByCategory(input: unknown, ctx: ToolContext): P
     .innerJoin(account, eq(transaction.accountId, account.id))
     .where(
       and(
-        eq(account.userId, PRIMARY_USER_ID),
+        eq(account.tenantId, ctx.tenantId),
         gte(transaction.startedAt, fromDate),
         lt(transaction.startedAt, toDate),
         eq(transaction.state, "completed"),
@@ -416,7 +417,7 @@ async function executeGetSubscriptions(ctx: ToolContext): Promise<unknown> {
     })
     .from(recurringSubscription)
     .leftJoin(category, eq(recurringSubscription.categoryId, category.id))
-    .where(eq(recurringSubscription.userId, PRIMARY_USER_ID))
+    .where(eq(recurringSubscription.tenantId, ctx.tenantId))
     .orderBy(asc(recurringSubscription.name));
 
   let totalMonthly = 0;

@@ -1,24 +1,18 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { asc, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_TENANT_ID, PRIMARY_USER_ID, categorizationRule } from "@/lib/db/schema";
-import { env } from "@/env";
-
-async function auth() {
-  const sid = (await cookies()).get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return null;
-  return readSession(getDb(), sid);
-}
+import { categorizationRule } from "@/lib/db/schema";
 
 export async function GET() {
-  if (!(await auth())) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const auth = await requireApiAuth();
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const db = getDb();
   const rows = await db.query.categorizationRule.findMany({
-    where: eq(categorizationRule.userId, PRIMARY_USER_ID),
+    where: eq(categorizationRule.tenantId, tenantId),
     orderBy: [asc(categorizationRule.priority)],
   });
 
@@ -39,7 +33,9 @@ const createSchema = z.object({
 });
 
 export async function POST(req: Request) {
-  if (!(await auth())) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const body = createSchema.safeParse(await req.json().catch(() => null));
   if (!body.success) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
@@ -47,7 +43,7 @@ export async function POST(req: Request) {
   const db = getDb();
   const [row] = await db
     .insert(categorizationRule)
-    .values({ tenantId: PRIMARY_TENANT_ID, userId: PRIMARY_USER_ID, source: "user", ...body.data })
+    .values({ tenantId, userId, source: "user", ...body.data })
     .returning();
 
   return NextResponse.json(row, { status: 201 });

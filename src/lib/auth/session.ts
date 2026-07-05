@@ -6,7 +6,9 @@
  */
 import { eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { PRIMARY_USER_ID, session } from "@/lib/db/schema";
+import { session } from "@/lib/db/schema";
+
+const DEV_BYPASS_USER_ID = "00000000-0000-0000-0000-000000000001";
 import { createServerClient } from "@/lib/supabase/server";
 
 export async function getCurrentUser() {
@@ -64,7 +66,7 @@ export async function createSession(
  */
 export async function readSession(db: Db, sessionId: string) {
   if (sessionId === DEV_BYPASS_TOKEN) {
-    return { id: DEV_BYPASS_TOKEN, userId: PRIMARY_USER_ID, createdAt: FAR_FUTURE, expiresAt: FAR_FUTURE, lastSeenAt: FAR_FUTURE, userAgent: null };
+    return { id: DEV_BYPASS_TOKEN, userId: DEV_BYPASS_USER_ID, createdAt: FAR_FUTURE, expiresAt: FAR_FUTURE, lastSeenAt: FAR_FUTURE, userAgent: null };
   }
   const row = await db.query.session.findFirst({ where: eq(session.id, sessionId) });
   if (!row) return null;

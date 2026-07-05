@@ -3,7 +3,6 @@ import { eq, gte, sql } from "drizzle-orm";
 import { env } from "@/env";
 import type { Db } from "@/lib/db/client";
 import {
-  PRIMARY_TENANT_ID,
   advisorMessage,
   pendingProposal,
 } from "@/lib/db/schema";
@@ -69,6 +68,8 @@ function buildMessagesFromHistory(
 
 export async function runAdvisorTurn(
   db: Db,
+  tenantId: string,
+  userId: string,
   conversationId: string,
   userMessageText: string,
 ): Promise<AdvisorTurnResult> {
@@ -88,8 +89,8 @@ export async function runAdvisorTurn(
 
   // Build cached system blocks
   const [profileBlock, snapshotBlock] = await Promise.all([
-    buildUserProfileBlock(db),
-    buildSnapshotBlock(db),
+    buildUserProfileBlock(db, userId),
+    buildSnapshotBlock(db, tenantId, userId),
   ]);
 
   const systemBlocks: Anthropic.TextBlockParam[] = [
@@ -112,14 +113,14 @@ export async function runAdvisorTurn(
 
   // Persist user message
   await db.insert(advisorMessage).values({
-    tenantId: PRIMARY_TENANT_ID,
+    tenantId,
     conversationId,
     role: "user",
     contentText: userMessageText,
   });
 
   const client = new Anthropic({ apiKey: env().ANTHROPIC_API_KEY });
-  const ctx: ToolContext = { db, proposals: [] };
+  const ctx: ToolContext = { db, tenantId, userId, proposals: [] };
 
   const messages: Anthropic.MessageParam[] = [
     ...buildMessagesFromHistory(historyRows),
@@ -152,7 +153,7 @@ export async function runAdvisorTurn(
 
     // Persist intermediate assistant message (tool calls)
     await db.insert(advisorMessage).values({
-      tenantId: PRIMARY_TENANT_ID,
+      tenantId,
       conversationId,
       role: "assistant",
       contentText: null,
@@ -178,7 +179,7 @@ export async function runAdvisorTurn(
 
     // Persist tool results message
     await db.insert(advisorMessage).values({
-      tenantId: PRIMARY_TENANT_ID,
+      tenantId,
       conversationId,
       role: "tool",
       contentText: null,
@@ -235,7 +236,7 @@ export async function runAdvisorTurn(
   const [finalMsg] = await db
     .insert(advisorMessage)
     .values({
-      tenantId: PRIMARY_TENANT_ID,
+      tenantId,
       conversationId,
       role: "assistant",
       contentText: outputText,
@@ -249,7 +250,7 @@ export async function runAdvisorTurn(
   if (ctx.proposals.length > 0 && finalMsg?.id) {
     await db.insert(pendingProposal).values(
       ctx.proposals.map((draft) => ({
-        tenantId: PRIMARY_TENANT_ID,
+        tenantId,
         id: draft.id,
         advisorMessageId: finalMsg.id,
         kind: draft.kind,

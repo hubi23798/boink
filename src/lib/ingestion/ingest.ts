@@ -1,11 +1,8 @@
 import { createHash } from "node:crypto";
-import { and, eq, inArray, isNull } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import {
-  PRIMARY_TENANT_ID,
-  PRIMARY_USER_ID,
   account,
-  category,
   importBatch,
   importBatchRejection,
   transaction,
@@ -33,10 +30,15 @@ export interface IngestResult {
   newAccountNames: string[];
 }
 
-async function resolveAccount(db: Db, hint: AccountHint): Promise<{ id: string; isNew: boolean }> {
+async function resolveAccount(
+  db: Db,
+  tenantId: string,
+  userId: string,
+  hint: AccountHint,
+): Promise<{ id: string; isNew: boolean }> {
   const existing = await db.query.account.findFirst({
     where: and(
-      eq(account.userId, PRIMARY_USER_ID),
+      eq(account.tenantId, tenantId),
       eq(account.externalProvider, "revolut"),
       eq(account.externalAccountId, hint.externalAccountId),
     ),
@@ -48,8 +50,8 @@ async function resolveAccount(db: Db, hint: AccountHint): Promise<{ id: string; 
   const [created] = await db
     .insert(account)
     .values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       name: hint.suggestedName,
       kind: hint.suggestedKind,
       currency: hint.currency,
@@ -62,7 +64,12 @@ async function resolveAccount(db: Db, hint: AccountHint): Promise<{ id: string; 
   return { id: created!.id, isNew: true };
 }
 
-export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
+export async function ingest(
+  db: Db,
+  tenantId: string,
+  userId: string,
+  file: Buffer,
+): Promise<IngestResult> {
   const fileSha256 = createHash("sha256").update(file).digest("hex");
 
   // File-level dedup: same sha256 → idempotent no-op
@@ -78,12 +85,12 @@ export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
   const [batch] = await db
     .insert(importBatch)
     .values({
-      tenantId: PRIMARY_TENANT_ID,
+      tenantId,
       sourceKind: "revolut_csv",
       fileSha256,
       status: "parsing",
       rowCount: parsed.rows.length + parsed.rejections.length,
-      importedByUserId: PRIMARY_USER_ID,
+      importedByUserId: userId,
     })
     .returning({ id: importBatch.id });
   const batchId = batch!.id;
@@ -95,7 +102,7 @@ export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
   for (const { accountHint } of parsed.rows) {
     const key = accountHint.externalAccountId;
     if (accountCache.has(key)) continue;
-    const { id, isNew } = await resolveAccount(db, accountHint);
+    const { id, isNew } = await resolveAccount(db, tenantId, userId, accountHint);
     accountCache.set(key, id);
     if (isNew) newAccountNames.push(accountHint.suggestedName);
   }
@@ -114,7 +121,7 @@ export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
         const inserted = await tx
           .insert(transaction)
           .values({
-            tenantId: PRIMARY_TENANT_ID,
+            tenantId,
             accountId,
             externalId: txn.externalId,
             startedAt: txn.startedAt,
@@ -150,7 +157,7 @@ export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
 
   // Post-ingestion: rules + transfer heuristic, then LLM for remaining
   if (acceptedIds.length > 0) {
-    await categorize(db, acceptedIds);
+    await categorize(db, tenantId, acceptedIds);
 
     // Find accepted transactions still uncategorized after rules pass
     const uncategorized = await db.query.transaction.findMany({
@@ -192,13 +199,13 @@ export async function ingest(db: Db, file: Buffer): Promise<IngestResult> {
       }
     }
 
-    await backfillSnapshots(db);
+    await backfillSnapshots(db, tenantId);
   }
 
   if (allRejections.length > 0) {
     await db.insert(importBatchRejection).values(
       allRejections.map((r) => ({
-        tenantId: PRIMARY_TENANT_ID,
+        tenantId,
         importBatchId: batchId,
         rowIndex: r.rowIndex,
         rawRowJson: r.rawRow,

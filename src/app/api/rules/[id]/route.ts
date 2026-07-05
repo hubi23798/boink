@@ -1,29 +1,23 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, categorizationRule } from "@/lib/db/schema";
-import { env } from "@/env";
-
-async function auth() {
-  const sid = (await cookies()).get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return null;
-  return readSession(getDb(), sid);
-}
+import { categorizationRule } from "@/lib/db/schema";
 
 interface Props {
   params: Promise<{ id: string }>;
 }
 
 export async function DELETE(_req: Request, { params }: Props) {
-  if (!(await auth())) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const auth = await requireApiAuth();
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const { id } = await params;
   const db = getDb();
   const [deleted] = await db
     .delete(categorizationRule)
-    .where(and(eq(categorizationRule.id, id), eq(categorizationRule.userId, PRIMARY_USER_ID)))
+    .where(and(eq(categorizationRule.id, id), eq(categorizationRule.tenantId, tenantId)))
     .returning({ id: categorizationRule.id });
 
   if (!deleted) return NextResponse.json({ error: "Not found" }, { status: 404 });

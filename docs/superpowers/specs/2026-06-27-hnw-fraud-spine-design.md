@@ -20,9 +20,9 @@ The original specs remain authoritative for their respective scopes:
 |---|---|---|
 | V1 | Vertical | HNW operator + anti-fraud spine (declined: elder protection, IFA tooling, CDFA, insolvency, SEA backpacking fintech — last evaluated and rejected on unit economics) |
 | V2 | Advisor authority | Detective-only — advisor flags, user decides; never blocks, never auto-acts |
-| V3 | Data ingest | Aggregator-first (Plaid US + TrueLayer/Tink EU); CSV retained as escape hatch for unaggregable assets |
+| V3 | Data ingest | Aggregator-first EU (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV retained as escape hatch for unaggregable assets |
 | V4 | Multi-party access | Owner + read-only observers (spouse, accountant, attorney); roles deferred to v2 |
-| V5 | MVP fraud wedges | `crypto-outflow-scam`, `vendor-bec`, `subscription-trap` (advisor/manager embezzlement emerges from observer+audit log, promoted to first-class in v2) |
+| V5 | MVP fraud wedges | `vendor-bec`, `subscription-trap`, `crypto-outflow-scam` (advisor/manager embezzlement emerges from observer+audit log, promoted to first-class in v2) |
 | V6 | Compliance posture | GDPR + SOC2 Type I in-progress from day 0; not registering as RIA/IFA (positioned as information service, not regulated advice) |
 | V7 | Deployment | Supabase (Postgres + Auth + Vault + Storage + Edge Functions + Realtime) + Vercel; replaces Fly.io self-hosted Postgres |
 
@@ -48,9 +48,9 @@ The original specs remain authoritative for their respective scopes:
 
 **Wedge (MVP fraud detectors, all detective-only, all evidence-cited):**
 
-1. **`crypto-outflow-scam`** — outflows to exchanges + on-chain destinations cross-referenced against scam-address feeds; advisor flags with evidence + cooling-off prompt.
-2. **`vendor-bec`** — new-payee, anomaly-vs-history, urgency-memo, address-mismatch heuristics on outgoing payments.
-3. **`subscription-trap`** — zombie subs, hidden price hikes, double-billing, post-trial conversions.
+1. **`vendor-bec`** — new-payee, anomaly-vs-history, urgency-memo, address-mismatch heuristics on outgoing payments.
+2. **`subscription-trap`** — zombie subs, hidden price hikes, double-billing, post-trial conversions.
+3. **`crypto-outflow-scam`** — outflows to exchanges + on-chain destinations cross-referenced against scam-address feeds; advisor flags with evidence + cooling-off prompt.
 
 **Explicit non-goals at launch:**
 
@@ -90,7 +90,7 @@ Five structural shifts. Each justified by one of the locked decisions.
 ### 2.3 Aggregator ingest layer
 
 - New `connection` table: `(tenant_id, provider, provider_item_id, access_token_ref, status, last_synced_at, last_error)`.
-- Providers: `plaid` (US), `truelayer` (UK/EU), `tink` (EU backup). Pluggable `Source` interface from existing `2026-04-30-merged-spec.md` §3.1 extends to aggregator sources.
+- Providers: `truelayer` (UK/EU primary), `tink` (EU backup), `plaid` (US, deferred post-EU launch). Pluggable `Source` interface from existing `2026-04-30-merged-spec.md` §3.1 extends to aggregator sources.
 - Token storage: Supabase Vault (KMS-backed). Tokens never logged, redacted at app boundary.
 - Sync cron: Supabase Edge Function, every 6h, exponential backoff on errors, status surfaced in UI.
 - CSV ingest retained for unaggregable assets (private banks, foreign accounts, alts). Manual entry retained for property/art/private equity.
@@ -181,7 +181,7 @@ Each refusal returns structured: `(category, user_explanation, suggested_next_ac
 - State parameter HMAC-signed with per-session nonce; replay rejected.
 - Tokens encrypted at rest via Supabase Vault; never returned to client.
 - Refresh handled server-side only; refresh failures revoke connection + notify owner + observers.
-- Provider webhook signatures verified (Plaid `Plaid-Verification` header, TrueLayer JWS).
+- Provider webhook signatures verified (TrueLayer JWS, Tink events-API HMAC). Plaid webhook verification deferred to US-phase integration.
 - Rate limits per tenant on connection adds (max 3 new per hour) to defend against credential-stuffing → connection-spam → cost explosion.
 - Connection-revoke flow available to observers (anti-coercion: spouse can pull plug if owner is compromised, audit logged).
 
@@ -229,7 +229,7 @@ tenant_member
 connection                                 -- aggregator linkage
   id (uuid pk)
   tenant_id (fk)
-  provider (enum: plaid, truelayer, tink, manual, csv)
+  provider (enum: truelayer, tink, plaid, manual, csv)  -- plaid deferred
   provider_item_id (text)                  -- aggregator's id
   access_token_ref (text)                  -- pointer into Supabase Vault, never raw
   status (enum: active, error, revoked, paused)
@@ -343,7 +343,7 @@ Three phases to first paying customer. Each ends with usable end-to-end product.
 
 **Deliverables:**
 
-- Supabase project (US region for SF beachhead; EU project provisioned for later residency).
+- Supabase project (EU Frankfurt primary for GDPR compliance; US project provisioned for later US-market expansion).
 - DB migration: `tenant`, `tenant_member`, `tenant_id` columns + backfill + RLS.
 - Auth migration: passkey credential rows → Supabase Auth WebAuthn factors.
 - Drizzle config repoints to Supabase Postgres; connection pooler (Supavisor).
@@ -360,7 +360,7 @@ Three phases to first paying customer. Each ends with usable end-to-end product.
 
 **Deliverables:**
 
-- **Plaid US** integration: OAuth flow, token storage via Supabase Vault, sync cron (Edge Function, 6h cadence), webhook signature verification, error/revoke handling.
+- **TrueLayer EU** integration: OAuth flow, token storage via Supabase Vault, sync cron (Edge Function, 6h cadence), JWS webhook signature verification, error/revoke handling. Tink as backup provider for coverage gaps.
 - **CSV stays** as escape hatch for unaggregable assets.
 - **Connection management UI**: `/settings/connections` — add, status, last-sync, manual resync, revoke.
 - **Observer model end-to-end:**
@@ -368,36 +368,39 @@ Three phases to first paying customer. Each ends with usable end-to-end product.
   - Observer routes: `/observe`, `/observe/audit`, `/observe/decisions`.
   - RLS scopes enforced per role; tested with adversarial fixtures (observer attempts SELECT on owner-private convos → rejected).
   - "Visible to N observers" badges on owner mutations.
-- **First fraud detector — `crypto-outflow-scam`:**
-  - Outflow to known exchange detected via vendor matching.
-  - Subsequent on-chain destination resolved (via Chainalysis API or open-source alternative — research spike to pick).
-  - Cross-reference scam-address feed (Chainabuse open feed for MVP; commercial later).
+- **First fraud detector — `vendor-bec`:**
+  - Net-new-payee heuristic (first time seen for tenant).
+  - Anomaly vs vendor history (amount > N× median, frequency change).
+  - Urgency-language scan on memos (untrusted-data wrapped before any LLM scoring).
+  - Address-mismatch when memo contains wire details that diverge from known vendor record.
   - `fraud_signal` row written with `evidence` array; surfaces in Transactions Inbox + Home Next Actions + observer `/observe/signals`.
   - Dismiss flow with reason; tenant-scoped tuning.
+- **Second fraud detector — `subscription-trap`:**
+  - Recurring-engine extension to detect: price hikes > N%, post-trial conversions, double-billing across accounts.
 - **Daily digest email** to owner + observers: new signals, new decisions, new connections.
 - **Advisor refusal policy v1**: hardcoded categories per §3.3; `policy_event` row on every refusal; adversarial fixture battery in CI.
 
 **Exit:** one paying beta tenant runs entire flow: connect → import → categorize → invite observer → receive first signal → dismiss or escalate → observer sees decision.
 
-### Phase C — Vendor BEC + subscription detectors + TrueLayer (~2–3 weeks)
+### Phase C — crypto-outflow-scam detector + Plaid US deferred (~2–3 weeks)
 
-**Goal:** second + third detectors live, EU/UK ingest available, ready for SF design-partner cohort.
+**Goal:** third detector live, full EU/UK ingest hardened, ready for London/Dublin/Amsterdam design-partner cohort.
 
 **Deliverables:**
 
-- **`vendor-bec` detector:**
-  - Net-new-payee heuristic (first time seen for tenant).
-  - Anomaly vs vendor history (amount > N× median, frequency change).
-  - Urgency-language scan on memos (untrusted-data wrapped before any LLM scoring).
-  - Address-mismatch when memo contains wire details that diverge from known vendor record.
-- **`subscription-trap` detector:**
-  - Recurring-engine extension to detect: price hikes > N%, post-trial conversions (first charge ≥ N× free-trial signup amount), double-billing (same merchant+amount within N days across accounts).
-- **TrueLayer integration** (UK/EU). Tink as backup provider.
+- **`crypto-outflow-scam` detector:**
+  - Outflows to known exchange deposit addresses (Binance, Kraken, Coinbase, OKX) pattern-matched against transaction metadata.
+  - On-chain destinations cross-referenced against Chainabuse public feed + OFAC SDN crypto addresses.
+  - Cooling-off prompt surfaced via advisor when high-severity signal fires ("you have 48h before this transaction is likely irreversible — review with your accountant").
+  - `fraud_signal` row written with evidence array: matched address, feed source, date feed last updated, on-chain amount estimate if available.
+  - Dismiss flow with reason; tenant-scoped tuning (e.g., "this is my own Ledger wallet" → suppress future signals for this address).
+- **Plaid US integration** — architecture wired, OAuth callback, token storage pattern established. Activation deferred; no US user-facing rollout in Phase C. Design so flipping to active requires only config change, no code rewrite.
 - **Observer-visible advisor convos** when fraud-related (`visibility = observers_visible` enforced).
 - **Audit log export** signed JSON download from `/observe/audit`.
 - **Onboarding flow**: 10-minute setup from signup → first connection → first signal demonstrable on demo tenant.
+- **Scam-address feed spike complete**: Chainabuse free feed validated for coverage; Chainalysis / TRM Labs commercial tiers evaluated and decision logged.
 
-**Exit:** product sellable to 5–10 design partners in SF; SOC2 Type I audit kickoff (~3–6mo to certification runs in parallel).
+**Exit:** product sellable to 5–10 design partners in London/Dublin/Amsterdam; SOC2 Type I audit kickoff (~3–6mo to certification runs in parallel).
 
 ### Cut from MVP, deferred
 
@@ -451,7 +454,7 @@ No free tier. 14-day trial. Demo tenant always accessible without signup for pro
 Inputs (conservative assumptions, document explicitly):
 
 - **Avg ARPU** (weighted across tiers, year 1 mix 60/35/5): ~$70/mo = **$840/yr**.
-- **Gross margin:** ~72% after Supabase + Vercel + Plaid/TrueLayer (~$0.50/active connection/mo) + Anthropic API + monitoring + KMS + email.
+- **Gross margin:** ~72% after Supabase + Vercel + TrueLayer/Tink (~€0.20/active connection/mo EU pricing) + Anthropic API + monitoring + KMS + email.
 - **CAC** (year 1, founder-led + small content + SF community):
   - Self-serve inbound (content, referrals): $80–150 blended.
   - Outbound to founders/exec network: $200–400.
@@ -464,7 +467,7 @@ Inputs (conservative assumptions, document explicitly):
 **Sanity check on infra cost per active customer/mo:**
 
 - Supabase Pro tier covers ~50 active tenants comfortably (~$25/mo amortized = $0.50/tenant at scale).
-- Plaid: ~$0.30/account/mo × avg 8 accounts = $2.40.
+- TrueLayer: ~€0.10–0.20/connection/mo (Data API, EU consent model); avg 8 connections = €0.80–1.60. Tink backup adds ~€0.05/connection for overlap coverage. Total aggregator cost: ~€1–2/tenant/mo — cheaper than US Plaid equivalent at scale.
 - Anthropic: cap per tenant at $5/mo (cost ceiling per merged-spec §4); reality probably $1–2.
 - Vercel: ~$0.20/tenant amortized on Pro.
 - Email (Postmark/Resend): ~$0.10.
@@ -477,11 +480,11 @@ Inputs (conservative assumptions, document explicitly):
 
 **Channel mix:**
 
-1. **Founder network (weeks 1–8)** — direct outreach in personal SF/NYC tech-founder network. Free white-glove onboarding. Target: 10 design partners. Cohort discount (50% lifetime) in exchange for testimonial + monthly feedback call.
-2. **Long-form content (weeks 4–24)** — one essay/month on: "How a bookkeeper stole $X from a public founder" (anonymized case studies); "What pig-butchering looks like in your accounting software"; "Why your wealth manager doesn't want you to see this audit log." Distribute on personal LinkedIn + Twitter + Hacker News + sub-stack. SEO target: "founder bookkeeper fraud," "crypto scam track wallet."
+1. **Founder network (weeks 1–8)** — direct outreach in London/Dublin/Amsterdam tech-founder and family-office network. Free white-glove onboarding. Target: 10 design partners. Cohort discount (50% lifetime) in exchange for testimonial + monthly feedback call.
+2. **Long-form content (weeks 4–24)** — one essay/month on: "How a bookkeeper stole £X from a founder" (anonymized EU case studies); "What APP fraud looks like in your accounting software"; "Why your wealth manager doesn't want you to see this audit log." Distribute on personal LinkedIn + Twitter + Hacker News + sub-stack. SEO target: "founder bookkeeper fraud," "APP fraud track wallet," "wealth manager embezzlement audit."
 3. **Referral mechanic (week 12+)** — 1 month free per referred paying tenant. Family Office tier gets 3 months.
-4. **Trust-and-Safety stance as marketing** — public security/T&S page documenting: SOC2 Type I status + audit firm; refusal policy categories; audit-log hash chain spec; detector evidence transparency; bug bounty (HackerOne or self-hosted; $500–$5,000 per finding). This page IS the sales tool for the persona.
-5. **Partnership pilots (month 6+)** — one RIA, one CPA firm, one T&E law firm in SF — observer-channel cross-sell. Their clients become tenants; firm becomes observer-by-default.
+4. **Trust-and-Safety stance as marketing** — public security/T&S page documenting: SOC2 Type I status + audit firm; GDPR compliance statement (EU Frankfurt data residency); refusal policy categories; audit-log hash chain spec; detector evidence transparency; bug bounty (HackerOne or self-hosted; £500–£5,000 per finding). This page IS the sales tool for the persona.
+5. **Partnership pilots (month 6+)** — one IFA firm, one chartered accountant firm, one family-law firm in London — observer-channel cross-sell. Their clients become tenants; firm becomes observer-by-default. UK FCA's APP-fraud reimbursement mandate (PSR policy) makes audit-trail positioning natural for advisors.
 
 **Specifically NOT doing:**
 
@@ -490,19 +493,19 @@ Inputs (conservative assumptions, document explicitly):
 - Hackathon sponsorships — wrong audience.
 - Tradeshow/conference floor — too expensive pre-PMF.
 
-**SF on-the-ground:**
+**EU on-the-ground:**
 
-- IndieBio / South Park founder dinners.
-- On Deck / YC alumni networks.
-- Founders' Inc., AGI House, similar SF founder houses (resident-talk format).
-- Direct intro to family-office service providers (Cresset, Wealthfront premium, Pillar, Compound — they CAN'T offer audit-against-themselves so we don't compete head-on).
+- London: Founders Forum, Antler London, Wayra UK, London & Partners startup events, Canary Wharf fintech network.
+- Dublin: NDRC, Dublin Tech Summit, Silicon Docks founder community.
+- Amsterdam: StartupAmsterdam, Rockstart, TNW Conference side dinners.
+- Direct intro to European family-office service providers and wealth managers (they CAN'T offer audit-against-themselves so we don't compete head-on).
 
 **Geo expansion order:**
 
-1. SF (months 0–6) — beachhead.
-2. NYC (months 4–10) — founders + finance ops crossover.
-3. LA / Miami (months 8–14) — creator + crypto-founder pockets.
-4. London (months 10–18) — TrueLayer integration enables EU/UK; FCA-regulated APP-fraud reimbursement environment makes audit-trail product compelling to banks as partners.
+1. London/Dublin/Amsterdam (months 0–6) — EU beachhead; GDPR-native, TrueLayer/Tink coverage, APP-fraud tailwind.
+2. Paris / Berlin / Zurich (months 4–10) — broader continental EU; HNW density + UBS/Credit Suisse distrust pocket in Zurich.
+3. SF / NYC (months 10–18) — US expansion; Plaid US integration activates; existing EU GDPR posture becomes competitive differentiator with US HNW privacy-aware early adopters.
+4. LA / Miami (months 14–24) — creator + crypto-founder pockets; crypto-outflow-scam detector resonates strongly here.
 
 ### 6.4 Year-1 targets (honest, not aspirational)
 
@@ -533,7 +536,7 @@ Inputs (conservative assumptions, document explicitly):
 | **Auth** | Self-hosted SimpleWebAuthn + bootstrap-token | Supabase Auth + WebAuthn factor; bootstrap-token removed (tenant signup via passkey enrollment) |
 | **Account model** | Single user owns all data | Tenant owns data; user is a member with role + scope |
 | **Login landing** | `/` dashboard | If multi-tenant member → tenant picker first; otherwise `/` |
-| **Ingest** | CSV upload only (Revolut tested) | Aggregator-first (Plaid/TrueLayer); CSV kept as escape hatch for unaggregable assets |
+| **Ingest** | CSV upload only (Revolut tested) | Aggregator-first (TrueLayer/Tink EU primary; Plaid US deferred post-EU launch); CSV kept as escape hatch for unaggregable assets |
 | **Audit log** | Single-row append, basic | Hash-chained `audit_log_v2`; observer-readable; export-signed-JSON; S3 Object Lock mirror |
 | **Advisor convos** | Owner-only | Visibility flag; fraud-related convos auto-shared with observers |
 | **Settings** | `/settings/accounts`, profile, passkeys | + `/settings/observers`, `/settings/connections`, `/settings/policy` |
@@ -578,8 +581,9 @@ Inputs (conservative assumptions, document explicitly):
 
 - Supabase (Postgres + Auth + Vault + Storage + Edge Functions + Realtime).
 - Vercel (Next.js host).
-- Plaid (US aggregator).
-- TrueLayer + Tink (EU/UK aggregator + backup).
+- TrueLayer (EU/UK primary aggregator — Phase B).
+- Tink (EU backup aggregator + coverage complement — Phase B).
+- Plaid (US aggregator — architecture wired in Phase C; user-facing activation deferred post-EU launch).
 - Chainabuse open feed (MVP) → Chainalysis/TRM Labs (later) for scam-address data.
 - Postmark or Resend (transactional email).
 - Axiom or Datadog (log observability).
@@ -599,7 +603,7 @@ Inputs (conservative assumptions, document explicitly):
 - **Scam-address feed selection** — Chainabuse is free but coverage is partial. Chainalysis Address Screening + TRM Labs are commercial ($) and require enterprise contracts. Research spike at Phase B kickoff to pick.
 - **Observer onboarding friction** — observer must create own passkey to accept invite. Some accountants/attorneys are not tech-literate; may need fallback (magic link with shorter session). Risk accepted at MVP.
 - **Embezzlement detector v2 design** — needs reconciliation logic between manager-reported balances and aggregator-fetched truth. Requires owner to mark "manager-reported" snapshots distinctly. Defer design until v2.
-- **Cross-jurisdiction data residency** — EU users on US Supabase region creates GDPR transfer issue. EU project provisioned in Phase A; data routing per tenant `region` field. Migration of any US-resident-then-moved-to-EU tenants deferred to dedicated workflow.
+- **Cross-jurisdiction data residency** — EU is the primary region (Frankfurt); US project provisioned in Phase A for future US-market expansion. US users routed to US Supabase region at onboarding via tenant `region` field. Cross-region tenant migration (e.g., EU user wants US region) deferred to dedicated workflow; no self-serve path at MVP.
 - **BYOK at Family Office tier** — Supabase BYOK is enterprise-tier feature. Pricing needs validation before promising on the tier.
 - **Bug bounty payout funding** — small at launch ($500–$5k bounty range); requires LLC + insurance + payout rails (HackerOne handles, but adds platform cost).
 - **Anthropic outage handling** — if advisor unavailable, fraud detector ingest paths must still write `fraud_signal` rows (detectors are deterministic, not LLM-dependent for MVP). Verified in Phase B test plan.

@@ -1,8 +1,4 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { readSession } from "@/lib/auth/session";
-import { getDb } from "@/lib/db/client";
-import { env } from "@/env";
+import { requirePageAuth } from "@/app/lib/require-auth";
 
 const items = [
   { href: "/settings/import", label: "Import CSV", description: "Upload Revolut CSV exports" },
@@ -10,15 +6,12 @@ const items = [
   { href: "/settings/categories", label: "Categories", description: "Manage spending categories" },
   { href: "/settings/rules", label: "Rules", description: "Auto-categorization rules" },
   { href: "/settings/profile", label: "Profile", description: "Currency, locale, risk tolerance" },
+  { href: "/settings/passkeys", label: "Passkeys", description: "Register devices for passwordless sign-in" },
   { href: "/settings/sessions", label: "Sessions", description: "Active sessions and sign-out" },
 ];
 
 export default async function SettingsPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  await requirePageAuth();
 
   return (
     <div className="space-y-6 px-6 py-8">

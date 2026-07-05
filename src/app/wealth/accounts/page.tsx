@@ -1,21 +1,12 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { and, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, account } from "@/lib/db/schema";
 import { getNetWorthNow } from "@/lib/net-worth/engine";
-import { env } from "@/env";
 
 export default async function AccountsPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const db = getDb();
-  const nw = await getNetWorthNow(db);
+  const nw = await getNetWorthNow(db, tenantId);
 
   function fmt(minor: number, currency = "EUR") {
     return new Intl.NumberFormat("en-IE", { style: "currency", currency }).format(minor / 100);

@@ -1,10 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, eq, gte, isNull, lt, ne, or } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, category, transaction } from "@/lib/db/schema";
-import { env } from "@/env";
+import { category, transaction } from "@/lib/db/schema";
 import { monthLabel } from "@/lib/summary";
 
 interface Props {
@@ -26,11 +23,7 @@ function fmtSigned(minor: number) {
 }
 
 export default async function InsightsPage({ searchParams }: Props) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   // ── Selected month ────────────────────────────────────────────────────────
   const params = await searchParams;
@@ -91,7 +84,7 @@ export default async function InsightsPage({ searchParams }: Props) {
       columns: { amountNative: true, categoryId: true, startedAt: true },
     }),
     db.query.category.findMany({
-      where: eq(category.userId, PRIMARY_USER_ID),
+      where: eq(category.tenantId, tenantId),
       columns: { id: true, name: true },
     }),
   ]);

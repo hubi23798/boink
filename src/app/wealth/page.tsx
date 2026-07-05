@@ -1,43 +1,35 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { and, asc, eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, goal } from "@/lib/db/schema";
+import { goal } from "@/lib/db/schema";
 import { getNetWorthNow, getNetWorthHistory } from "@/lib/net-worth/engine";
 import { buildForecast } from "@/lib/net-worth/forecast";
 import { getLatestBalances } from "@/lib/goals/balance";
 import { calculateGoalProgress } from "@/lib/goals/progress";
 import { ForecastSection } from "./forecast-section";
-import { env } from "@/env";
 
 function fmt(minor: number, currency = "EUR") {
   return new Intl.NumberFormat("en-IE", { style: "currency", currency }).format(minor / 100);
 }
 
 export default async function WealthPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const db = getDb();
   const today = new Date().toISOString().slice(0, 10);
 
   const [nw, history, goals] = await Promise.all([
-    getNetWorthNow(db),
-    getNetWorthHistory(db, 180),
+    getNetWorthNow(db, tenantId),
+    getNetWorthHistory(db, tenantId, 180),
     db
       .select()
       .from(goal)
-      .where(and(eq(goal.userId, PRIMARY_USER_ID), eq(goal.isArchived, false)))
+      .where(and(eq(goal.tenantId, tenantId), eq(goal.isArchived, false)))
       .orderBy(asc(goal.createdAt)),
   ]);
 
   const forecast = buildForecast(history, today);
 
-  // Compute current progress for each goal so the slider can estimate crossing dates
   const allLinkedIds = [...new Set(goals.flatMap((g) => g.linkedAccountIds))];
   const balances = await getLatestBalances(db, allLinkedIds);
 
@@ -73,7 +65,6 @@ export default async function WealthPage() {
         <p className="text-fg-muted mt-1 text-xs">As of {nw.asOf}</p>
       </div>
 
-      {/* Net worth hero */}
       <div className="rounded-xl border border-[#C9A84C]/40 bg-[#3A2414] p-6 shadow-[0_1px_4px_rgba(0,0,0,0.3)]">
         <p className="text-[#C4B8A8] text-sm">Net worth</p>
         <p className="mt-1 font-mono text-4xl font-bold tracking-tight text-[#C9A84C]">{fmt(nw.netWorth)}</p>
@@ -89,7 +80,6 @@ export default async function WealthPage() {
         </div>
       </div>
 
-      {/* Breakdown by kind */}
       {Object.entries(nw.byKind).length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-medium text-[#C4B8A8]">Breakdown</h2>
@@ -108,7 +98,6 @@ export default async function WealthPage() {
         </section>
       )}
 
-      {/* Accounts */}
       {nw.accounts.length > 0 && (
         <section className="space-y-2">
           <h2 className="text-sm font-medium">
@@ -136,7 +125,6 @@ export default async function WealthPage() {
         </section>
       )}
 
-      {/* Forecast */}
       {forecast.historicalPoints.length > 1 && (
         <section className="space-y-3">
           <h2 className="text-sm font-medium text-[#C4B8A8]">Forecast</h2>

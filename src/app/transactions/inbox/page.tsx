@@ -1,18 +1,11 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { asc, desc, eq, isNull } from "drizzle-orm";
 import { CategoryPicker } from "@/components/category-picker";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, category, transaction } from "@/lib/db/schema";
-import { env } from "@/env";
+import { category, transaction } from "@/lib/db/schema";
 
 export default async function InboxPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const db = getDb();
 
@@ -32,7 +25,7 @@ export default async function InboxPage() {
       },
     }),
     db.query.category.findMany({
-      where: eq(category.userId, PRIMARY_USER_ID),
+      where: eq(category.tenantId, tenantId),
       orderBy: [asc(category.name)],
       columns: { id: true, name: true, parentId: true },
     }),

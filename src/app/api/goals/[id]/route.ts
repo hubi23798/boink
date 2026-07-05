@@ -1,11 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, account, goal } from "@/lib/db/schema";
-import { env } from "@/env";
+import { account, goal } from "@/lib/db/schema";
 import { getLatestBalances } from "@/lib/goals/balance";
 import { UUID_RE } from "@/lib/validation/uuid";
 
@@ -20,14 +18,11 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
@@ -40,7 +35,7 @@ export async function PATCH(
 
   const existing = await db.query.goal.findFirst({
     where: (g, { and, eq }) =>
-      and(eq(g.id, id), eq(g.userId, PRIMARY_USER_ID), eq(g.isArchived, false)),
+      and(eq(g.id, id), eq(g.tenantId, tenantId), eq(g.isArchived, false)),
   });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
 
@@ -48,14 +43,13 @@ export async function PATCH(
     const ownedAccounts = await db
       .select({ id: account.id })
       .from(account)
-      .where(eq(account.userId, PRIMARY_USER_ID));
+      .where(eq(account.tenantId, tenantId));
     const ownedIds = new Set(ownedAccounts.map((a) => a.id));
     if (!parsed.data.linkedAccountIds.every((aid) => ownedIds.has(aid))) {
       return NextResponse.json({ error: "Invalid account" }, { status: 400 });
     }
   }
 
-  // Re-snapshot initialBalance when debt_payoff accounts change
   let newInitialBalance: number | undefined;
   if (existing.kind === "debt_payoff" && parsed.data.linkedAccountIds !== undefined) {
     const balances = await getLatestBalances(db, parsed.data.linkedAccountIds);
@@ -75,7 +69,7 @@ export async function PATCH(
       ...(newInitialBalance !== undefined ? { initialBalance: newInitialBalance } : {}),
       updatedAt: now,
     })
-    .where(and(eq(goal.id, id), eq(goal.userId, PRIMARY_USER_ID)))
+    .where(and(eq(goal.id, id), eq(goal.tenantId, tenantId)))
     .returning();
 
   if (!updated) return NextResponse.json({ error: "Internal error" }, { status: 500 });
@@ -87,21 +81,18 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth();
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const [archived] = await db
     .update(goal)
     .set({ isArchived: true, updatedAt: new Date() })
-    .where(and(eq(goal.id, id), eq(goal.userId, PRIMARY_USER_ID)))
+    .where(and(eq(goal.id, id), eq(goal.tenantId, tenantId)))
     .returning({ id: goal.id });
 
   if (!archived) return NextResponse.json({ error: "Not found" }, { status: 404 });

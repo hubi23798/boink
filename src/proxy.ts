@@ -3,18 +3,21 @@ import { NextResponse, type NextRequest } from "next/server";
 // -- Public route allowlist --------------------------------------------
 //
 // Anything not in this list (and not a static-asset prefix) requires a
-// session cookie. The proxy checks cookie *presence* only — Edge runtime
-// can't reach Postgres, so route handlers and Server Components
-// re-validate the session against the DB.
+// Supabase Auth session cookie. The proxy checks cookie *presence* only —
+// Edge runtime can't reach Postgres, so route handlers and Server Components
+// re-validate via supabase.auth.getUser().
 
 const PUBLIC_PATHS = [
   "/login",
+  "/landing",
+  "/trust",
+  "/privacy",
+  "/terms",
+  "/auth/callback",
   "/api/health",
   "/api/auth/login",
-  // Logout is public so a client with an expired/missing session can still
-  // call it to clean up the cookie. The route handler is idempotent and
-  // only audits when an actual session exists, so attribution stays sound.
   "/api/auth/logout",
+  "/api/auth/sync",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",
@@ -32,14 +35,13 @@ function isPublic(pathname: string): boolean {
   return PUBLIC_PATHS.includes(pathname);
 }
 
+function hasSupabaseSession(req: NextRequest): boolean {
+  return req.cookies.getAll().some(
+    (c) => c.name.includes("-auth-token") && c.value.length > 0,
+  );
+}
+
 // -- Security headers --------------------------------------------------
-//
-// Phase 0 trade-offs documented inline:
-// - script-src: dev allows 'unsafe-inline' because Next.js/Turbopack injects
-//   inline RSC payload scripts (self.__next_f.push) required for hydration.
-//   Production keeps 'self' only; Phase 4 polish: tighten with nonces.
-// - style-src 'unsafe-inline': pragmatic for Tailwind v4 runtime CSS
-//   variables. Phase 4 polish: tighten with nonces.
 
 const isDev = process.env.NODE_ENV === "development";
 
@@ -65,24 +67,25 @@ function applySecurityHeaders(res: NextResponse): NextResponse {
   return res;
 }
 
-// -- Proxy (Next 16 — formerly "middleware") ---------------------------
-//
-// On a missing session we differentiate API vs page requests:
-//  - /api/* → 401 JSON. Method-preserving redirects on a POST/PUT/DELETE
-//    would re-issue the request body to /login (which doesn't accept it).
-//    APIs should signal "not authenticated" with a status code, not a
-//    page redirect, so the client can react appropriately.
-//  - everything else → 303 See Other to /login?from=<path>. 303 forces
-//    the browser to follow with GET regardless of the original method,
-//    avoiding 307's method-preservation footgun.
-
 export function proxy(req: NextRequest) {
-  // Auth disabled for local dev — inject a bypass cookie so every page and
-  // API route passes its own session check without any code changes there.
-  const cookieName = process.env.SESSION_COOKIE_NAME ?? "session";
-  const reqHeaders = new Headers(req.headers);
-  reqHeaders.set("cookie", `${cookieName}=dev-bypass`);
-  return applySecurityHeaders(NextResponse.next({ request: { headers: reqHeaders } }));
+  const { pathname } = req.nextUrl;
+
+  if (isPublic(pathname)) {
+    return applySecurityHeaders(NextResponse.next());
+  }
+
+  if (!hasSupabaseSession(req)) {
+    if (pathname.startsWith("/api/")) {
+      return applySecurityHeaders(
+        NextResponse.json({ error: "unauthenticated" }, { status: 401 }),
+      );
+    }
+    const login = new URL("/login", req.url);
+    login.searchParams.set("from", pathname);
+    return applySecurityHeaders(NextResponse.redirect(login, 303));
+  }
+
+  return applySecurityHeaders(NextResponse.next());
 }
 
 export const config = {

@@ -1,19 +1,15 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import {
-  PRIMARY_TENANT_ID,
-  PRIMARY_USER_ID,
   advisorConversation,
   advisorMessage,
   auditLog,
   categorizationRule,
   pendingProposal,
 } from "@/lib/db/schema";
-import { env } from "@/env";
 
 const bodySchema = z.object({
   action: z.enum(["accept", "reject"]),
@@ -23,21 +19,17 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
 
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
     return NextResponse.json({ error: "Invalid id" }, { status: 400 });
   }
 
-  // Verify proposal belongs to this user via conversation chain
   const [proposal] = await db
     .select({
       id: pendingProposal.id,
@@ -50,7 +42,7 @@ export async function PATCH(
     .innerJoin(advisorMessage, eq(pendingProposal.advisorMessageId, advisorMessage.id))
     .innerJoin(advisorConversation, eq(advisorMessage.conversationId, advisorConversation.id))
     .where(
-      and(eq(pendingProposal.id, id), eq(advisorConversation.userId, PRIMARY_USER_ID)),
+      and(eq(pendingProposal.id, id), eq(advisorConversation.tenantId, tenantId)),
     )
     .limit(1);
 
@@ -71,17 +63,16 @@ export async function PATCH(
       categoryId: string;
     };
 
-    // Get next priority
     const existing = await db.query.categorizationRule.findMany({
-      where: eq(categorizationRule.userId, PRIMARY_USER_ID),
+      where: eq(categorizationRule.tenantId, tenantId),
       columns: { priority: true },
       orderBy: (t, { desc: d }) => [d(t.priority)],
     });
     const nextPriority = (existing[0]?.priority ?? 0) + 1;
 
     await db.insert(categorizationRule).values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       priority: nextPriority,
       matchKind: p.matchKind,
       matchValue: p.matchValue,
@@ -90,7 +81,7 @@ export async function PATCH(
     });
 
     await db.insert(auditLog).values({
-      userId: PRIMARY_USER_ID,
+      userId,
       actor: "user",
       action: "accept_proposal",
       targetTable: "categorization_rule",
@@ -99,7 +90,7 @@ export async function PATCH(
     });
   } else if (action === "reject") {
     await db.insert(auditLog).values({
-      userId: PRIMARY_USER_ID,
+      userId,
       actor: "user",
       action: "reject_proposal",
       targetTable: "pending_proposal",

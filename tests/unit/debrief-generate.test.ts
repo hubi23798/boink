@@ -1,5 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import type { DebriefFlag } from "@/lib/db/schema";
+import { PRIMARY_TENANT_ID } from "@/lib/db/schema";
+
+const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 const mockCreate = vi.fn();
 
@@ -57,7 +60,7 @@ const VALID_RESPONSE = JSON.stringify({
 describe("generateDebrief", () => {
   it("returns parsed DebriefOutput for valid Claude JSON response", async () => {
     mockAnthropicText(VALID_RESPONSE);
-    const result = await generateDebrief(makeDb(), {
+    const result = await generateDebrief(makeDb(), PRIMARY_TENANT_ID, TEST_USER_ID, {
       weekStart: new Date("2026-05-11T00:00:00Z"),
       weekEnd: new Date("2026-05-17T23:59:59Z"),
     });
@@ -69,7 +72,7 @@ describe("generateDebrief", () => {
   it("throws on malformed JSON response (does not swallow)", async () => {
     mockAnthropicText("not json at all");
     await expect(
-      generateDebrief(makeDb(), {
+      generateDebrief(makeDb(), PRIMARY_TENANT_ID, TEST_USER_ID, {
         weekStart: new Date("2026-05-11T00:00:00Z"),
         weekEnd: new Date("2026-05-17T23:59:59Z"),
       }),
@@ -86,7 +89,7 @@ describe("generateDebrief", () => {
         ],
       }),
     );
-    const result = await generateDebrief(makeDb(), {
+    const result = await generateDebrief(makeDb(), PRIMARY_TENANT_ID, TEST_USER_ID, {
       weekStart: new Date("2026-05-11T00:00:00Z"),
       weekEnd: new Date("2026-05-17T23:59:59Z"),
     });

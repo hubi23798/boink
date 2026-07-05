@@ -18,6 +18,23 @@ npx supabase functions deploy jwt-claims --no-verify-jwt
 
 The `--no-verify-jwt` flag is required because Supabase calls Auth Hooks with a service-role request, not a user JWT.
 
+Configure the hook in the Supabase dashboard **or** via `supabase/config.toml` for local dev:
+
+```toml
+[auth.hook.custom_access_token]
+enabled = true
+uri = "http://host.docker.internal:54321/functions/v1/jwt-claims"
+```
+
+After changing `config.toml`, restart the local stack: `supabase stop && supabase start`.
+
+Deploy the edge function locally:
+
+```bash
+supabase functions serve jwt-claims --no-verify-jwt
+# Or rely on `supabase start` which serves functions from supabase/functions/
+```
+
 ## Configuring the Hook in the Supabase Dashboard
 
 1. Navigate to **Authentication** → **Hooks** in the Supabase dashboard.

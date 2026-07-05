@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, user } from "@/lib/db/schema";
-import { env } from "@/env";
+import { user } from "@/lib/db/schema";
 
 const patchSchema = z.object({
   baseCurrency: z.string().length(3).optional(),
@@ -16,11 +14,9 @@ const patchSchema = z.object({
 });
 
 export async function PATCH(req: Request) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const sess = await readSession(getDb(), sid);
-  if (!sess) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { userId } = auth.ctx;
 
   const body = await req.json();
   const parsed = patchSchema.safeParse(body);
@@ -29,7 +25,7 @@ export async function PATCH(req: Request) {
   }
 
   const db = getDb();
-  await db.update(user).set(parsed.data).where(eq(user.id, PRIMARY_USER_ID));
+  await db.update(user).set(parsed.data).where(eq(user.id, userId));
 
   return NextResponse.json({ ok: true });
 }

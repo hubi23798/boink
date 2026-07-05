@@ -1,13 +1,7 @@
 import { and, eq, isNotNull, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
-import { PRIMARY_TENANT_ID, PRIMARY_USER_ID, account, balanceSnapshot, transaction } from "@/lib/db/schema";
+import { account, balanceSnapshot, transaction } from "@/lib/db/schema";
 import { getFxRate } from "@/lib/fx/rates";
-
-interface AccountRow {
-  id: string;
-  currency: string;
-  kind: string;
-}
 
 async function getLedgerBalance(db: Db, accountId: string, asOfDate: string): Promise<number> {
   const result = await db
@@ -28,6 +22,7 @@ async function getLedgerBalance(db: Db, accountId: string, asOfDate: string): Pr
 
 async function upsertSnapshot(
   db: Db,
+  tenantId: string,
   accountId: string,
   asOfDate: string,
   balanceNative: number,
@@ -35,7 +30,7 @@ async function upsertSnapshot(
 ) {
   await db
     .insert(balanceSnapshot)
-    .values({ tenantId: PRIMARY_TENANT_ID, accountId, asOfDate, balanceNative, balanceBaseCcy })
+    .values({ tenantId, accountId, asOfDate, balanceNative, balanceBaseCcy })
     .onConflictDoUpdate({
       target: [balanceSnapshot.accountId, balanceSnapshot.asOfDate],
       set: { balanceNative, balanceBaseCcy },
@@ -46,10 +41,10 @@ async function upsertSnapshot(
  * Write today's balance snapshot for every active account.
  * Called by the daily cron.
  */
-export async function writeDailySnapshots(db: Db): Promise<number> {
+export async function writeDailySnapshots(db: Db, tenantId: string): Promise<number> {
   const today = new Date().toISOString().split("T")[0]!;
   const accounts = await db.query.account.findMany({
-    where: and(eq(account.userId, PRIMARY_USER_ID), eq(account.isActive, true)),
+    where: and(eq(account.tenantId, tenantId), eq(account.isActive, true)),
     columns: { id: true, currency: true, kind: true },
   });
 
@@ -58,7 +53,7 @@ export async function writeDailySnapshots(db: Db): Promise<number> {
     const balanceNative = await getLedgerBalance(db, acct.id, today);
     const rate = await getFxRate(db, acct.currency, today);
     const balanceBaseCcy = Math.round(balanceNative / rate);
-    await upsertSnapshot(db, acct.id, today, balanceNative, balanceBaseCcy);
+    await upsertSnapshot(db, tenantId, acct.id, today, balanceNative, balanceBaseCcy);
     count++;
   }
   return count;
@@ -69,9 +64,9 @@ export async function writeDailySnapshots(db: Db): Promise<number> {
  * transaction date to today. Idempotent — uses upsert.
  * Called once after the first successful import.
  */
-export async function backfillSnapshots(db: Db): Promise<number> {
+export async function backfillSnapshots(db: Db, tenantId: string): Promise<number> {
   const accounts = await db.query.account.findMany({
-    where: and(eq(account.userId, PRIMARY_USER_ID), eq(account.isActive, true)),
+    where: and(eq(account.tenantId, tenantId), eq(account.isActive, true)),
     columns: { id: true, currency: true, kind: true },
   });
 
@@ -98,7 +93,7 @@ export async function backfillSnapshots(db: Db): Promise<number> {
       const balanceNative = await getLedgerBalance(db, acct.id, asOfDate);
       const rate = await getFxRate(db, acct.currency, asOfDate);
       const balanceBaseCcy = Math.round(balanceNative / rate);
-      await upsertSnapshot(db, acct.id, asOfDate, balanceNative, balanceBaseCcy);
+      await upsertSnapshot(db, tenantId, acct.id, asOfDate, balanceNative, balanceBaseCcy);
       total++;
     }
   }

@@ -1,11 +1,9 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, account } from "@/lib/db/schema";
-import { env } from "@/env";
+import { account } from "@/lib/db/schema";
 
 const patchSchema = z.object({
   name: z.string().min(1).max(100).optional(),
@@ -18,11 +16,9 @@ interface Context {
 }
 
 export async function PATCH(req: Request, { params }: Context) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
-  const sess = await readSession(getDb(), sid);
-  if (!sess) return NextResponse.json({ error: "unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const { id } = await params;
   const body = await req.json();
@@ -40,7 +36,7 @@ export async function PATCH(req: Request, { params }: Context) {
   const [updated] = await db
     .update(account)
     .set(patch)
-    .where(and(eq(account.id, id), eq(account.userId, PRIMARY_USER_ID)))
+    .where(and(eq(account.id, id), eq(account.tenantId, tenantId)))
     .returning({ id: account.id });
 
   if (!updated) return NextResponse.json({ error: "not found" }, { status: 404 });

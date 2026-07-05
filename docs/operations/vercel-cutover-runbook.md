@@ -2,7 +2,7 @@
 
 ## Prerequisites
 - Vercel project `truffe` imported from repo, all env vars set (see `.env.example`)
-- Supabase project `truffe-us` live and migrations applied
+- Supabase project `truffe-eu` (Frankfurt, eu-central-1) live and migrations applied
 - Production branch: `main`. Preview branches: all.
 
 ## Steps

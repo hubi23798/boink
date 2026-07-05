@@ -1,6 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 import type { Db } from "@/lib/db/client";
 import { type ToolContext, executeTool, wrapUserData } from "@/lib/advisor/tools";
+import { PRIMARY_TENANT_ID } from "@/lib/db/schema";
+
+const TEST_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 function makeCtx(): ToolContext {
   const mockDb = {
@@ -18,7 +21,7 @@ function makeCtx(): ToolContext {
       budgetTarget: { findMany: vi.fn().mockResolvedValue([]) },
     },
   } as unknown as Db;
-  return { db: mockDb, proposals: [] };
+  return { db: mockDb, tenantId: PRIMARY_TENANT_ID, userId: TEST_USER_ID, proposals: [] };
 }
 
 describe("wrapUserData", () => {

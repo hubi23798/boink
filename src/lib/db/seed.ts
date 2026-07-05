@@ -11,13 +11,14 @@ import { eq, inArray } from "drizzle-orm";
 import { getDb } from "./client";
 import {
   PRIMARY_TENANT_ID,
-  PRIMARY_USER_ID,
   account,
   importBatch,
   transaction,
   balanceSnapshot,
   categorizationRule,
 } from "./schema";
+
+const SEED_USER_ID = "00000000-0000-0000-0000-000000000001";
 
 // ── Sentinel UUIDs (identify seed data for idempotent reset) ───────────────
 
@@ -328,7 +329,7 @@ async function main() {
   // Delete all user categorization rules (re-inserted below)
   await db
     .delete(categorizationRule)
-    .where(eq(categorizationRule.userId, PRIMARY_USER_ID));
+    .where(eq(categorizationRule.userId, SEED_USER_ID));
 
   // ── Accounts ────────────────────────────────────────────────────────────
   console.log("Inserting accounts…");
@@ -336,7 +337,7 @@ async function main() {
     {
       id: ACCT_CURRENT,
       tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      userId: SEED_USER_ID,
       name: "Revolut EUR",
       kind: "cash",
       currency: "EUR",
@@ -348,7 +349,7 @@ async function main() {
     {
       id: ACCT_SAVINGS,
       tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      userId: SEED_USER_ID,
       name: "Savings EUR",
       kind: "cash",
       currency: "EUR",
@@ -368,7 +369,7 @@ async function main() {
       fileSha256: "seed-demo-current-00000000000000000000000000000000",
       status: "done",
       notes: "Demo seed data — synthetic",
-      importedByUserId: PRIMARY_USER_ID,
+      importedByUserId: SEED_USER_ID,
     },
     {
       id: BATCH_SAVINGS,
@@ -378,7 +379,7 @@ async function main() {
       fileSha256: "seed-demo-savings-00000000000000000000000000000000",
       status: "done",
       notes: "Demo seed data — synthetic",
-      importedByUserId: PRIMARY_USER_ID,
+      importedByUserId: SEED_USER_ID,
     },
   ]);
 
@@ -392,51 +393,51 @@ async function main() {
     categoryId: string;
   }[] = [
     // Income
-    { userId: PRIMARY_USER_ID, priority: 10, matchKind: "description_contains", matchValue: "Salary", categoryId: CAT.salary },
+    { userId: SEED_USER_ID, priority: 10, matchKind: "description_contains", matchValue: "Salary", categoryId: CAT.salary },
     // Rent
-    { userId: PRIMARY_USER_ID, priority: 20, matchKind: "description_contains", matchValue: "Property Rent", categoryId: CAT.rent },
+    { userId: SEED_USER_ID, priority: 20, matchKind: "description_contains", matchValue: "Property Rent", categoryId: CAT.rent },
     // Groceries
-    { userId: PRIMARY_USER_ID, priority: 30, matchKind: "description_contains", matchValue: "Lidl", categoryId: CAT.groceries },
-    { userId: PRIMARY_USER_ID, priority: 31, matchKind: "description_contains", matchValue: "SuperValu", categoryId: CAT.groceries },
-    { userId: PRIMARY_USER_ID, priority: 32, matchKind: "description_contains", matchValue: "Tesco", categoryId: CAT.groceries },
-    { userId: PRIMARY_USER_ID, priority: 33, matchKind: "description_contains", matchValue: "Aldi", categoryId: CAT.groceries },
+    { userId: SEED_USER_ID, priority: 30, matchKind: "description_contains", matchValue: "Lidl", categoryId: CAT.groceries },
+    { userId: SEED_USER_ID, priority: 31, matchKind: "description_contains", matchValue: "SuperValu", categoryId: CAT.groceries },
+    { userId: SEED_USER_ID, priority: 32, matchKind: "description_contains", matchValue: "Tesco", categoryId: CAT.groceries },
+    { userId: SEED_USER_ID, priority: 33, matchKind: "description_contains", matchValue: "Aldi", categoryId: CAT.groceries },
     // Streaming
-    { userId: PRIMARY_USER_ID, priority: 40, matchKind: "description_contains", matchValue: "Netflix", categoryId: CAT.streaming },
-    { userId: PRIMARY_USER_ID, priority: 41, matchKind: "description_contains", matchValue: "Spotify", categoryId: CAT.streaming },
-    { userId: PRIMARY_USER_ID, priority: 42, matchKind: "description_contains", matchValue: "Disney+", categoryId: CAT.streaming },
-    { userId: PRIMARY_USER_ID, priority: 43, matchKind: "description_contains", matchValue: "Prime Video", categoryId: CAT.streaming },
+    { userId: SEED_USER_ID, priority: 40, matchKind: "description_contains", matchValue: "Netflix", categoryId: CAT.streaming },
+    { userId: SEED_USER_ID, priority: 41, matchKind: "description_contains", matchValue: "Spotify", categoryId: CAT.streaming },
+    { userId: SEED_USER_ID, priority: 42, matchKind: "description_contains", matchValue: "Disney+", categoryId: CAT.streaming },
+    { userId: SEED_USER_ID, priority: 43, matchKind: "description_contains", matchValue: "Prime Video", categoryId: CAT.streaming },
     // Software
-    { userId: PRIMARY_USER_ID, priority: 50, matchKind: "description_contains", matchValue: "Apple iCloud", categoryId: CAT.software },
-    { userId: PRIMARY_USER_ID, priority: 51, matchKind: "description_contains", matchValue: "Google One", categoryId: CAT.software },
+    { userId: SEED_USER_ID, priority: 50, matchKind: "description_contains", matchValue: "Apple iCloud", categoryId: CAT.software },
+    { userId: SEED_USER_ID, priority: 51, matchKind: "description_contains", matchValue: "Google One", categoryId: CAT.software },
     // Transport
-    { userId: PRIMARY_USER_ID, priority: 60, matchKind: "description_contains", matchValue: "Leap Card", categoryId: CAT.transport },
-    { userId: PRIMARY_USER_ID, priority: 61, matchKind: "description_contains", matchValue: "Dublin Bus", categoryId: CAT.transport },
-    { userId: PRIMARY_USER_ID, priority: 62, matchKind: "description_contains", matchValue: "Luas", categoryId: CAT.transport },
-    { userId: PRIMARY_USER_ID, priority: 63, matchKind: "description_contains", matchValue: "Irish Rail", categoryId: CAT.transport },
-    { userId: PRIMARY_USER_ID, priority: 64, matchKind: "description_contains", matchValue: "Uber", categoryId: CAT.transport },
-    { userId: PRIMARY_USER_ID, priority: 65, matchKind: "description_contains", matchValue: "Bolt", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 60, matchKind: "description_contains", matchValue: "Leap Card", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 61, matchKind: "description_contains", matchValue: "Dublin Bus", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 62, matchKind: "description_contains", matchValue: "Luas", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 63, matchKind: "description_contains", matchValue: "Irish Rail", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 64, matchKind: "description_contains", matchValue: "Uber", categoryId: CAT.transport },
+    { userId: SEED_USER_ID, priority: 65, matchKind: "description_contains", matchValue: "Bolt", categoryId: CAT.transport },
     // Utilities
-    { userId: PRIMARY_USER_ID, priority: 70, matchKind: "description_contains", matchValue: "Electric Ireland", categoryId: CAT.utilities },
-    { userId: PRIMARY_USER_ID, priority: 71, matchKind: "description_contains", matchValue: "Pure Telecom", categoryId: CAT.utilities },
-    { userId: PRIMARY_USER_ID, priority: 72, matchKind: "description_contains", matchValue: "Eir", categoryId: CAT.utilities },
-    { userId: PRIMARY_USER_ID, priority: 73, matchKind: "description_contains", matchValue: "Bord Gáis", categoryId: CAT.utilities },
+    { userId: SEED_USER_ID, priority: 70, matchKind: "description_contains", matchValue: "Electric Ireland", categoryId: CAT.utilities },
+    { userId: SEED_USER_ID, priority: 71, matchKind: "description_contains", matchValue: "Pure Telecom", categoryId: CAT.utilities },
+    { userId: SEED_USER_ID, priority: 72, matchKind: "description_contains", matchValue: "Eir", categoryId: CAT.utilities },
+    { userId: SEED_USER_ID, priority: 73, matchKind: "description_contains", matchValue: "Bord Gáis", categoryId: CAT.utilities },
     // Healthcare
-    { userId: PRIMARY_USER_ID, priority: 80, matchKind: "description_contains", matchValue: "Pharmacy", categoryId: CAT.healthcare },
-    { userId: PRIMARY_USER_ID, priority: 81, matchKind: "description_contains", matchValue: "Boots", categoryId: CAT.healthcare },
-    { userId: PRIMARY_USER_ID, priority: 82, matchKind: "description_contains", matchValue: "LloydsPharmacy", categoryId: CAT.healthcare },
+    { userId: SEED_USER_ID, priority: 80, matchKind: "description_contains", matchValue: "Pharmacy", categoryId: CAT.healthcare },
+    { userId: SEED_USER_ID, priority: 81, matchKind: "description_contains", matchValue: "Boots", categoryId: CAT.healthcare },
+    { userId: SEED_USER_ID, priority: 82, matchKind: "description_contains", matchValue: "LloydsPharmacy", categoryId: CAT.healthcare },
     // Personal care
-    { userId: PRIMARY_USER_ID, priority: 90, matchKind: "description_contains", matchValue: "Barber", categoryId: CAT.personalCare },
-    { userId: PRIMARY_USER_ID, priority: 91, matchKind: "description_contains", matchValue: "Gym", categoryId: CAT.personalCare },
-    { userId: PRIMARY_USER_ID, priority: 92, matchKind: "description_contains", matchValue: "Salon", categoryId: CAT.personalCare },
+    { userId: SEED_USER_ID, priority: 90, matchKind: "description_contains", matchValue: "Barber", categoryId: CAT.personalCare },
+    { userId: SEED_USER_ID, priority: 91, matchKind: "description_contains", matchValue: "Gym", categoryId: CAT.personalCare },
+    { userId: SEED_USER_ID, priority: 92, matchKind: "description_contains", matchValue: "Salon", categoryId: CAT.personalCare },
     // Entertainment
-    { userId: PRIMARY_USER_ID, priority: 100, matchKind: "description_contains", matchValue: "Vue Cinema", categoryId: CAT.entertainment },
-    { userId: PRIMARY_USER_ID, priority: 101, matchKind: "description_contains", matchValue: "Cineworld", categoryId: CAT.entertainment },
+    { userId: SEED_USER_ID, priority: 100, matchKind: "description_contains", matchValue: "Vue Cinema", categoryId: CAT.entertainment },
+    { userId: SEED_USER_ID, priority: 101, matchKind: "description_contains", matchValue: "Cineworld", categoryId: CAT.entertainment },
     // Travel
-    { userId: PRIMARY_USER_ID, priority: 110, matchKind: "description_contains", matchValue: "Ryanair", categoryId: CAT.travel },
-    { userId: PRIMARY_USER_ID, priority: 111, matchKind: "description_contains", matchValue: "Airbnb", categoryId: CAT.travel },
-    { userId: PRIMARY_USER_ID, priority: 112, matchKind: "description_contains", matchValue: "Aer Lingus", categoryId: CAT.travel },
+    { userId: SEED_USER_ID, priority: 110, matchKind: "description_contains", matchValue: "Ryanair", categoryId: CAT.travel },
+    { userId: SEED_USER_ID, priority: 111, matchKind: "description_contains", matchValue: "Airbnb", categoryId: CAT.travel },
+    { userId: SEED_USER_ID, priority: 112, matchKind: "description_contains", matchValue: "Aer Lingus", categoryId: CAT.travel },
     // Tax
-    { userId: PRIMARY_USER_ID, priority: 120, matchKind: "description_contains", matchValue: "Revenue", categoryId: CAT.tax },
+    { userId: SEED_USER_ID, priority: 120, matchKind: "description_contains", matchValue: "Revenue", categoryId: CAT.tax },
   ];
   await db.insert(categorizationRule).values(rules.map((r) => ({ ...r, tenantId: PRIMARY_TENANT_ID })));
 

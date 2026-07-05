@@ -1,22 +1,15 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
 import { eq } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_USER_ID, session } from "@/lib/db/schema";
-import { env } from "@/env";
+import { session } from "@/lib/db/schema";
 import { RevokeButton } from "./revoke-button";
 
 export default async function SettingsSessionsPage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { userId } = await requirePageAuth();
 
   const db = getDb();
   const sessions = await db.query.session.findMany({
-    where: eq(session.userId, PRIMARY_USER_ID),
+    where: eq(session.userId, userId),
     orderBy: (s, { desc }) => [desc(s.lastSeenAt)],
   });
 
@@ -46,18 +39,18 @@ export default async function SettingsSessionsPage() {
                 Created {s.createdAt.toLocaleDateString("en-IE")}
                 {" · "}Last seen {relTime(s.lastSeenAt)}
                 {" · "}Expires {s.expiresAt.toLocaleDateString("en-IE")}
-                {s.id === sid ? " · " : ""}
-                {s.id === sid && <span className="text-success font-medium">current</span>}
               </p>
             </div>
-            {s.id !== sid && <RevokeButton sessionId={s.id} />}
+            <RevokeButton sessionId={s.id} />
           </div>
         ))}
       </div>
 
-      <div className="pt-2">
-        <RevokeButton sessionId="all" label="Sign out everywhere" />
-      </div>
+      {sessions.length > 0 && (
+        <div className="pt-2">
+          <RevokeButton sessionId="all" label="Sign out everywhere" />
+        </div>
+      )}
     </main>
   );
 }

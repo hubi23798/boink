@@ -1,6 +1,5 @@
 import Anthropic from "@anthropic-ai/sdk";
 import type { Db } from "@/lib/db/client";
-import { PRIMARY_USER_ID } from "@/lib/db/schema";
 import type { DebriefFlag } from "@/lib/db/schema";
 
 export interface DebriefInput {
@@ -47,7 +46,12 @@ function threeMonthAvg(
   );
 }
 
-export async function generateDebrief(db: Db, input: DebriefInput): Promise<DebriefOutput> {
+export async function generateDebrief(
+  db: Db,
+  tenantId: string,
+  userId: string,
+  input: DebriefInput,
+): Promise<DebriefOutput> {
   const client = new Anthropic();
   const { weekStart, weekEnd } = input;
 
@@ -62,30 +66,35 @@ export async function generateDebrief(db: Db, input: DebriefInput): Promise<Debr
   const [thisWeekTxns, prevWeekTxns, threeMonthTxns, budgets, subscriptions, userRow] =
     await Promise.all([
       db.query.transaction.findMany({
-        where: (t, { between }) => between(t.startedAt, weekStart, weekEnd),
+        where: (t, { and, between, eq }) =>
+          and(eq(t.tenantId, tenantId), between(t.startedAt, weekStart, weekEnd)),
         columns: { amountNative: true, currency: true, categoryId: true },
       }),
       db.query.transaction.findMany({
-        where: (t, { between }) => between(t.startedAt, prevStart, prevEnd),
+        where: (t, { and, between, eq }) =>
+          and(eq(t.tenantId, tenantId), between(t.startedAt, prevStart, prevEnd)),
         columns: { amountNative: true, currency: true, categoryId: true },
       }),
       db.query.transaction.findMany({
-        where: (t, { between }) => between(t.startedAt, threeMonthsAgo, weekStart),
+        where: (t, { and, between, eq }) =>
+          and(eq(t.tenantId, tenantId), between(t.startedAt, threeMonthsAgo, weekStart)),
         columns: { amountNative: true, currency: true, categoryId: true },
       }),
       db.query.budgetTarget.findMany({
+        where: (b, { eq }) => eq(b.tenantId, tenantId),
         columns: { categoryId: true, amountMonthly: true },
       }),
       db.query.recurringSubscription.findMany({
-        where: (s, { and, gte, lte }) =>
+        where: (s, { and, eq, gte, lte }) =>
           and(
+            eq(s.tenantId, tenantId),
             gte(s.nextDue, toDateStr(weekStart)),
             lte(s.nextDue, toDateStr(weekEnd)),
           ),
         columns: { name: true, amountNative: true, currency: true, nextDue: true },
       }),
       db.query.user.findFirst({
-        where: (u, { eq }) => eq(u.id, PRIMARY_USER_ID),
+        where: (u, { eq }) => eq(u.id, userId),
         columns: { baseCurrency: true },
       }),
     ]);

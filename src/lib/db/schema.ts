@@ -26,13 +26,7 @@ const bytea = customType<{ data: Buffer }>({
 
 // -- Constants ----------------------------------------------------------
 
-/**
- * Single-user app. The user row is seeded by migration 0001 with this
- * fixed UUID so route handlers and the auth layer can reference "the
- * user" without a lookup. Email + password live in env (ADMIN_EMAIL,
- * ADMIN_PASSWORD), never in this row.
- */
-export const PRIMARY_USER_ID = "00000000-0000-0000-0000-000000000001";
+/** Default tenant for single-tenant dev / cron jobs. */
 export const PRIMARY_TENANT_ID = "00000000-0000-0000-0000-0000000000aa";
 
 // -- Enums --------------------------------------------------------------
@@ -140,8 +134,7 @@ export const memberScopeEnum = pgEnum("member_scope", [
 // -- Tables -------------------------------------------------------------
 
 /**
- * Single-user app — `user` is effectively a one-row table seeded by
- * migration 0001 with PRIMARY_USER_ID.
+ * App user profile — seeded by migration 0001 with a fixed UUID.
  */
 export const user = pgTable("user", {
   id: uuid("id").primaryKey().defaultRandom(),

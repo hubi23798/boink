@@ -1,17 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  PRIMARY_TENANT_ID,
-  PRIMARY_USER_ID,
-  budgetTarget,
-  category,
-  recurringSubscription,
-} from "@/lib/db/schema";
-import { env } from "@/env";
+import { budgetTarget, category, recurringSubscription } from "@/lib/db/schema";
 import { computeBudgetProposal } from "@/lib/recurring/budget-proposal";
 
 function toMonthlyAbs(absAmount: number, frequency: "weekly" | "fortnightly" | "monthly"): number {
@@ -35,14 +27,11 @@ export async function PATCH(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
@@ -56,7 +45,7 @@ export async function PATCH(
   const existing = await db.query.recurringSubscription.findFirst({
     where: and(
       eq(recurringSubscription.id, id),
-      eq(recurringSubscription.userId, PRIMARY_USER_ID),
+      eq(recurringSubscription.tenantId, tenantId),
     ),
   });
   if (!existing) return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -74,7 +63,7 @@ export async function PATCH(
       updatedAt: now,
     })
     .where(
-      and(eq(recurringSubscription.id, id), eq(recurringSubscription.userId, PRIMARY_USER_ID)),
+      and(eq(recurringSubscription.id, id), eq(recurringSubscription.tenantId, tenantId)),
     )
     .returning();
 
@@ -92,7 +81,7 @@ export async function PATCH(
     .select({ amountMonthly: budgetTarget.amountMonthly })
     .from(budgetTarget)
     .where(
-      and(eq(budgetTarget.userId, PRIMARY_USER_ID), eq(budgetTarget.categoryId, newCategoryId)),
+      and(eq(budgetTarget.tenantId, tenantId), eq(budgetTarget.categoryId, newCategoryId)),
     );
 
   const monthlyAmount = toMonthlyAbs(Math.abs(sub.amountNative), sub.frequency);
@@ -104,8 +93,8 @@ export async function PATCH(
 
   if (proposal.action === "create") {
     await db.insert(budgetTarget).values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       categoryId: newCategoryId,
       amountMonthly: proposal.amount,
       updatedAt: now,
@@ -135,21 +124,18 @@ export async function DELETE(
   _req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth();
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
   if (!UUID_RE.test(id)) return NextResponse.json({ error: "Invalid id" }, { status: 400 });
 
   const deleted = await db
     .delete(recurringSubscription)
     .where(
-      and(eq(recurringSubscription.id, id), eq(recurringSubscription.userId, PRIMARY_USER_ID)),
+      and(eq(recurringSubscription.id, id), eq(recurringSubscription.tenantId, tenantId)),
     )
     .returning({ id: recurringSubscription.id });
 

@@ -1,11 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import { PRIMARY_TENANT_ID, PRIMARY_USER_ID, account, goal } from "@/lib/db/schema";
-import { env } from "@/env";
+import { account, goal } from "@/lib/db/schema";
 import { getLatestBalances } from "@/lib/goals/balance";
 import { calculateGoalProgress } from "@/lib/goals/progress";
 import { UUID_RE } from "@/lib/validation/uuid";
@@ -19,16 +17,13 @@ const createSchema = z.object({
 });
 
 export async function GET() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth();
+  if (!auth.ok) return auth.response;
+  const { tenantId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const goals = await db.query.goal.findMany({
-    where: (g, { and, eq }) => and(eq(g.userId, PRIMARY_USER_ID), eq(g.isArchived, false)),
+    where: (g, { and, eq }) => and(eq(g.tenantId, tenantId), eq(g.isArchived, false)),
     orderBy: (g, { asc }) => [asc(g.createdAt)],
   });
 
@@ -64,30 +59,25 @@ export async function GET() {
 }
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const parsed = createSchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
   const { name, kind, targetAmount, targetDate, linkedAccountIds } = parsed.data;
 
-  // Verify all linked accounts belong to this user
   const ownedAccounts = await db
     .select({ id: account.id })
     .from(account)
-    .where(eq(account.userId, PRIMARY_USER_ID));
+    .where(eq(account.tenantId, tenantId));
   const ownedIds = new Set(ownedAccounts.map((a) => a.id));
   if (!linkedAccountIds.every((id) => ownedIds.has(id))) {
     return NextResponse.json({ error: "Invalid account" }, { status: 400 });
   }
 
-  // For debt_payoff, capture current liability balance as the starting point
   let initialBalance: number | null = null;
   if (kind === "debt_payoff") {
     const latestBalances = await getLatestBalances(db, linkedAccountIds);
@@ -98,8 +88,8 @@ export async function POST(req: Request) {
   const [inserted] = await db
     .insert(goal)
     .values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       name,
       kind,
       targetAmount,

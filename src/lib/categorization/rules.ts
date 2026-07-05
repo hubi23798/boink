@@ -1,7 +1,6 @@
 import { and, asc, eq, inArray, isNull } from "drizzle-orm";
 import type { Db } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   categorizationRule,
   transaction,
   type CategorizationRule,
@@ -44,11 +43,15 @@ export function matches(rule: CategorizationRule, txn: Transaction): boolean {
   }
 }
 
-export async function applyRules(db: Db, transactionIds: string[]): Promise<number> {
+export async function applyRules(
+  db: Db,
+  tenantId: string,
+  transactionIds: string[],
+): Promise<number> {
   if (transactionIds.length === 0) return 0;
 
   const rules = await db.query.categorizationRule.findMany({
-    where: eq(categorizationRule.userId, PRIMARY_USER_ID),
+    where: eq(categorizationRule.tenantId, tenantId),
     orderBy: [asc(categorizationRule.priority)],
   });
 

@@ -1,12 +1,11 @@
-import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { desc, isNull } from "drizzle-orm";
-import { readSession } from "@/lib/auth/session";
+import { getAuthContext } from "@/lib/auth/guard";
+import { requirePageAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import { getNetWorthNow } from "@/lib/net-worth/engine";
 import { getMonthlySummary, monthLabel, prevMonth } from "@/lib/summary";
-import { advisorConversation, PRIMARY_TENANT_ID, PRIMARY_USER_ID, transaction } from "@/lib/db/schema";
-import { env } from "@/env";
+import { advisorConversation, transaction } from "@/lib/db/schema";
 import { cn } from "@/lib/utils";
 import { KpiCard, KpiGrid } from "@/components/kpi-card";
 import { TransactionList, type Transaction } from "@/components/transaction-row";
@@ -35,11 +34,7 @@ function greeting(): string {
 }
 
 export default async function HomePage() {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) redirect("/login");
-  const sess = await readSession(getDb(), sid);
-  if (!sess) redirect("/login");
+  const { tenantId } = await requirePageAuth();
 
   const db = getDb();
   const now = new Date();
@@ -48,7 +43,7 @@ export default async function HomePage() {
   const prev = prevMonth(curYear, curMonth);
 
   const [nw, thisMo, lastMo, recentTxns, uncategorizedCount, latestDebrief] = await Promise.all([
-    getNetWorthNow(db),
+    getNetWorthNow(db, tenantId),
     getMonthlySummary(db, curYear, curMonth),
     getMonthlySummary(db, prev.year, prev.month),
     db.query.transaction.findMany({
@@ -65,7 +60,7 @@ export default async function HomePage() {
     }),
     db.$count(transaction, isNull(transaction.categoryId)),
     db.query.weeklyDebrief.findFirst({
-      where: (d, { eq }) => eq(d.userId, PRIMARY_USER_ID),
+      where: (d, { eq }) => eq(d.tenantId, tenantId),
       orderBy: (d, { desc }) => [desc(d.weekStart)],
       columns: { narrativeText: true, flags: true, weekStart: true, weekEnd: true },
     }),
@@ -103,15 +98,12 @@ export default async function HomePage() {
 
   async function createConversationWithQuestion(q: string) {
     "use server";
-    const cookieStore2 = await cookies();
-    const sid2 = cookieStore2.get(env().SESSION_COOKIE_NAME)?.value;
-    if (!sid2) redirect("/login");
+    const ctx = await getAuthContext();
+    if (!ctx) redirect("/login");
     const db2 = getDb();
-    const sess2 = await readSession(db2, sid2);
-    if (!sess2) redirect("/login");
     const [conv] = await db2
       .insert(advisorConversation)
-      .values({ tenantId: PRIMARY_TENANT_ID, userId: PRIMARY_USER_ID, title: q.slice(0, 60) })
+      .values({ tenantId: ctx.tenantId, userId: ctx.userId, title: q.slice(0, 60) })
       .returning({ id: advisorConversation.id });
     redirect(`/advisor/c/${conv!.id}?q=${encodeURIComponent(q)}`);
   }

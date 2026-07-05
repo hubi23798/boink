@@ -1,15 +1,12 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
 import {
-  PRIMARY_USER_ID,
   advisorConversation,
   advisorMessage,
 } from "@/lib/db/schema";
-import { env } from "@/env";
 import { runAdvisorTurn } from "@/lib/advisor/engine";
 
 const bodySchema = z.object({
@@ -20,14 +17,11 @@ export async function POST(
   req: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const { id } = await params;
 
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id)) {
@@ -38,7 +32,7 @@ export async function POST(
     .select({ id: advisorConversation.id, title: advisorConversation.title })
     .from(advisorConversation)
     .where(
-      and(eq(advisorConversation.id, id), eq(advisorConversation.userId, PRIMARY_USER_ID)),
+      and(eq(advisorConversation.id, id), eq(advisorConversation.tenantId, tenantId)),
     )
     .limit(1);
 
@@ -47,7 +41,6 @@ export async function POST(
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
-  // Check if this is the first message to auto-set title
   const [firstCheck] = await db
     .select({ id: advisorMessage.id })
     .from(advisorMessage)
@@ -57,7 +50,7 @@ export async function POST(
 
   let result;
   try {
-    result = await runAdvisorTurn(db, id, parsed.data.message);
+    result = await runAdvisorTurn(db, tenantId, userId, id, parsed.data.message);
   } catch (err) {
     console.error("[advisor] runAdvisorTurn failed:", err);
     return NextResponse.json({ error: "Advisor unavailable. Please try again." }, { status: 500 });

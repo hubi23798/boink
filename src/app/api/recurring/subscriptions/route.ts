@@ -1,17 +1,9 @@
-import { cookies } from "next/headers";
 import { NextResponse } from "next/server";
 import { and, eq } from "drizzle-orm";
 import { z } from "zod";
-import { readSession } from "@/lib/auth/session";
+import { requireApiAuth } from "@/app/lib/require-auth";
 import { getDb } from "@/lib/db/client";
-import {
-  PRIMARY_TENANT_ID,
-  PRIMARY_USER_ID,
-  budgetTarget,
-  category,
-  recurringSubscription,
-} from "@/lib/db/schema";
-import { env } from "@/env";
+import { budgetTarget, category, recurringSubscription } from "@/lib/db/schema";
 import { computeBudgetProposal } from "@/lib/recurring/budget-proposal";
 
 function toMonthlyAbs(absAmount: number, frequency: "weekly" | "fortnightly" | "monthly"): number {
@@ -31,14 +23,11 @@ const bodySchema = z.object({
 });
 
 export async function POST(req: Request) {
-  const cookieStore = await cookies();
-  const sid = cookieStore.get(env().SESSION_COOKIE_NAME)?.value;
-  if (!sid) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  const auth = await requireApiAuth(req);
+  if (!auth.ok) return auth.response;
+  const { tenantId, userId } = auth.ctx;
 
   const db = getDb();
-  const sess = await readSession(db, sid);
-  if (!sess) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
   const parsed = bodySchema.safeParse(await req.json().catch(() => null));
   if (!parsed.success) return NextResponse.json({ error: "Invalid body" }, { status: 400 });
 
@@ -49,8 +38,8 @@ export async function POST(req: Request) {
   const [sub] = await db
     .insert(recurringSubscription)
     .values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       detectionKey: detectionKey ?? null,
       name,
       frequency,
@@ -72,7 +61,7 @@ export async function POST(req: Request) {
     .select({ amountMonthly: budgetTarget.amountMonthly })
     .from(budgetTarget)
     .where(
-      and(eq(budgetTarget.userId, PRIMARY_USER_ID), eq(budgetTarget.categoryId, categoryId)),
+      and(eq(budgetTarget.tenantId, tenantId), eq(budgetTarget.categoryId, categoryId)),
     );
 
   const monthlyAmount = toMonthlyAbs(Math.abs(amountNative), frequency);
@@ -84,8 +73,8 @@ export async function POST(req: Request) {
 
   if (proposal.action === "create") {
     await db.insert(budgetTarget).values({
-      tenantId: PRIMARY_TENANT_ID,
-      userId: PRIMARY_USER_ID,
+      tenantId,
+      userId,
       categoryId,
       amountMonthly: proposal.amount,
       updatedAt: now,
