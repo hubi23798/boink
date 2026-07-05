@@ -120,6 +120,26 @@ export const memberRoleEnum = pgEnum("member_role", ["owner", "observer"]);
 
 export const memberScopeEnum = pgEnum("member_scope", ["full_read", "ledger_only", "audit_only"]);
 
+export const signalSeverityEnum = pgEnum("signal_severity", ["info", "warn", "high"]);
+
+export const signalStatusEnum = pgEnum("signal_status", [
+  "open",
+  "dismissed",
+  "acknowledged",
+  "escalated",
+]);
+
+export const policyEventCategoryEnum = pgEnum("policy_event_category", [
+  "securities",
+  "tax_evasion",
+  "aml",
+  "insider",
+  "legal",
+  "welfare",
+  "scam_enablement",
+  "cross_tenant",
+]);
+
 // -- Tables -------------------------------------------------------------
 
 /**
@@ -664,6 +684,66 @@ export const auditLogV2 = pgTable(
 
 export type AuditLogV2 = typeof auditLogV2.$inferSelect;
 
+// -- Fraud + Policy (Phase C) ------------------------------------------
+
+/**
+ * Detective-only fraud signals. Append-only (never deleted); status transitions
+ * (dismiss / acknowledge / escalate) are the only mutations. Evidence is
+ * structured jsonb — no free text from the LLM. Observer-visible.
+ */
+export const fraudSignal = pgTable(
+  "fraud_signal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    detectorId: text("detector_id").notNull(),
+    transactionId: uuid("transaction_id").references(() => transaction.id, {
+      onDelete: "set null",
+    }),
+    severity: signalSeverityEnum("severity").notNull(),
+    evidence: jsonb("evidence").notNull(),
+    suggestedAction: text("suggested_action").notNull(),
+    status: signalStatusEnum("status").notNull().default("open"),
+    dismissedBy: uuid("dismissed_by").references(() => user.id, { onDelete: "set null" }),
+    dismissedReason: text("dismissed_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+  },
+  (t) => [
+    index("fraud_signal_tenant_status_idx").on(t.tenantId, t.status),
+    index("fraud_signal_transaction_idx").on(t.transactionId),
+    uniqueIndex("fraud_signal_open_dedup_udx")
+      .on(t.tenantId, t.detectorId, t.transactionId)
+      .where(sql`"status" = 'open' AND "transaction_id" IS NOT NULL`),
+  ],
+);
+
+/**
+ * Advisor refusal + welfare-flag log. Append-only immutable evidence. Trigger
+ * text stored only as a hash (PII hygiene). `surfacedToObserver` gates
+ * owner-only welfare flags out of observer views.
+ */
+export const policyEvent = pgTable(
+  "policy_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    userId: uuid("user_id").references(() => user.id, { onDelete: "set null" }),
+    conversationId: uuid("conversation_id").references(() => advisorConversation.id, {
+      onDelete: "set null",
+    }),
+    category: policyEventCategoryEnum("category").notNull(),
+    triggerTextHash: bytea("trigger_text_hash").notNull(),
+    surfacedToObserver: boolean("surfaced_to_observer").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("policy_event_tenant_created_idx").on(t.tenantId, t.createdAt)],
+);
+
 // -- Inferred types -----------------------------------------------------
 
 export type User = typeof user.$inferSelect;
@@ -703,3 +783,7 @@ export type Tenant = typeof tenant.$inferSelect;
 export type NewTenant = typeof tenant.$inferInsert;
 export type TenantMember = typeof tenantMember.$inferSelect;
 export type NewTenantMember = typeof tenantMember.$inferInsert;
+export type FraudSignal = typeof fraudSignal.$inferSelect;
+export type NewFraudSignal = typeof fraudSignal.$inferInsert;
+export type PolicyEvent = typeof policyEvent.$inferSelect;
+export type NewPolicyEvent = typeof policyEvent.$inferInsert;
