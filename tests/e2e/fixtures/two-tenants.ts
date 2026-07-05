@@ -24,41 +24,33 @@ export async function seedTwoTenants() {
     .values({ name: "B", plan: "trial", region: "us" })
     .returning();
 
-  await db
-    .insert(tenantMember)
-    .values({
-      tenantId: tA!.id,
-      userId: userAData.user!.id,
-      role: "owner",
-      acceptedAt: new Date(),
-    });
-  await db
-    .insert(tenantMember)
-    .values({
-      tenantId: tB!.id,
-      userId: userBData.user!.id,
-      role: "owner",
-      acceptedAt: new Date(),
-    });
+  await db.insert(tenantMember).values({
+    tenantId: tA!.id,
+    userId: userAData.user!.id,
+    role: "owner",
+    acceptedAt: new Date(),
+  });
+  await db.insert(tenantMember).values({
+    tenantId: tB!.id,
+    userId: userBData.user!.id,
+    role: "owner",
+    acceptedAt: new Date(),
+  });
 
-  await db
-    .insert(account)
-    .values({
-      tenantId: tA!.id,
-      userId: userAData.user!.id,
-      name: "A-checking",
-      kind: "cash",
-      currency: "USD",
-    });
-  await db
-    .insert(account)
-    .values({
-      tenantId: tB!.id,
-      userId: userBData.user!.id,
-      name: "B-checking",
-      kind: "cash",
-      currency: "USD",
-    });
+  await db.insert(account).values({
+    tenantId: tA!.id,
+    userId: userAData.user!.id,
+    name: "A-checking",
+    kind: "cash",
+    currency: "USD",
+  });
+  await db.insert(account).values({
+    tenantId: tB!.id,
+    userId: userBData.user!.id,
+    name: "B-checking",
+    kind: "cash",
+    currency: "USD",
+  });
 
   return { tA: tA!.id, tB: tB!.id, userA: userAData.user!.id, userB: userBData.user!.id };
 }

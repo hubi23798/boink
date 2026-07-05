@@ -1770,22 +1770,18 @@ export async function seedTwoTenants() {
     .insert(tenant)
     .values({ name: "B", plan: "trial", region: "us" })
     .returning();
-  await db
-    .insert(tenantMember)
-    .values({
-      tenantId: tA.id,
-      userId: userA.data.user!.id,
-      role: "owner",
-      acceptedAt: new Date(),
-    });
-  await db
-    .insert(tenantMember)
-    .values({
-      tenantId: tB.id,
-      userId: userB.data.user!.id,
-      role: "owner",
-      acceptedAt: new Date(),
-    });
+  await db.insert(tenantMember).values({
+    tenantId: tA.id,
+    userId: userA.data.user!.id,
+    role: "owner",
+    acceptedAt: new Date(),
+  });
+  await db.insert(tenantMember).values({
+    tenantId: tB.id,
+    userId: userB.data.user!.id,
+    role: "owner",
+    acceptedAt: new Date(),
+  });
   await db
     .insert(account)
     .values({ tenantId: tA.id, name: "A-checking", kind: "cash", currency: "USD" });
