@@ -57,7 +57,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Migrate DB
-        run: pnpm db:migrate
+        run: pnpm exec drizzle-kit migrate
 
       - name: Unit tests
         run: pnpm test:unit -- --run
