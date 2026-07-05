@@ -37,3 +37,4 @@ playwright/.cache/
 
 # Claude Code local artifacts
 .claude/
+.cursor/
