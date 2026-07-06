@@ -45,6 +45,11 @@ const schema = z.object({
   // Axiom structured logging (optional; logs silently dropped when unset)
   AXIOM_DATASET: z.string().optional(),
   AXIOM_TOKEN: z.string().optional(),
+  // Phase B-EU aggregators
+  TRUELAYER_CLIENT_ID: z.string().min(1).optional(),
+  TRUELAYER_CLIENT_SECRET: z.string().min(1).optional(),
+  TRUELAYER_ENV: z.enum(["sandbox", "live"]).default("sandbox"),
+  AGGREGATOR_OAUTH_STATE_SECRET: z.string().min(16).optional(),
 });
 
 export type Env = z.infer<typeof schema>;
