@@ -1,6 +1,11 @@
 import { requirePageAuth } from "@/app/lib/require-auth";
 
 const items = [
+  {
+    href: "/settings/connections",
+    label: "Connections",
+    description: "Link banks for automatic sync",
+  },
   { href: "/settings/import", label: "Import CSV", description: "Upload Revolut CSV exports" },
   { href: "/settings/accounts", label: "Accounts", description: "Rename, archive, set liquidity" },
   { href: "/settings/categories", label: "Categories", description: "Manage spending categories" },
