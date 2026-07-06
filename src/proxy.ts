@@ -44,13 +44,27 @@ function hasSupabaseSession(req: NextRequest): boolean {
 
 const isDev = process.env.NODE_ENV === "development";
 
+function supabaseConnectOrigin(): string | undefined {
+  const url = process.env.SUPABASE_URL;
+  if (!url) return undefined;
+  try {
+    return new URL(url).origin;
+  } catch {
+    return undefined;
+  }
+}
+
+const connectSrc = ["'self'", "https://api.anthropic.com", supabaseConnectOrigin()]
+  .filter(Boolean)
+  .join(" ");
+
 const CSP = [
   "default-src 'self'",
   isDev ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" : "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data:",
   "font-src 'self' data:",
-  "connect-src 'self' https://api.anthropic.com",
+  `connect-src ${connectSrc}`,
   "frame-ancestors 'none'",
   "base-uri 'self'",
   "form-action 'self'",

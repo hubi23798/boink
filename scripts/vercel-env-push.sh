@@ -7,6 +7,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
 
+ENV_FILE="${ENV_FILE:-$ROOT/.env}"
 FORCE="${1:-}"
 FORCE_FLAG=""
 if [[ "$FORCE" == "--force" ]]; then
@@ -15,7 +16,9 @@ fi
 
 # Vercel default production hostname until TRU-A-07 DNS cutover to truffe.ai
 VERCEL_HOST="truffe.vercel.app"
-CRON_SECRET="$(openssl rand -hex 24)"
+
+DATABASE_PUSHED=0
+CRON_FROM_FILE=""
 
 add_env() {
   local name="$1"
@@ -35,7 +38,7 @@ add_env() {
   done
 }
 
-echo "Pushing env vars to Vercel (truffe/truffe)..."
+echo "Pushing env vars to Vercel (truffe/truffe) from ${ENV_FILE}..."
 
 while IFS= read -r line || [[ -n "$line" ]]; do
   [[ -z "$line" || "$line" =~ ^[[:space:]]*# ]] && continue
@@ -49,7 +52,7 @@ while IFS= read -r line || [[ -n "$line" ]]; do
     VERCEL_*|LINEAR_*) continue ;;
     RP_ID) value="$VERCEL_HOST" ;;
     ORIGIN) value="https://$VERCEL_HOST" ;;
-    CRON_SECRET) value="$CRON_SECRET" ;;
+    CRON_SECRET) CRON_FROM_FILE=1 ;;
     DATABASE_URL|SUPABASE_URL|SUPABASE_ANON_KEY|SUPABASE_SERVICE_ROLE_KEY|SUPABASE_DB_URL|SUPABASE_DB_DIRECT_URL)
       if [[ "$value" == *"127.0.0.1"* || "$value" == *"localhost"* || "$value" == *"supabase-demo"* ]]; then
         echo "  ⊘ skip $name (local dev — set EU cloud values in Vercel dashboard)"
@@ -58,13 +61,22 @@ while IFS= read -r line || [[ -n "$line" ]]; do
       ;;
   esac
 
+  if [[ "$name" == "DATABASE_URL" ]]; then DATABASE_PUSHED=1; fi
   add_env "$name" "$value"
-done < "$ROOT/.env"
+done < "$ENV_FILE"
 
-# DATABASE_URL required for build; placeholder until truffe-eu creds are set
-add_env "DATABASE_URL" "postgresql://placeholder:placeholder@placeholder.supabase.co:6543/postgres?pgbouncer=true"
+if [[ "$DATABASE_PUSHED" -eq 0 ]]; then
+  echo "  ⊘ no DATABASE_URL in env file — add Supabase pooler URL before deploy"
+fi
+
+if [[ -z "$CRON_FROM_FILE" ]]; then
+  echo "  → CRON_SECRET (generated)"
+  add_env "CRON_SECRET" "$(openssl rand -hex 24)"
+fi
 
 # Production HTTPS cookie names (not in .env)
+if ! grep -q '^SESSION_COOKIE_NAME=' "$ENV_FILE" 2>/dev/null; then
 add_env "SESSION_COOKIE_NAME" "__Host-session"
+fi
 
 echo "Done. Run: pnpm dlx vercel env ls"
