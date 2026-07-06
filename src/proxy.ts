@@ -19,6 +19,7 @@ const PUBLIC_PATHS = [
   "/api/auth/login",
   "/api/auth/logout",
   "/api/auth/sync",
+  "/api/aggregators/truelayer/webhook",
   "/manifest.webmanifest",
   "/icon-192.png",
   "/icon-512.png",

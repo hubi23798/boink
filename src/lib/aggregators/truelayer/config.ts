@@ -37,3 +37,13 @@ export const TRUELAYER_SCOPES = [
   "transactions",
   "offline_access",
 ] as const;
+
+export const TRUELAYER_WEBHOOK_JWKS = {
+  sandbox: "https://webhooks.truelayer-sandbox.com/.well-known/jwks",
+  live: "https://webhooks.truelayer.com/.well-known/jwks",
+} as const;
+
+export function getTrueLayerWebhookJwksUri(): string {
+  const cfg = getTrueLayerConfig();
+  return cfg.env === "live" ? TRUELAYER_WEBHOOK_JWKS.live : TRUELAYER_WEBHOOK_JWKS.sandbox;
+}
