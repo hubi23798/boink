@@ -61,7 +61,10 @@ export const transactionStateEnum = pgEnum("transaction_state", [
 
 export const categorizedByEnum = pgEnum("categorized_by", ["rule", "llm", "manual"]);
 
-export const importBatchSourceKindEnum = pgEnum("import_batch_source_kind", ["revolut_csv"]);
+export const importBatchSourceKindEnum = pgEnum("import_batch_source_kind", [
+  "revolut_csv",
+  "truelayer_sync",
+]);
 
 export const importBatchStatusEnum = pgEnum("import_batch_status", [
   "pending",

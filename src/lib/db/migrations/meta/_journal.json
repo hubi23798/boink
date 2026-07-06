@@ -162,6 +162,13 @@
       "when": 1783345400000,
       "tag": "0022_aggregator_vault",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "7",
+      "when": 1783345500000,
+      "tag": "0023_truelayer_sync_source",
+      "breakpoints": true
     }
   ]
 }

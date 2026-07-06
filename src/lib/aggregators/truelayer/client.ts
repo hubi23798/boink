@@ -30,6 +30,16 @@ type TrueLayerTransaction = {
   status?: string;
 };
 
+export class TrueLayerApiError extends Error {
+  constructor(
+    public readonly status: number,
+    message: string,
+  ) {
+    super(message);
+    this.name = "TrueLayerApiError";
+  }
+}
+
 function mapTxnState(status?: string): AggregatorTransaction["state"] {
   switch (status?.toUpperCase()) {
     case "PENDING":
@@ -56,7 +66,7 @@ export class TrueLayerSource implements AggregatorSource {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) {
-      throw new Error(`TrueLayer API ${path} failed (${res.status})`);
+      throw new TrueLayerApiError(res.status, `TrueLayer API ${path} failed (${res.status})`);
     }
     return (await res.json()) as T;
   }

@@ -7,6 +7,7 @@ import { storeConnectionTokens } from "@/lib/aggregators/tokens";
 import { oauthStateSecret, verifyOAuthState } from "@/lib/aggregators/oauth-state";
 import { exchangeAuthorizationCode } from "@/lib/aggregators/truelayer/oauth";
 import { createTrueLayerSource } from "@/lib/aggregators/truelayer/client";
+import { syncConnection } from "@/lib/aggregators/truelayer/sync";
 import { getDb } from "@/lib/db/client";
 import { connection } from "@/lib/db/schema";
 
@@ -61,6 +62,8 @@ export async function GET(req: Request) {
       where: eq(connection.accessTokenRef, secretName),
     });
 
+    let connectionId: string;
+
     if (existing) {
       await db
         .update(connection)
@@ -70,15 +73,24 @@ export async function GET(req: Request) {
           updatedAt: new Date(),
         })
         .where(eq(connection.id, existing.id));
+      connectionId = existing.id;
     } else {
-      await db.insert(connection).values({
-        tenantId: auth.ctx.tenantId,
-        provider: "truelayer",
-        providerItemId: info.providerItemId,
-        accessTokenRef: secretName,
-        status: "active",
-      });
+      const [inserted] = await db
+        .insert(connection)
+        .values({
+          tenantId: auth.ctx.tenantId,
+          provider: "truelayer",
+          providerItemId: info.providerItemId,
+          accessTokenRef: secretName,
+          status: "active",
+        })
+        .returning({ id: connection.id });
+      connectionId = inserted!.id;
     }
+
+    void syncConnection(db, connectionId).catch((e) => {
+      console.error("[truelayer/callback] initial sync failed", connectionId, e);
+    });
 
     return NextResponse.redirect(new URL("/settings/connections?connected=truelayer", req.url));
   } catch (e) {
