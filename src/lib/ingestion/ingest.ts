@@ -5,6 +5,8 @@ import { account, importBatch, importBatchRejection, transaction } from "@/lib/d
 import { categorize } from "@/lib/categorization/categorize";
 import { classifyTransactions } from "@/lib/categorization/llm";
 import { backfillSnapshots } from "@/lib/net-worth/snapshots";
+import { registeredDetectors } from "@/lib/fraud/registry";
+import { runDetectors } from "@/lib/fraud/runner";
 import { RevolutCsvSource } from "./revolut-csv";
 import type { AccountHint } from "./types";
 
@@ -189,6 +191,20 @@ export async function ingest(
     }
 
     await backfillSnapshots(db, tenantId);
+
+    // Fraud detectors (detective-only) run post-categorization on the newly
+    // imported transactions. No-op while the registry is empty; guarded so a
+    // detector failure can never break an import.
+    if (registeredDetectors.length > 0) {
+      try {
+        const scanTargets = await db.query.transaction.findMany({
+          where: (t, { inArray }) => inArray(t.id, acceptedIds),
+        });
+        await runDetectors(db, tenantId, scanTargets);
+      } catch (e) {
+        console.error("[fraud] post-ingest detector scan failed:", e);
+      }
+    }
   }
 
   if (allRejections.length > 0) {

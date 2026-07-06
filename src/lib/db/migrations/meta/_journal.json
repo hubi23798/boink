@@ -127,6 +127,20 @@
       "when": 1782582400000,
       "tag": "0017_drop_old_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1782582500000,
+      "tag": "0018_fraud_signal",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1782582600000,
+      "tag": "0019_policy_event",
+      "breakpoints": true
     }
   ]
 }
