@@ -120,6 +120,46 @@ export const memberRoleEnum = pgEnum("member_role", ["owner", "observer"]);
 
 export const memberScopeEnum = pgEnum("member_scope", ["full_read", "ledger_only", "audit_only"]);
 
+export const providerEnum = pgEnum("provider_enum", [
+  "truelayer",
+  "tink",
+  "plaid",
+  "manual",
+  "csv",
+]);
+
+export const connectionStatusEnum = pgEnum("connection_status", [
+  "active",
+  "error",
+  "revoked",
+  "paused",
+]);
+
+export const signalSeverityEnum = pgEnum("signal_severity", ["info", "warn", "high"]);
+
+export const signalStatusEnum = pgEnum("signal_status", [
+  "open",
+  "dismissed",
+  "acknowledged",
+  "escalated",
+]);
+
+export const policyCategoryEnum = pgEnum("policy_category", [
+  "securities",
+  "tax_evasion",
+  "aml",
+  "insider",
+  "legal",
+  "welfare",
+  "scam_enablement",
+  "cross_tenant",
+]);
+
+export const advisorVisibilityEnum = pgEnum("advisor_visibility", [
+  "owner_private",
+  "observers_visible",
+]);
+
 // -- Tables -------------------------------------------------------------
 
 /**
@@ -480,6 +520,7 @@ export const advisorConversation = pgTable(
       .references(() => user.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
     isArchived: boolean("is_archived").notNull().default(false),
+    visibility: advisorVisibilityEnum("visibility").notNull().default("owner_private"),
     startedAt: timestamp("started_at", { withTimezone: true }).notNull().defaultNow(),
   },
   (t) => [index("advisor_conversation_tenant_id_idx").on(t.tenantId)],
@@ -637,6 +678,78 @@ export const weeklyDebrief = pgTable(
   ],
 );
 
+// -- Phase B-EU: connections, fraud, policy --------------------------------
+
+export const connection = pgTable(
+  "connection",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    provider: providerEnum("provider").notNull(),
+    providerItemId: text("provider_item_id").notNull(),
+    accessTokenRef: text("access_token_ref").notNull(),
+    status: connectionStatusEnum("status").notNull().default("active"),
+    lastSyncedAt: timestamp("last_synced_at", { withTimezone: true }),
+    lastError: text("last_error"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [
+    index("connection_tenant_idx").on(t.tenantId),
+    uniqueIndex("connection_tenant_provider_item_udx").on(
+      t.tenantId,
+      t.provider,
+      t.providerItemId,
+    ),
+  ],
+);
+
+export const fraudSignal = pgTable(
+  "fraud_signal",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    detectorId: text("detector_id").notNull(),
+    transactionId: uuid("transaction_id").references(() => transaction.id, {
+      onDelete: "set null",
+    }),
+    severity: signalSeverityEnum("severity").notNull(),
+    evidence: jsonb("evidence").notNull(),
+    suggestedAction: text("suggested_action").notNull(),
+    status: signalStatusEnum("status").notNull().default("open"),
+    dismissedBy: uuid("dismissed_by").references(() => user.id, { onDelete: "set null" }),
+    dismissedReason: text("dismissed_reason"),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+    expiresAt: timestamp("expires_at", { withTimezone: true }),
+  },
+  (t) => [index("fraud_signal_tenant_status_idx").on(t.tenantId, t.status)],
+);
+
+export const policyEvent = pgTable(
+  "policy_event",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    tenantId: uuid("tenant_id")
+      .notNull()
+      .references(() => tenant.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => user.id, { onDelete: "cascade" }),
+    conversationId: uuid("conversation_id").references(() => advisorConversation.id, {
+      onDelete: "set null",
+    }),
+    category: policyCategoryEnum("category").notNull(),
+    triggerTextHash: bytea("trigger_text_hash").notNull(),
+    surfacedToObserver: boolean("surfaced_to_observer").notNull().default(false),
+    createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  },
+  (t) => [index("policy_event_tenant_created_idx").on(t.tenantId, t.createdAt)],
+);
+
 // -- Audit Log V2 ------------------------------------------------------
 
 export const auditLogV2 = pgTable(
@@ -703,3 +816,9 @@ export type Tenant = typeof tenant.$inferSelect;
 export type NewTenant = typeof tenant.$inferInsert;
 export type TenantMember = typeof tenantMember.$inferSelect;
 export type NewTenantMember = typeof tenantMember.$inferInsert;
+export type Connection = typeof connection.$inferSelect;
+export type NewConnection = typeof connection.$inferInsert;
+export type FraudSignal = typeof fraudSignal.$inferSelect;
+export type NewFraudSignal = typeof fraudSignal.$inferInsert;
+export type PolicyEvent = typeof policyEvent.$inferSelect;
+export type NewPolicyEvent = typeof policyEvent.$inferInsert;

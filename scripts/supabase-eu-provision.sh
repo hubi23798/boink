@@ -13,6 +13,10 @@ REF="${SUPABASE_PROJECT_REF:-ltoqmvaiolyqyfykkxxs}"
 HOST="aws-0-eu-central-1.pooler.supabase.com"
 URL="https://${REF}.supabase.co"
 
+if [[ -z "${SUPABASE_DB_PASSWORD:-}" ]] && [[ -f "$ROOT/.env" ]]; then
+  SUPABASE_DB_PASSWORD="$(grep -E '^SUPABASE_DB_PASSWORD=' "$ROOT/.env" | head -1 | cut -d= -f2- | tr -d "'\"")"
+fi
+
 if [[ -z "${SUPABASE_DB_PASSWORD:-}" ]]; then
   echo "Set SUPABASE_DB_PASSWORD (from Supabase project creation)." >&2
   exit 1

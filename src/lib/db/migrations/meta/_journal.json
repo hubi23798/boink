@@ -127,6 +127,41 @@
       "when": 1782582400000,
       "tag": "0017_drop_old_audit_log",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "7",
+      "when": 1783345000000,
+      "tag": "0018_connection",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1783345100000,
+      "tag": "0019_fraud_signal",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1783345200000,
+      "tag": "0020_policy_event",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "7",
+      "when": 1783345300000,
+      "tag": "0021_advisor_visibility",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "7",
+      "when": 1783345400000,
+      "tag": "0022_aggregator_vault",
+      "breakpoints": true
     }
   ]
 }
