@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { and, eq } from "drizzle-orm";
-import type { AggregatorProvider, AggregatorSource, AggregatorTokens } from "@/lib/aggregators/interface";
+import type {
+  AggregatorProvider,
+  AggregatorSource,
+  AggregatorTokens,
+} from "@/lib/aggregators/interface";
 import { getAggregatorSource } from "@/lib/aggregators/registry";
 import { resolveTenantOwnerUserId } from "@/lib/aggregators/tenant-owner";
 import { TrueLayerApiError } from "@/lib/aggregators/truelayer/client";

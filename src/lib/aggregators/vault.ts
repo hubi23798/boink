@@ -17,11 +17,7 @@ export function aggregatorSecretName(
 
 type VaultClient = ReturnType<typeof createServiceRoleClient>;
 
-async function rpc<T>(
-  client: VaultClient,
-  fn: string,
-  args: Record<string, string>,
-): Promise<T> {
+async function rpc<T>(client: VaultClient, fn: string, args: Record<string, string>): Promise<T> {
   const { data, error } = await client.rpc(fn, args);
   if (error) throw new Error(`${fn}: ${error.message}`);
   return data as T;

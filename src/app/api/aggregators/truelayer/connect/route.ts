@@ -2,11 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { requireApiAuth } from "@/app/lib/require-auth";
 import { assertConnectionRateLimit } from "@/lib/aggregators/rate-limit";
-import {
-  createOAuthNonce,
-  oauthStateSecret,
-  signOAuthState,
-} from "@/lib/aggregators/oauth-state";
+import { createOAuthNonce, oauthStateSecret, signOAuthState } from "@/lib/aggregators/oauth-state";
 import { buildAuthUrl } from "@/lib/aggregators/truelayer/oauth";
 import { getTrueLayerConfig } from "@/lib/aggregators/truelayer/config";
 import { getDb } from "@/lib/db/client";

@@ -1,9 +1,5 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
-import {
-  createOAuthNonce,
-  signOAuthState,
-  verifyOAuthState,
-} from "@/lib/aggregators/oauth-state";
+import { createOAuthNonce, signOAuthState, verifyOAuthState } from "@/lib/aggregators/oauth-state";
 import { buildAuthUrl, exchangeAuthorizationCode } from "@/lib/aggregators/truelayer/oauth";
 import type { TrueLayerConfig } from "@/lib/aggregators/truelayer/config";
 

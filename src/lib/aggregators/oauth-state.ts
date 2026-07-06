@@ -34,7 +34,10 @@ export function verifyOAuthState(token: string, secret: string): OAuthStatePaylo
   const sig = token.slice(dot + 1);
   const expected = createHmac("sha256", secret).update(body).digest("base64url");
   try {
-    if (sig.length !== expected.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(expected))) {
+    if (
+      sig.length !== expected.length ||
+      !timingSafeEqual(Buffer.from(sig), Buffer.from(expected))
+    ) {
       return null;
     }
   } catch {

@@ -701,11 +701,7 @@ export const connection = pgTable(
   },
   (t) => [
     index("connection_tenant_idx").on(t.tenantId),
-    uniqueIndex("connection_tenant_provider_item_udx").on(
-      t.tenantId,
-      t.provider,
-      t.providerItemId,
-    ),
+    uniqueIndex("connection_tenant_provider_item_udx").on(t.tenantId, t.provider, t.providerItemId),
   ],
 );
 

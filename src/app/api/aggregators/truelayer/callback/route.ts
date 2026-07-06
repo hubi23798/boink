@@ -50,11 +50,7 @@ export async function GET(req: Request) {
     const source = createTrueLayerSource();
     const info = await source.fetchConnectionInfo(tokens.accessToken);
 
-    const secretName = aggregatorSecretName(
-      auth.ctx.tenantId,
-      "truelayer",
-      info.providerItemId,
-    );
+    const secretName = aggregatorSecretName(auth.ctx.tenantId, "truelayer", info.providerItemId);
     await storeConnectionTokens(secretName, tokens);
 
     const db = getDb();

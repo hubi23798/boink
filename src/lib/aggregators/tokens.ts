@@ -3,12 +3,7 @@ import {
   serializeAggregatorTokens,
   type AggregatorTokens,
 } from "@/lib/aggregators/interface";
-import {
-  deleteToken,
-  retrieveToken,
-  storeToken,
-  updateToken,
-} from "@/lib/aggregators/vault";
+import { deleteToken, retrieveToken, storeToken, updateToken } from "@/lib/aggregators/vault";
 
 export async function storeConnectionTokens(
   secretName: string,
@@ -17,9 +12,7 @@ export async function storeConnectionTokens(
   await storeToken(secretName, serializeAggregatorTokens(tokens));
 }
 
-export async function loadConnectionTokens(
-  secretName: string,
-): Promise<AggregatorTokens | null> {
+export async function loadConnectionTokens(secretName: string): Promise<AggregatorTokens | null> {
   const raw = await retrieveToken(secretName);
   if (!raw) return null;
   return parseAggregatorTokens(raw);
