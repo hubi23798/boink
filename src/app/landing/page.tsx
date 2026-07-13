@@ -322,7 +322,8 @@ function BottomCTA() {
             </h2>
             <p className="cta-body">
               truffe.ai is a financial OS for founders, executives, and families managing wealth
-              across multiple accounts, advisors, and jurisdictions. Connect your accounts, invite a
+              across multiple accounts, advisors, and jurisdictions. Connect your accounts live
+              &mdash; or import a CSV for anything a connection can&rsquo;t reach &mdash; invite a
               trusted observer, and let the audit trail surface what your data already knows.
             </p>
             <div className="cta-actions">
@@ -341,7 +342,7 @@ function BottomCTA() {
               </MotionLink>
             </div>
             <p className="cta-foot">
-              Multi-account · Observer access · AI advisor with strict guardrails
+              Live connections or CSV import · Observer access · AI advisor with strict guardrails
             </p>
           </div>
         </Reveal>
