@@ -14,7 +14,7 @@ const mockExtractJku = vi.fn();
 const mockVerify = vi.fn();
 
 vi.mock("truelayer-signing", async (importOriginal) => {
-  const actual = await importOriginal<typeof import("truelayer-signing")>();
+  const actual = (await importOriginal()) as Record<string, unknown>;
   return {
     ...actual,
     extractJku: (...args: unknown[]) => mockExtractJku(...args),
