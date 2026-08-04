@@ -169,6 +169,13 @@
       "when": 1783345500000,
       "tag": "0023_truelayer_sync_source",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1785882000000,
+      "tag": "0024_fraud_signal_dedup",
+      "breakpoints": true
     }
   ]
 }

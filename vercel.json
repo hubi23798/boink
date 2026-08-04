@@ -15,6 +15,10 @@
     {
       "path": "/api/cron/sync-connections",
       "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/fraud-rescan",
+      "schedule": "30 2 * * *"
     }
   ]
 }

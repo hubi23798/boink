@@ -725,7 +725,13 @@ export const fraudSignal = pgTable(
     createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
     expiresAt: timestamp("expires_at", { withTimezone: true }),
   },
-  (t) => [index("fraud_signal_tenant_status_idx").on(t.tenantId, t.status)],
+  (t) => [
+    index("fraud_signal_tenant_status_idx").on(t.tenantId, t.status),
+    index("fraud_signal_transaction_idx").on(t.transactionId),
+    uniqueIndex("fraud_signal_open_dedup_udx")
+      .on(t.tenantId, t.detectorId, t.transactionId)
+      .where(sql`"status" = 'open' AND "transaction_id" IS NOT NULL`),
+  ],
 );
 
 export const policyEvent = pgTable(
