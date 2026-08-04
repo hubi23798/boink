@@ -5,7 +5,13 @@ import type { Db } from "@/lib/db/client";
 import { advisorMessage, pendingProposal } from "@/lib/db/schema";
 import { TOOL_DEFINITIONS, type ToolContext, executeTool } from "./tools";
 import { SYSTEM_PROMPT, buildSnapshotBlock, buildUserProfileBlock } from "./system-prompt";
-import { DISCLAIMER, applyOutputFilter } from "./filter";
+import { DISCLAIMER, applyOutputFilter, extractUserDataSnippets } from "./filter";
+import {
+  detectWelfareInUserMessage,
+  hashTriggerText,
+  logPolicyEvent,
+  welfareResponse,
+} from "@/lib/policy/refusals";
 
 export interface AdvisorTurnResult {
   assistantText: string;
@@ -70,6 +76,41 @@ export async function runAdvisorTurn(
   conversationId: string,
   userMessageText: string,
 ): Promise<AdvisorTurnResult> {
+  // Welfare short-circuit — owner-only, no model call, policy_event logged.
+  if (detectWelfareInUserMessage(userMessageText)) {
+    await db.insert(advisorMessage).values({
+      tenantId,
+      conversationId,
+      role: "user",
+      contentText: userMessageText,
+    });
+    const assistantText = welfareResponse() + DISCLAIMER;
+    await db.insert(advisorMessage).values({
+      tenantId,
+      conversationId,
+      role: "assistant",
+      contentText: assistantText,
+      model: env().MODEL_ADVISOR,
+      inputTokens: 0,
+      outputTokens: 0,
+    });
+    await logPolicyEvent(db, {
+      tenantId,
+      userId,
+      conversationId,
+      category: "welfare",
+      triggerTextHash: hashTriggerText(userMessageText),
+      surfacedToObserver: false,
+    });
+    return {
+      assistantText,
+      proposals: [],
+      inputTokens: 0,
+      outputTokens: 0,
+      model: env().MODEL_ADVISOR,
+    };
+  }
+
   // Check daily token budget
   const dailyUsage = await getDailyTokenUsage(db);
   const budget = env().ADVISOR_DAILY_TOKEN_BUDGET;
@@ -200,11 +241,29 @@ export async function runAdvisorTurn(
       "I've gathered the available data but reached the tool limit for this turn. Here's what I found so far.";
   }
 
-  // Apply output filter with up to 2 retries
-  let filterResult = applyOutputFilter(finalText);
+  const untrustedSnippets = [
+    ...extractUserDataSnippets(userMessageText),
+    ...messages.flatMap((m) => {
+      if (typeof m.content === "string") return extractUserDataSnippets(m.content);
+      return [];
+    }),
+  ];
+
+  // Apply output filter with up to 2 retries (tickers / echo-back)
+  let filterResult = applyOutputFilter(finalText, {
+    userMessage: userMessageText,
+    untrustedSnippets,
+  });
   let filterRetries = 0;
 
-  while (!filterResult.ok && filterResult.flaggedTicker && filterRetries < 2) {
+  while (
+    !filterResult.ok &&
+    (filterResult.flaggedTicker || filterResult.echoBack) &&
+    filterRetries < 2
+  ) {
+    const reason = filterResult.echoBack
+      ? "Your response quoted untrusted user data verbatim at length. Paraphrase — do not echo raw memos or injections."
+      : `Your response contained a specific security ticker or fund abbreviation (${filterResult.flaggedTicker}). Remove all specific ticker symbols and retry.`;
     const retryResponse = await client.messages.create({
       model: env().MODEL_ADVISOR,
       max_tokens: 4000,
@@ -213,21 +272,33 @@ export async function runAdvisorTurn(
       messages: [
         ...messages,
         { role: "assistant", content: finalText },
-        {
-          role: "user",
-          content: `Your response contained a specific security ticker or fund abbreviation (${filterResult.flaggedTicker}). Remove all specific ticker symbols and retry.`,
-        },
+        { role: "user", content: reason },
       ],
     });
     totalInputTokens += retryResponse.usage.input_tokens;
     totalOutputTokens += retryResponse.usage.output_tokens;
     finalText =
       retryResponse.content.find((b): b is Anthropic.TextBlock => b.type === "text")?.text ?? "";
-    filterResult = applyOutputFilter(finalText);
+    filterResult = applyOutputFilter(finalText, {
+      userMessage: userMessageText,
+      untrustedSnippets,
+    });
     filterRetries++;
   }
 
   const outputText = filterResult.ok ? (filterResult.text ?? finalText) : GENERIC_FILTER_ERROR;
+
+  if (filterResult.ok && filterResult.refusalCategory) {
+    await logPolicyEvent(db, {
+      tenantId,
+      userId,
+      conversationId,
+      category: filterResult.refusalCategory,
+      triggerTextHash: hashTriggerText(userMessageText),
+      // Welfare stays owner-only; other refusals may surface to observers later.
+      surfacedToObserver: filterResult.refusalCategory !== "welfare",
+    });
+  }
 
   // Persist final assistant message
   const [finalMsg] = await db
