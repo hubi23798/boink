@@ -1,7 +1,7 @@
 import { and, eq, lt, sql } from "drizzle-orm";
 import type { Detector, DetectorContext, FraudSignalDraft } from "@/lib/fraud/interface";
 import { transaction, type Transaction } from "@/lib/db/schema";
-import { normalizePayee } from "@/lib/fraud/vendor-bec/heuristics";
+import { extractPayeeKey } from "@/lib/fraud/vendor-bec/heuristics";
 import {
   doubleBilling,
   postTrialConversion,
@@ -24,7 +24,7 @@ export function evaluateSubscriptionTrap(
 ): FraudSignalDraft | null {
   if (tx.amountNative >= 0) return null;
 
-  const payee = normalizePayee(tx.descriptionRaw);
+  const payee = extractPayeeKey(tx.descriptionRaw);
   if (!payee) return null;
 
   const history: RecurringEntry[] = sameMerchantRows.map((r) => ({
@@ -111,7 +111,7 @@ export const subscriptionTrapDetector: Detector = {
 
   async run(ctx: DetectorContext, tx: Transaction): Promise<FraudSignalDraft[]> {
     if (tx.amountNative >= 0) return [];
-    const payee = normalizePayee(tx.descriptionRaw);
+    const payee = extractPayeeKey(tx.descriptionRaw);
     if (!payee) return [];
 
     const rows = await ctx.db
@@ -131,7 +131,7 @@ export const subscriptionTrapDetector: Detector = {
         ),
       );
 
-    const sameMerchant = rows.filter((r) => normalizePayee(r.descriptionRaw) === payee);
+    const sameMerchant = rows.filter((r) => extractPayeeKey(r.descriptionRaw) === payee);
     const draft = evaluateSubscriptionTrap(tx, sameMerchant);
     return draft ? [draft] : [];
   },

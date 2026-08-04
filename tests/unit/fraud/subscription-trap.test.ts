@@ -52,10 +52,7 @@ describe("priceHikeDetect", () => {
 
 describe("postTrialConversion", () => {
   it("flags trial → full price within 35 days at ≥3×", () => {
-    const r = postTrialConversion([
-      entry(-100, daysAgo(20)),
-      entry(-1500, daysAgo(0)),
-    ]);
+    const r = postTrialConversion([entry(-100, daysAgo(20)), entry(-1500, daysAgo(0))]);
     expect(r.flagged).toBe(true);
     expect(r.trialAmount).toBe(100);
     expect(r.firstFullAmount).toBe(1500);
@@ -63,15 +60,15 @@ describe("postTrialConversion", () => {
   });
 
   it("does not flag when gap > 35 days", () => {
-    expect(
-      postTrialConversion([entry(-100, daysAgo(60)), entry(-1500, daysAgo(0))]).flagged,
-    ).toBe(false);
+    expect(postTrialConversion([entry(-100, daysAgo(60)), entry(-1500, daysAgo(0))]).flagged).toBe(
+      false,
+    );
   });
 
   it("does not flag when increase is under 3×", () => {
-    expect(
-      postTrialConversion([entry(-1000, daysAgo(10)), entry(-2000, daysAgo(0))]).flagged,
-    ).toBe(false);
+    expect(postTrialConversion([entry(-1000, daysAgo(10)), entry(-2000, daysAgo(0))]).flagged).toBe(
+      false,
+    );
   });
 });
 
@@ -100,28 +97,25 @@ describe("doubleBilling", () => {
 
   it("does not flag same account", () => {
     expect(
-      doubleBilling(
-        { id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(1) },
-        [{ id: "b", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(2) }],
-      ).flagged,
+      doubleBilling({ id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(1) }, [
+        { id: "b", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(2) },
+      ]).flagged,
     ).toBe(false);
   });
 
   it("does not flag outside 7-day window", () => {
     expect(
-      doubleBilling(
-        { id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(0) },
-        [{ id: "b", accountId: "acct-2", amountNative: -1999, startedAt: daysAgo(10) }],
-      ).flagged,
+      doubleBilling({ id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(0) }, [
+        { id: "b", accountId: "acct-2", amountNative: -1999, startedAt: daysAgo(10) },
+      ]).flagged,
     ).toBe(false);
   });
 
   it("does not flag different amounts", () => {
     expect(
-      doubleBilling(
-        { id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(1) },
-        [{ id: "b", accountId: "acct-2", amountNative: -2999, startedAt: daysAgo(2) }],
-      ).flagged,
+      doubleBilling({ id: "a", accountId: "acct-1", amountNative: -1999, startedAt: daysAgo(1) }, [
+        { id: "b", accountId: "acct-2", amountNative: -2999, startedAt: daysAgo(2) },
+      ]).flagged,
     ).toBe(false);
   });
 });

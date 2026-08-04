@@ -4,8 +4,8 @@ import { transaction, type Transaction } from "@/lib/db/schema";
 import {
   addressMismatch,
   amountAnomaly,
+  extractPayeeKey,
   isNewPayee,
-  normalizePayee,
   urgencyLanguageScan,
 } from "./heuristics";
 
@@ -30,14 +30,15 @@ export function evaluateVendorBec(
 ): FraudSignalDraft | null {
   if (tx.amountNative >= 0) return null;
 
-  const payee = normalizePayee(tx.descriptionRaw);
+  const payee = extractPayeeKey(tx.descriptionRaw);
   if (!payee) return null;
 
-  const tenantHistory = historyRows
-    .map((r) => normalizePayee(r.descriptionRaw))
-    .filter(Boolean);
+  const tenantHistory = historyRows.map((r) => extractPayeeKey(r.descriptionRaw)).filter(Boolean);
 
-  const vendorRows = historyRows.filter((r) => normalizePayee(r.descriptionRaw) === payee);
+  const vendorRows = historyRows.filter((r) => {
+    const key = extractPayeeKey(r.descriptionRaw);
+    return key === payee || payee.startsWith(`${key} `) || key.startsWith(`${payee} `);
+  });
   const vendorHistory = vendorRows.map((r) => r.amountNative);
 
   const payeeFirstSeenAt =
@@ -51,7 +52,16 @@ export function evaluateVendorBec(
   const newPayee = isNewPayee(payee, tenantHistory);
   const anomaly = amountAnomaly(tx.amountNative, vendorHistory);
   const urgency = urgencyLanguageScan(tx.descriptionRaw ?? "");
-  const knownAddress = addressDirectory.get(payee) ?? null;
+  // Address directory keys are stable merchant keys; also try prefix matches.
+  let knownAddress = addressDirectory.get(payee) ?? null;
+  if (!knownAddress) {
+    for (const [key, addr] of addressDirectory) {
+      if (payee.startsWith(`${key} `) || key.startsWith(`${payee} `) || key === payee) {
+        knownAddress = addr;
+        break;
+      }
+    }
+  }
   const addrMismatch = addressMismatch(tx.descriptionRaw ?? "", knownAddress);
 
   const fires = [newPayee, anomaly.flagged, urgency.flagged, addrMismatch].filter(Boolean);
@@ -84,7 +94,7 @@ export const vendorBecDetector: Detector = {
 
   async run(ctx: DetectorContext, tx: Transaction): Promise<FraudSignalDraft[]> {
     if (tx.amountNative >= 0) return [];
-    const payee = normalizePayee(tx.descriptionRaw);
+    const payee = extractPayeeKey(tx.descriptionRaw);
     if (!payee) return [];
 
     const historyRows = await ctx.db

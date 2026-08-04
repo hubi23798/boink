@@ -4,6 +4,7 @@ import {
   FIRST_PAYMENT_ANOMALY_THRESHOLD,
   addressMismatch,
   amountAnomaly,
+  extractPayeeKey,
   isNewPayee,
   normalizePayee,
   urgencyLanguageScan,
@@ -21,7 +22,7 @@ function tx(overrides: Partial<Parameters<typeof evaluateVendorBec>[0]> = {}) {
   };
 }
 
-describe("normalizePayee", () => {
+describe("normalizePayee / extractPayeeKey", () => {
   it("lowercases and strips punctuation/noise", () => {
     expect(normalizePayee("  Acme Supplies, Ltd. ")).toBe("acme supplies ltd");
   });
@@ -29,6 +30,11 @@ describe("normalizePayee", () => {
   it("returns empty for blank", () => {
     expect(normalizePayee(null)).toBe("");
     expect(normalizePayee("   ")).toBe("");
+  });
+
+  it("strips urgency and address noise from payee key", () => {
+    expect(extractPayeeKey("ACME SUPPLIES LTD urgent invoice")).toBe("acme supplies ltd invoice");
+    expect(extractPayeeKey("ACME SUPPLIES LTD 99 Fake Street")).toBe("acme supplies ltd");
   });
 });
 
@@ -96,27 +102,26 @@ describe("addressMismatch", () => {
   });
 
   it("returns false when memo address matches known", () => {
-    expect(
-      addressMismatch("Remit to 10 Downing Street London", "10 Downing Street"),
-    ).toBe(false);
+    expect(addressMismatch("Remit to 10 Downing Street London", "10 Downing Street")).toBe(false);
   });
 
   it("flags when memo asserts a different street address", () => {
-    expect(
-      addressMismatch("Please pay 99 Fake Street London", "10 Downing Street"),
-    ).toBe(true);
+    expect(addressMismatch("Please pay 99 Fake Street London", "10 Downing Street")).toBe(true);
   });
 });
 
 describe("evaluateVendorBec", () => {
   it("new payee + anomalous amount → high severity", () => {
-    const draft = evaluateVendorBec(tx({ amountNative: -80_000, descriptionRaw: "NEW VENDOR LLC" }), [
-      {
-        descriptionRaw: "TESCO STORES",
-        amountNative: -5_000,
-        startedAt: new Date("2026-01-01"),
-      },
-    ]);
+    const draft = evaluateVendorBec(
+      tx({ amountNative: -80_000, descriptionRaw: "NEW VENDOR LLC" }),
+      [
+        {
+          descriptionRaw: "TESCO STORES",
+          amountNative: -5_000,
+          startedAt: new Date("2026-01-01"),
+        },
+      ],
+    );
     expect(draft).not.toBeNull();
     expect(draft!.severity).toBe("high");
     expect(draft!.evidence.isNewPayee).toBe(true);

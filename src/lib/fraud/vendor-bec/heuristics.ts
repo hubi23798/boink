@@ -47,14 +47,42 @@ export function normalizePayee(raw: string | null | undefined): string {
 }
 
 /**
+ * Stable merchant key for history matching. Strips urgency phrases, address
+ * candidates, and common prompt-injection boilerplate so memo noise does not
+ * make a known payee look new.
+ */
+export function extractPayeeKey(raw: string | null | undefined): string {
+  if (!raw) return "";
+  let text = raw;
+  for (const { re } of URGENCY_PATTERNS) {
+    text = text.replace(re, " ");
+  }
+  // Drop street-address candidates before normalizing.
+  text = text.replace(
+    /\b\d{1,5}\s+[a-z0-9][a-z0-9\s]{2,40}(?:street|st|road|rd|avenue|ave|lane|ln|drive|dr|way|blvd|boulevard|court|ct)\b/gi,
+    " ",
+  );
+  // Drop common injection / instruction boilerplate (data-only hygiene).
+  text = text.replace(
+    /\b(ignore\s+(all\s+)?(previous|prior|all)\s+(instructions?|rules?)|you\s+are\s+now\s+in\s+admin\s+mode|mark\s+(this\s+)?(transaction\s+)?safe|system\s*:\s*approve\s+all)\b/gi,
+    " ",
+  );
+  return normalizePayee(text);
+}
+
+/**
  * True when this payee has never appeared in the tenant's prior history.
  * Empty / blank payee names are treated as unknown (not new) to avoid noise.
+ * History entries may be raw descriptions — they are keyed via extractPayeeKey.
+ * Prefix match tolerates leftover memo tokens after noise stripping.
  */
 export function isNewPayee(payeeName: string, tenantHistory: string[]): boolean {
-  const needle = normalizePayee(payeeName);
+  const needle = extractPayeeKey(payeeName);
   if (!needle) return false;
-  const seen = new Set(tenantHistory.map(normalizePayee).filter(Boolean));
-  return !seen.has(needle);
+  const seen = [...new Set(tenantHistory.map(extractPayeeKey).filter(Boolean))];
+  return !seen.some(
+    (h) => h === needle || needle.startsWith(`${h} `) || h.startsWith(`${needle} `),
+  );
 }
 
 function medianAbs(values: number[]): number | null {
@@ -121,16 +149,13 @@ export function addressMismatch(memoText: string, knownVendorAddress: string | n
 }
 
 function normalizeAddress(raw: string): string {
-  return raw
-    .toLowerCase()
-    .replace(/[.,#]/g, " ")
-    .replace(/\s+/g, " ")
-    .trim();
+  return raw.toLowerCase().replace(/[.,#]/g, " ").replace(/\s+/g, " ").trim();
 }
 
 /** Pull simple "123 Main St" style candidates from free text. */
 function extractAddressCandidates(text: string): string[] {
-  const re = /\b(\d{1,5}\s+[a-z0-9][a-z0-9\s]{2,40}(?:street|st|road|rd|avenue|ave|lane|ln|drive|dr|way|blvd|boulevard|court|ct))\b/gi;
+  const re =
+    /\b(\d{1,5}\s+[a-z0-9][a-z0-9\s]{2,40}(?:street|st|road|rd|avenue|ave|lane|ln|drive|dr|way|blvd|boulevard|court|ct))\b/gi;
   const out: string[] = [];
   for (const m of text.matchAll(re)) {
     out.push(normalizeAddress(m[1] ?? ""));

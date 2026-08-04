@@ -59,9 +59,7 @@ export function priceHikeDetect(history: RecurringEntry[]): PriceHikeResult {
   const sorted = [...history].sort((a, b) => a.startedAt.getTime() - b.startedAt.getTime());
   const latest = sorted[sorted.length - 1]!;
   const windowStart = new Date(latest.startedAt.getTime() - 183 * DAY_MS);
-  const prior = sorted
-    .slice(0, -1)
-    .filter((e) => e.startedAt.getTime() >= windowStart.getTime());
+  const prior = sorted.slice(0, -1).filter((e) => e.startedAt.getTime() >= windowStart.getTime());
   if (prior.length === 0) {
     return { flagged: false, from: null, to: null, percentIncrease: null };
   }
