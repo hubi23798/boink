@@ -11,5 +11,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS "fraud_signal_open_dedup_udx"
   WHERE "status" = 'open' AND "transaction_id" IS NOT NULL;--> statement-breakpoint
 
 -- Append-only: signals are never deleted. Observer-scope write restrictions land
--- with the observer RLS layer (TRU-BTR-03).
-REVOKE DELETE ON "fraud_signal" FROM authenticated;
+-- with the observer RLS layer (TRU-BTR-03). Guarded for plain-Postgres CI.
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'authenticated') THEN
+    EXECUTE 'REVOKE DELETE ON "fraud_signal" FROM authenticated';
+  END IF;
+END $$;
