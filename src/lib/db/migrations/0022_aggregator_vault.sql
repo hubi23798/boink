@@ -1,7 +1,13 @@
 -- Phase B-EU: Supabase Vault wrappers for aggregator tokens (TRU-BEU-02)
 -- Service-role only — never expose to authenticated/anon JWT paths.
 
-CREATE EXTENSION IF NOT EXISTS supabase_vault WITH SCHEMA vault;--> statement-breakpoint
+-- Prefer real Supabase Vault; fall back to CI stub schema (scripts/ci-pg-stubs.sql).
+DO $$ BEGIN
+  CREATE EXTENSION IF NOT EXISTS supabase_vault WITH SCHEMA vault;
+EXCEPTION
+  WHEN OTHERS THEN
+    RAISE NOTICE 'supabase_vault unavailable (%); expecting vault stub schema', SQLERRM;
+END $$;--> statement-breakpoint
 
 CREATE OR REPLACE FUNCTION public.aggregator_vault_store(
   secret_name text,
