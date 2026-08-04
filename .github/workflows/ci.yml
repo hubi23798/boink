@@ -57,7 +57,7 @@ jobs:
         run: pnpm typecheck
 
       - name: Stub Supabase roles/functions for CI Postgres
-        run: psql "$DATABASE_URL" -v ON_ERROR_STOP=1 -f scripts/ci-pg-stubs.sql
+        run: pnpm exec tsx scripts/ci-pg-stubs.ts
 
       - name: Migrate DB
         run: pnpm exec drizzle-kit migrate
