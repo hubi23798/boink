@@ -37,3 +37,60 @@ AS $$
     '{}'::jsonb
   )
 $$;
+
+-- Stub vault schema so 0022_aggregator_vault.sql can apply without the
+-- real supabase_vault extension (unavailable on plain Postgres).
+CREATE SCHEMA IF NOT EXISTS vault;
+
+CREATE TABLE IF NOT EXISTS vault.secrets (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text UNIQUE,
+  secret text,
+  description text
+);
+
+CREATE OR REPLACE VIEW vault.decrypted_secrets AS
+SELECT id, name, secret AS decrypted_secret, description
+FROM vault.secrets;
+
+CREATE OR REPLACE FUNCTION vault.create_secret(
+  new_secret text,
+  new_name text DEFAULT NULL,
+  new_description text DEFAULT NULL
+)
+RETURNS uuid
+LANGUAGE plpgsql
+AS $$
+DECLARE
+  secret_id uuid;
+BEGIN
+  INSERT INTO vault.secrets (name, secret, description)
+  VALUES (new_name, new_secret, new_description)
+  ON CONFLICT (name) DO UPDATE
+    SET secret = EXCLUDED.secret,
+        description = COALESCE(EXCLUDED.description, vault.secrets.description)
+  RETURNING id INTO secret_id;
+  RETURN secret_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION vault.update_secret(
+  secret_id uuid,
+  new_secret text DEFAULT NULL,
+  new_name text DEFAULT NULL,
+  new_description text DEFAULT NULL
+)
+RETURNS void
+LANGUAGE plpgsql
+AS $$
+BEGIN
+  UPDATE vault.secrets
+  SET
+    secret = COALESCE(new_secret, secret),
+    name = COALESCE(new_name, name),
+    description = COALESCE(new_description, description)
+  WHERE id = secret_id;
+END;
+$$;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
