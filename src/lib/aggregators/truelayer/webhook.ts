@@ -1,8 +1,8 @@
 import {
   extractJku,
-  HttpMethod,
   SignatureError,
   verify as verifyTlSignature,
+  type HttpMethod,
 } from "truelayer-signing";
 
 const JWKS_CACHE_TTL_MS = 5 * 60 * 1000;

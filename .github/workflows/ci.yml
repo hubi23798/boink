@@ -56,6 +56,9 @@ jobs:
       - name: Typecheck
         run: pnpm typecheck
 
+      - name: Stub Supabase roles/functions for CI Postgres
+        run: pnpm exec tsx scripts/ci-pg-stubs.ts
+
       - name: Migrate DB
         run: pnpm exec drizzle-kit migrate
 
